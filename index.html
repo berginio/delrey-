@@ -2546,11 +2546,14 @@ function portionLabel(food, g) {
   if (food === 'isoclear' || food === 'whey' || food === 'vegprot') return '1 Shake';
   return `${fmt(g)} ${F.unit || 'g'}`;
 }
+/* Anzeige-Menge in den Listen: Fleisch & Co. pro 100 g, Becher pro Becher, Pulver pro Shake */
+const SRC_SHOW = { topfen: 250, greekyog: 250, skyr: 250, cottage: 200, isoclear: 30, whey: 30, vegprot: 30 };
+const SHAKES_SRC = ['isoclear', 'whey', 'vegprot'];
 function sourceRows(k) {
   const taste = S.prefs.taste;
-  const rows = SRC[k].filter(([f]) => tasteOf(taste, f) !== 'no').map(([f]) => ({ f, v: macrosOf(f, 100)[k], love: tasteOf(taste, f) === 'love' }));
+  const rows = SRC[k].filter(([f]) => tasteOf(taste, f) !== 'no').map(([f]) => { const g = SRC_SHOW[f] || 100; return { f, g, v: macrosOf(f, g)[k], love: tasteOf(taste, f) === 'love' }; });
   rows.sort((a, b) => (b.love - a.love) || (b.v - a.v));
-  return rows.slice(0, 6).map(r => `<li><span>100 ${FOODS[r.f].unit || 'g'} ${esc(FOODS[r.f].n)}${FOODS[r.f].raw && FOODS[r.f].grp === 'side' ? ' (roh)' : ''}${r.love ? icon('heart-fill') : ''}</span><b>${k === 'leu' || r.v < 10 ? dec(r.v) : fmt(r.v)} g</b></li>`).join('');
+  return rows.slice(0, 6).map(r => `<li><span>${SHAKES_SRC.includes(r.f) ? '1 Shake' : `${fmt(r.g)} ${FOODS[r.f].unit || 'g'}`} ${esc(FOODS[r.f].n)}${FOODS[r.f].raw && FOODS[r.f].grp === 'side' ? ' (roh)' : ''}${r.love ? icon('heart-fill') : ''}</span><b>${k === 'leu' || r.v < 10 ? dec(r.v) : fmt(r.v)} g</b></li>`).join('');
 }
 function todayContrib(k) {
   if (!todayPlan) return '';
@@ -2631,7 +2634,7 @@ function renderInfo() {
   ${accSec('i-p', 'barbell', 'Eiweiß', `${fmt(per.gym.p)} g pro Tag`, 4, `
     <p>Eiweiß ist der Baustoff für Muskeln. Mit 1,6 bis 2,2 g pro kg Körpergewicht holst du am meisten aus dem Training raus. Verteil es auf 4 bis 5 Mahlzeiten mit je 25 bis 40 g, das nutzt der Körper besser als eine große Portion.</p>
     <div class="calc">${String(g.pk).replace('.', ',')} g × ${String(kg).replace('.', ',')} kg = <b>${fmt(per.gym.p)} g</b>, etwa ${fmt(per.gym.p / 4.5)} g pro Mahlzeit</div>
-    <div class="label" style="margin-top:12px">Was du essen kannst · pro 100 g</div><ul class="srcs">${sourceRows('p')}</ul>${todayContrib('p')}
+    <div class="label" style="margin-top:12px">Was du essen kannst</div><ul class="srcs">${sourceRows('p')}</ul>${todayContrib('p')}
   `, 'inut')}
 
   ${(() => {
@@ -2653,7 +2656,7 @@ function renderInfo() {
     <div class="label" style="margin-top:16px">Die 9 essenziellen Aminosäuren</div>
     <p class="muted" style="margin:4px 0 4px !important;font-size:12.5px !important">Links dein Mindestbedarf pro Tag, rechts etwa so viel, wie ${fmt(pDay)} g Eiweiß liefern. Tipp eine an für mehr.</p>
     <div>${EAA.map(([n, mgkg, mgp, what, src]) => `<details class="aa"><summary><span><b>${n}</b></span><span class="nums">mind. ${dec(mgkg * kg / 1000)} g · <b>~${dec(mgp * pDay / 1000)} g</b></span>${icon('caret-down')}</summary><p>${what}</p><p class="src">Steckt in: ${src}.</p></details>`).join('')}</div>
-    <div class="label" style="margin-top:14px">Am meisten Leucin · pro 100 g</div><ul class="srcs">${sourceRows('leu')}</ul>${todayContrib('leu')}
+    <div class="label" style="margin-top:14px">Am meisten Leucin</div><ul class="srcs">${sourceRows('leu')}</ul>${todayContrib('leu')}
     <div class="note" style="margin-top:12px">${icon('info')}<p>BCAA- oder EAA-Pulver brauchst du nicht. Wenn du dein Eiweiß-Ziel erreichst, sind alle Aminosäuren mehrfach gedeckt. Ein Whey- oder Isoclear-Shake liefert dasselbe plus alle anderen.</p></div>
   `, 'inut')}`;
   })()}
@@ -2673,19 +2676,19 @@ function renderInfo() {
   ${accSec('i-c', 'lightning', 'Kohlenhydrate', `${rangeTxt(per.rest.c, per.gym.c, 'g')}`, 5, `
     <p>Kohlenhydrate sind der Treibstoff fürs Training. Sie füllen die Speicher in den Muskeln, damit du schwerer heben und länger laufen kannst. Am meisten davon gehört vor und nach das Training, an Ruhetagen brauchst du weniger.</p>
     <div class="calc">Was an Kalorien nach Eiweiß und Fett übrig bleibt: <b>${fmt(per.gym.c)} g</b> an Gym-Tagen, <b>${fmt(per.run.c)} g</b> an Lauf-Tagen, <b>${fmt(per.rest.c)} g</b> an Ruhetagen</div>
-    <div class="label" style="margin-top:12px">Was du essen kannst · pro 100 g</div><ul class="srcs">${sourceRows('c')}</ul>${todayContrib('c')}
+    <div class="label" style="margin-top:12px">Was du essen kannst</div><ul class="srcs">${sourceRows('c')}</ul>${todayContrib('c')}
   `, 'inut')}
 
   ${accSec('i-f', 'drop', 'Fett', `${fmt(per.gym.f)} g pro Tag`, 6, `
     <p>Fett braucht dein Körper für Hormone wie Testosteron und um die Vitamine A, D, E und K aufzunehmen. Unter 0,8 g pro kg solltest du nicht gehen. Gute Quellen sind Nüsse, Olivenöl, Eier und Lachs.</p>
     <div class="calc">${String(g.fk).replace('.', ',')} g × ${String(kg).replace('.', ',')} kg = <b>${fmt(per.gym.f)} g</b></div>
-    <div class="label" style="margin-top:12px">Was du essen kannst · pro 100 g</div><ul class="srcs">${sourceRows('f')}</ul>${todayContrib('f')}
+    <div class="label" style="margin-top:12px">Was du essen kannst</div><ul class="srcs">${sourceRows('f')}</ul>${todayContrib('f')}
   `, 'inut')}
 
   ${accSec('i-fib', 'orange-slice', 'Ballaststoffe', `mindestens ${fmt(per.rest.fib)} g`, 7, `
     <p>Ballaststoffe halten lange satt, sind gut für die Verdauung und halten den Blutzucker stabil. Faustregel: 14 g pro 1.000 kcal.${GROUPS.veg.order.every(v => tasteOf(S.prefs.taste, v) === 'no') ? ' Ohne Gemüse kommen sie vor allem aus Haferflocken, Vollkorn, Obst und Chiasamen.' : ''}</p>
     <div class="calc">14 g × ${String((T.avg / 1000).toFixed(1)).replace('.', ',')} = <b>${fmt(per.rest.fib)} bis ${fmt(per.gym.fib)} g</b></div>
-    <div class="label" style="margin-top:12px">Was du essen kannst · pro 100 g</div><ul class="srcs">${sourceRows('fib')}</ul>${todayContrib('fib')}
+    <div class="label" style="margin-top:12px">Was du essen kannst</div><ul class="srcs">${sourceRows('fib')}</ul>${todayContrib('fib')}
   `, 'inut')}
 
   ${accSec('i-ess', 'book-open', 'Was Muskeln wirklich wachsen lässt', `Training, Schlaf, Trinken, Geduld`, 8, `
