@@ -3005,6 +3005,13 @@ document.addEventListener('click', e => {
     try { importCode(code); toast('Daten übernommen'); } catch (e) { toast('Der Code ist ungültig'); }
     return;
   }
+  if (a === 'gtab') {
+    const g = b.dataset.g, t = b.dataset.t; if (!g || !t) return;
+    S.gtab[g] = t; saveGtab();
+    document.querySelectorAll(`.gtabs button[data-g="${g}"]`).forEach(x => x.setAttribute('aria-selected', String(x.dataset.t === t)));
+    document.querySelectorAll(`.gpane[data-g="${g}"]`).forEach(p => { const on = p.dataset.t === t; p.hidden = !on; p.classList.remove('in'); if (on) { void p.offsetWidth; p.classList.add('in'); } });
+    return;
+  }
   if (a === 'acc') {
     const k = b.dataset.id; if (S.acc.has(k)) S.acc.delete(k); else S.acc.add(k);
     try { localStorage.setItem('np:acc', JSON.stringify([...S.acc])); } catch (e) {}
