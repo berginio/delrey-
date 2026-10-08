@@ -349,6 +349,12 @@ details.how p{margin:8px 0 0;color:var(--muted);max-width:60ch}
 .hold-btn span{position:relative;display:inline-flex;gap:6px;align-items:center;white-space:nowrap}
 .hold-btn span .ico{width:14px;height:14px}
 .hold-btn.holding{border-color:var(--warn);color:var(--ink)}
+.reset-wrap{display:grid;justify-items:center;gap:8px;margin-top:22px}
+.reset-wrap .foot{margin:0;max-width:34ch}
+.hold-btn.reset-btn{padding:13px 20px;font-size:14px;color:var(--bad);border-color:color-mix(in srgb,var(--bad) 40%,var(--line))}
+.hold-btn.reset-btn i{background:color-mix(in srgb,var(--bad) 22%,transparent)}
+.hold-btn.reset-btn span .ico{width:16px;height:16px}
+.hold-btn.reset-btn.holding{border-color:var(--bad);color:var(--bad)}
 .crea.late{border-color:color-mix(in srgb,var(--warn) 55%,transparent);background:color-mix(in srgb,var(--warn) 9%,var(--surface))}
 .crea.late .crea-ico{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
 .crea.pop .crea-ico{animation:creapop .5s cubic-bezier(.2,.8,.2,1)}
@@ -871,6 +877,10 @@ details.trip[open] > summary .ico.car{transform:rotate(180deg)}
         <section class="card acc" data-acc="challenge" style="--i:5"><button class="acc-h" data-act="acc" data-id="challenge" aria-expanded="false" aria-controls="accb-challenge"><span class="acc-ico"><svg class="ico" aria-hidden="true"><use href="#i-flag-checkered"/></svg></span><span class="acc-t"><b>Challenges</b><small id="accs-challenge"></small></span><svg class="ico acc-chev" aria-hidden="true"><use href="#i-caret-down"/></svg></button><div class="acc-b" id="accb-challenge" inert><div class="acc-in"><div class="acc-pad"><div id="zChallenge"></div></div></div></div></section>
       </div>
       <p class="foot" style="--i:9">Richtwerte nach der Mifflin-St-Jeor-Formel. Kein Ersatz für ärztliche Beratung.</p>
+      <div class="reset-wrap" style="--i:10">
+        <button class="hold-btn reset-btn" data-hold="reset" data-ms="5000" data-label="Alle Einstellungen zurücksetzen" aria-label="5 Sekunden gedrückt halten, um alle Einstellungen zurückzusetzen"><i aria-hidden="true"></i><span><svg class="ico" aria-hidden="true"><use href="#i-arrow-clockwise"/></svg>Alle Einstellungen zurücksetzen</span></button>
+        <p class="foot">5 Sekunden gedrückt halten. Setzt Körper &amp; Training, Arbeit und Sonstiges auf den Anfang zurück. Gewicht, Essen, Challenges und deine Gerichte bleiben.</p>
+      </div>
     </section>
   </main>
 
@@ -3621,6 +3631,17 @@ function saveEstimate() {
     if (kind === 'streak') {
       S.profile.creaSince = S.today; S.profile.creaTrackFrom = S.today;
       profileChanged(false); renderCrea(true); toast('Serie zurückgesetzt');
+    }
+    if (kind === 'reset') {
+      clearTimeout(Store._pt);
+      S.profile = JSON.parse(JSON.stringify(DEFAULT_PROFILE));
+      if (Store.mode === 'db') Store.write(Store.base, { ...S.profile, updatedAt: Date.now() }); else Store.ls('profile', S.profile);
+      S.acc = new Set(ACC_DEFAULT); S.gtab = {};
+      try { localStorage.setItem('np:acc', JSON.stringify([...S.acc])); localStorage.setItem('np:gtab', '{}'); } catch (e) {}
+      document.documentElement.dataset.pal = palFor(S.tab);
+      renderAll(true); applyAcc();
+      window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+      toast('Alle Einstellungen zurückgesetzt');
     }
   };
   document.addEventListener('pointerdown', e => {
