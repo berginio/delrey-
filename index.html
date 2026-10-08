@@ -350,6 +350,31 @@ details.how p{margin:8px 0 0;color:var(--muted);max-width:60ch}
 .hold-btn span .ico{width:14px;height:14px}
 .hold-btn.holding{border-color:var(--warn);color:var(--ink)}
 .reset-wrap{display:grid;justify-items:center;gap:8px;margin-top:22px}
+/* Noch offen heute */
+.gapc{display:grid;gap:14px}
+.gap-chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(68px,1fr));gap:8px}
+.gap-chip{border-radius:14px;background:var(--tint);padding:9px 10px 8px;display:grid;gap:1px;min-width:0}
+.gap-chip b{font-family:var(--font-display);font-size:19px;font-weight:750;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.15}
+.gap-chip small{font-size:11.5px;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.gap-chip small i{width:8px;height:8px;border-radius:3px;flex:none}
+.gsug{display:grid;gap:8px}
+.gsug-h{font-size:13px;font-weight:650;color:var(--muted);margin:0}
+.gsug-h b{color:var(--ink)}
+.gopts{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.gopts li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 10px 10px 12px;border:1px solid color-mix(in srgb,var(--line) 80%,transparent);border-radius:14px}
+.gopts b{display:block;font-size:14px;font-weight:600;line-height:1.3}
+.gopts small{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.gopts .btn{padding:8px 12px;font-size:13px}
+.gnote{margin:0;font-size:13px;color:var(--muted);display:flex;gap:7px;align-items:flex-start}
+.gnote .ico{color:var(--warn);margin-top:2px}
+.gwhy{margin-top:0}
+.gwhy ul{margin:10px 0 0;padding-left:18px;font-size:13.5px;line-height:1.5;color:var(--muted);display:grid;gap:8px}
+.gwhy li b{color:var(--ink)}
+.gwhy p.sum{margin:10px 0 0;font-size:13.5px;color:var(--ink);font-weight:600}
+.gdone{display:grid;grid-template-columns:38px minmax(0,1fr);gap:12px;align-items:center}
+.gdone > span{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--tint);color:var(--accent)}
+.gdone b{display:block;font-size:14.5px}
+.gdone small{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
 .reset-wrap .foot{margin:0;max-width:34ch}
 .hold-btn.reset-btn{padding:13px 20px;font-size:14px;color:var(--bad);border-color:color-mix(in srgb,var(--bad) 40%,var(--line))}
 .hold-btn.reset-btn i{background:color-mix(in srgb,var(--bad) 22%,transparent)}
@@ -792,6 +817,7 @@ details.trip[open] > summary .ico.car{transform:rotate(180deg)}
             <div class="water-btns"><button data-act="water" data-v="-250" aria-label="250 ml Wasser abziehen">−250</button><button data-act="water" data-v="250" aria-label="250 ml Wasser dazu">+250</button><button data-act="water" data-v="500" aria-label="500 ml Wasser dazu">+500</button></div></div>
         </div>
       </div>
+      <div class="card gapc" id="gapCard" style="--i:1"></div>
       <div class="card crea" id="creaCard" style="--i:1" hidden></div>
       <div id="exampleNote" style="--i:1"></div>
       <div id="homeNext" style="--i:1"></div>
@@ -1944,6 +1970,7 @@ function renderToday() {
   const w = S.log.waterMl || 0;
   $('#waterTxt').textContent = `${String((w / 1000).toFixed(2)).replace('.', ',')} / ${String((T.water / 1000).toFixed(2)).replace('.', ',')} l`;
   $('#waterBar').style.width = Math.min(100, w / T.water * 100) + '%';
+  renderGap(R, T);
 
   const wsNow = weighStatus();
   $('#exampleNote').innerHTML = !S.profile.example && wsNow.due ? `<div class="note">${icon('scales')}<p>Zeit fürs Wiegen der Woche. <button class="linkbtn" data-act="info" data-open="g-weight" data-tab="i-weight">Im Gym Wiki eintragen</button>, dann passt die App deine Werte an.</p></div>` : S.profile.example ? `<div class="note">${icon('info')}<p>Die Ziele rechnen gerade mit Beispielwerten (80 kg, 180 cm, 25 Jahre). <button class="linkbtn" data-act="tab" data-tab="ziele">Trag deine Daten ein</button>, dann stimmt alles.</p></div>` : '';
@@ -3128,6 +3155,12 @@ document.addEventListener('click', e => {
   if (a === 'est-stop') { S.est && S.est.ctl && S.est.ctl.abort(); return; }
   if (a === 'est-save') return saveEstimate();
   if (a === 'est-cancel') { $('#estOut').innerHTML = ''; S.est = null; if (S.dishOpen) { S.dishOpen = null; renderDishes(); } return; }
+  if (a === 'gap-eat') {
+    const o = (S.gapOpts || [])[+b.dataset.i]; if (!o) return;
+    const r = x => Math.round(x), id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+    const entry = { id, name: o.name, time: toHHMM(nowMin()), kcal: r(o.tot.kcal), p: r(o.tot.p), c: r(o.tot.c), f: r(o.tot.f), fib: r(o.tot.fib), leu: Math.round(o.tot.leu * 10) / 10, src: 'fill' };
+    return mutateLog(l => { l.extras = (l.extras || []).concat(entry); }, `${o.name} eingetragen`);
+  }
   if (a === 'dish-cat') { S.dishCat = b.dataset.c; S.dishOpen = null; S.est = null; $('#dishQ').value = ''; renderDishes(); return; }
   if (a === 'dish-pick') {
     const id = b.dataset.id;
@@ -3499,6 +3532,99 @@ function saveBuilder(eat) {
   if (eat) { S.dishOpen = id; renderDishes(); showEstimate(dishResult(d, 1)); setTimeout(() => { const el = document.getElementById('dform-' + id); if (el) el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' }); }, 60); toast('Gespeichert. Prüf die Uhrzeit und tipp auf Eintragen'); }
   else { renderDishes(); toast(B.id ? 'Gericht aktualisiert' : 'Gericht gespeichert'); }
 }
+
+
+/* ================= Noch offen heute: was fehlt, womit auffüllen, was passiert sonst ================= */
+// [Zutat, Schritt, min, max] in g; Reihenfolge = Vorliebe bei Gleichstand
+const FILL = {
+  f: [['almonds', 10, 10, 40], ['pb', 15, 15, 45], ['walnuts', 10, 10, 40], ['cashews', 10, 10, 40], ['x-avocado', 75, 75, 150], ['eggs', 60, 60, 180], ['x-gouda', 10, 20, 60], ['oil', 5, 5, 20]],
+  p: [['skyr', 50, 150, 500], ['topfen', 50, 125, 500], ['whey', 5, 20, 40], ['isoclear', 5, 20, 40], ['cottage', 50, 100, 400], ['greekyog', 50, 150, 500], ['ham', 25, 50, 150], ['x-chicken-cooked', 25, 100, 250]],
+  c: [['banana', 60, 120, 240], ['ricecake', 8, 16, 48], ['oats', 10, 30, 100], ['bread', 50, 50, 150], ['honey', 5, 10, 30], ['apple', 80, 160, 320], ['x-rice-cooked', 50, 100, 300]],
+};
+const MAC = { p: ['Eiweiß', 'var(--accent)', 4], c: ['Kohlenhydrate', 'var(--accent2)', 4], f: ['Fett', 'var(--ring3)', 9] };
+const GAP_MIN = { p: 10, c: 20, f: 8 };
+const half = n => n === 0.5 ? '½' : n % 1 ? `${Math.floor(n)}½` : String(n);
+function amtLabel(id, g) {
+  const I = INGS[id], nm = (FOODS[id] && FOODS[id].nom) || I.n;
+  if (I.piece && I.pn) { const n = Math.round(g / I.piece * 2) / 2, w = n <= 1 ? I.pn[0] : I.pn[1]; return `${half(n)} ${w}${/^Scheibe/.test(w) ? ' ' + nm : ''}`; }
+  if (I.spoon) { const n = Math.max(1, Math.round(g / I.spoon)); return `${n} EL ${nm}`; }
+  return `${fmt(g)} ${I.unit} ${nm}`;
+}
+function fillOptions(m, G, gap, n = 2) {
+  const tol = { p: 8, c: 15, f: 5 };
+  const ok = id => INGS[id] && tasteOf(S.prefs.taste, id) !== 'no';
+  const grams = (id, step, min, max, need) => Math.max(min, Math.min(max, Math.round(need / (INGS[id][m] / 100) / step) * step));
+  const evalOpt = o => {
+    const t = o.parts.reduce((a, [id, g]) => add(a, ingMac(INGS[id], g)), Z()); o.tot = t;
+    let sc = Math.abs(G - t[m]) / G * 100;
+    for (const x of ['p', 'c', 'f']) if (x !== m) { const over = t[x] - Math.max(0, gap[x]) - tol[x]; if (over > 0) sc += over * (x === 'f' ? 3 : 1.5); }
+    const ko = t.kcal - Math.max(0, gap.kcal) - 100; if (ko > 0) sc += ko / 8;
+    sc += Math.max(0, t.kcal - t[m] * MAC[m][2]) / 20;
+    o.score = sc; return o;
+  };
+  const L = FILL[m].filter(([id]) => ok(id));
+  const singles = L.map(([id, st, mn, mx], i) => evalOpt({ parts: [[id, grams(id, st, mn, mx, G)]], pref: i })).sort((a, b) => a.score - b.score || a.pref - b.pref);
+  const out = [];
+  for (const o of singles.slice(0, 4)) {
+    let best = o;
+    if (o.tot[m] < G * 0.75) {
+      for (const [id, st, mn, mx] of L) {
+        if (id === o.parts[0][0]) continue;
+        const c = evalOpt({ parts: [...o.parts, [id, grams(id, st, mn, mx, G - o.tot[m])]] });
+        if (c.score < best.score) best = c;
+      }
+    }
+    if (!out.some(x => x.parts.map(p => p[0]).sort().join() === best.parts.map(p => p[0]).sort().join())) out.push(best);
+  }
+  return out.sort((a, b) => a.score - b.score).slice(0, n).map(o => ({ ...o, name: o.parts.map(([id, g]) => amtLabel(id, g)).join(' + ') }));
+}
+function gapWhy(open, gap) {
+  const goal = S.profile.goal || 'recomp', kg = +S.profile.weight || 80, out = [];
+  if (open.p) out.push(`<li><b>Eiweiß:</b> Ein Tag darunter ist kein Problem, für die Muskeln zählt der Schnitt über die Woche. Fehlt es öfter, wachsen sie langsamer${goal === 'bulk' ? '' : ', und im Kaloriendefizit geht eher Muskelmasse verloren'}. Außerdem hält Eiweiß lange satt.</li>`);
+  if (open.f) out.push(`<li><b>Fett:</b> Einmal zu wenig macht nichts. Liegst du aber über Wochen deutlich darunter (unter etwa 0,5 g pro kg Körpergewicht, bei dir rund ${fmt(kg * 0.5)} g am Tag), kann das den Hormonhaushalt belasten, auch das Testosteron. Und die Vitamine A, D, E und K braucht Fett, damit der Körper sie aufnehmen kann.</li>`);
+  if (open.c) out.push(`<li><b>Kohlenhydrate:</b> Sie sind dein Treibstoff fürs Training. Fehlen sie, sind die Speicher in den Muskeln leerer und du hast beim nächsten Training weniger Kraft. Für den Fettabbau ist es egal, solange die Kalorien stimmen.</li>`);
+  if (gap.kcal > 150) out.push(goal === 'bulk'
+    ? `<li><b>Kalorien:</b> Im Lean Bulk brauchst du den kleinen Überschuss. Fehlen öfter rund ${fmt(gap.kcal)} kcal, baust du langsamer auf, und die Waage bleibt stehen.</li>`
+    : `<li><b>Kalorien:</b> Ein größeres Defizit lässt das Gewicht schneller fallen. Passiert das oft, riskierst du aber mehr Muskelverlust, Hunger und Müdigkeit. Ab und zu ist das völlig okay.</li>`);
+  return out.join('');
+}
+function renderGap(R, T) {
+  const el = $('#gapCard'); if (!el) return;
+  const gap = R.gap, planLeft = R.open.some(o => !o.skip);
+  const open = {}; for (const m of ['p', 'c', 'f']) if (gap[m] > GAP_MIN[m]) open[m] = Math.round(gap[m]);
+  const kOpen = gap.kcal > 150;
+  let html;
+  S.gapOpts = [];
+  if (!Object.keys(open).length && !kOpen) {
+    const over = gap.kcal < -150;
+    html = `<div class="gdone"><span>${icon(over ? 'info' : 'check')}</span><div><b>${over ? `Heute etwa ${fmt(-gap.kcal)} kcal über dem Ziel` : planLeft ? 'Dein Plan deckt den Rest des Tages' : 'Heute ist alles gedeckt'}</b>
+      <small>${over ? 'Ein Tag ändert wenig. Morgen einfach normal weiter.' : planLeft ? 'Iss die restlichen Mahlzeiten wie geplant, dann erreichst du alle Ziele.' : 'Eiweiß, Kohlenhydrate, Fett und Kalorien passen.'}</small></div></div>`;
+  } else {
+    const chips = [...Object.entries(open).map(([m, g]) => `<div class="gap-chip"><b>${fmt(g)} g</b><small><i style="background:${MAC[m][1]}"></i>${MAC[m][0]}</small></div>`),
+      kOpen ? `<div class="gap-chip"><b>${fmt(gap.kcal)}</b><small>kcal</small></div>` : ''].join('');
+    let budget = Math.max(0, gap.kcal), used = null;
+    const order = ['p', 'f', 'c'].filter(m => open[m]);
+    let notes = '';
+    const sugs = order.map(m => {
+      const G = Math.min(open[m], budget / MAC[m][2] + (m === 'p' ? 10 : 0));
+      if (G < GAP_MIN[m]) { notes += `<p class="gnote">${icon('warning-circle')}<span>${used ? `Mit dem ${used} sind deine Kalorien für heute aufgebraucht.` : `Deine Kalorien sind ${budget ? 'fast' : 'schon'} aufgebraucht.`} ${MAC[m][0]} heute lieber nicht mehr nachholen, morgen normal weiter.</span></p>`; return ''; }
+      const opts = fillOptions(m, G, { ...gap, kcal: budget }, order.length === 1 ? 3 : 2); if (!opts.length) return '';
+      budget = Math.max(0, budget - opts[0].tot.kcal); used = MAC[m][0];
+      return `<div class="gsug"><p class="gsug-h">Für <b>${fmt(open[m])} g ${MAC[m][0]}</b>${G < open[m] - 2 ? ` (passend zu deinen Kalorien etwa ${fmt(G)} g)` : ''}</p><ul class="gopts">${opts.map(o => {
+        const i = S.gapOpts.push(o) - 1;
+        return `<li><span><b>${esc(o.name)}</b><small>${fmt(o.tot.kcal)} kcal · ${fmt(o.tot[m])} g ${MAC[m][0]}${['p', 'c', 'f'].filter(x => x !== m && o.tot[x] >= 3).map(x => ` · ${fmt(o.tot[x])} g ${x === 'p' ? 'Eiweiß' : x === 'c' ? 'KH' : 'Fett'}`).join('')}</small></span><button class="btn soft" data-act="gap-eat" data-i="${i}" aria-label="${esc(o.name)} eintragen">${icon('plus')}Essen</button></li>`;
+      }).join('')}</ul></div>`;
+    }).join('');
+    const why = gapWhy(open, gap);
+    html = `<div class="spread"><h3>Noch offen heute</h3>${planLeft ? `<span class="chip">${icon('calendar-dots')}inkl. Plan</span>` : ''}</div>
+      <div class="gap-chips">${chips}</div>
+      ${planLeft ? `<p class="gnote" style="margin-top:-4px">${icon('info')}<span>Deine noch offenen Mahlzeiten sind schon eingerechnet. Das fehlt danach noch.</span></p>` : ''}
+      ${sugs || notes ? `<div class="label" style="margin-bottom:-6px">Damit deckst du es</div>${sugs}${notes}` : ''}
+      ${why ? `<details class="how gwhy" id="gapWhy" ${S.gapWhy ? 'open' : ''}><summary>Was passiert, wenn du es nicht schaffst? ${icon('caret-down')}</summary><ul>${why}</ul><p class="sum">Ein einzelner Tag ändert kaum etwas. Entscheidend ist, dass du über die Woche im Schnitt hinkommst.</p></details>` : ''}`;
+  }
+  if (el.dataset.h !== html) { el.innerHTML = html; el.dataset.h = html; }
+}
+document.addEventListener('toggle', e => { if (e.target.id === 'gapWhy') S.gapWhy = e.target.open; }, true);
 
 /* ---------- Schätzen mit Claude ---------- */
 document.getElementById('estPhoto').addEventListener('change', e => {
