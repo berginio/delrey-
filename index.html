@@ -729,6 +729,9 @@ details.trip[open] > summary .ico.car{transform:rotate(180deg)}
 .dfav:active{transform:scale(.85)}
 .dnew{width:100%;margin-top:12px;justify-content:center}
 .dlinks{display:flex;gap:16px;flex-wrap:wrap;font-size:13.5px}
+.dren{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:6px;align-items:center}
+.dren input{width:100%;min-width:0;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:var(--r-input);padding:9px 10px;font:inherit;font-size:16px}
+.dren input:focus{outline:2px solid color-mix(in srgb,var(--accent) 55%,transparent);border-color:transparent}
 .dings{margin:0;font-size:12.5px;color:var(--muted)}
 /* Baukasten */
 .bld{display:grid;gap:14px}
@@ -3276,6 +3279,24 @@ document.addEventListener('click', e => {
     if (S.evEdit && S.evEdit.id === id) S.evEdit = null;
     eventsChanged(`${evTitle(e)} gelöscht`); return;
   }
+  if (a === 'dish-rename') {
+    const d = dishById(b.dataset.id); if (!d) return;
+    const box = document.getElementById('dlinks-' + d.id); if (!box) return;
+    box.outerHTML = `<div class="dren" id="dren-${esc(d.id)}"><input id="ren-in" autocomplete="off" enterkeyhint="done" value="${esc(d.n)}" aria-label="Neuer Name"><button class="btn sm" data-act="dish-rename-save" data-id="${esc(d.id)}">Speichern</button><button class="btn ghost sm" data-act="dish-rename-cancel">${icon('x')}</button></div>`;
+    const i = $('#ren-in'); i.focus(); i.select(); return;
+  }
+  if (a === 'dish-rename-cancel') { renderDishes(); return; }
+  if (a === 'dish-rename-save') {
+    const d = dishById(b.dataset.id), name = ($('#ren-in').value || '').trim(); if (!d) return;
+    if (!name) { toast('Bitte einen Namen eingeben'); $('#ren-in').focus(); return; }
+    if ((S.prefs.dishes || []).some(x => x.id !== d.id && normQ(x.n) === normQ(name))) { toast('Ein Gericht mit diesem Namen gibt es schon'); $('#ren-in').focus(); return; }
+    const old = d.n;
+    S.prefs = { ...S.prefs, dishes: (S.prefs.dishes || []).map(x => x.id === d.id ? { ...x, n: name } : x) };
+    Store.savePrefs();
+    if ((S.log.extras || []).some(e => normQ(e.name) === normQ(old))) { S.log = JSON.parse(JSON.stringify(S.log)); for (const e of S.log.extras) if (normQ(e.name) === normQ(old)) e.name = name; Store.saveLog(); renderTimeline(); renderTrack(); }
+    if (S.est && S.est.result && S.est.result.dish === d.id) S.est.result = dishResult(dishById(d.id), S.est.result.mult || 1);
+    renderDishes(); toast(`Umbenannt in „${name}“`); return;
+  }
   if (a === 'extra-keep') {
     const e = (S.log.extras || []).find(x => x.id === b.dataset.id); if (!e) return;
     keepExtra(e); renderTrack(); renderTimeline(); if (!S.bld && !S.dishOpen) renderDishes();
@@ -3369,6 +3390,8 @@ for (const evName of ['input', 'change']) document.addEventListener(evName, e =>
   }
 });
 document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.id === 'ren-in') { e.preventDefault(); const sv = document.querySelector('[data-act="dish-rename-save"]'); if (sv) sv.click(); }
+  if (e.key === 'Escape' && e.target.id === 'ren-in') { e.preventDefault(); renderDishes(); }
   if (e.key === 'Enter' && e.target.id === 'b-q') { e.preventDefault(); const first = document.querySelector('#bRes [data-act="bld-add"]'); if (first) first.click(); }
   if (e.key === 'Enter' && e.target.dataset && e.target.dataset.bi != null) { e.preventDefault(); e.target.blur(); }
 });
@@ -3917,7 +3940,7 @@ function showEstimate(r, manual, keep) {
     <div class="seg" role="group" aria-label="Portion">${MULTS.map(([m, l]) => `<button data-act="dish-mult" data-m="${m}" aria-pressed="${m === (r.mult || 1)}">${l}</button>`).join('')}</div>
     <p class="dsum num" id="dishSum"></p>
     ${(() => { const d = dishById(r.dish); if (!d || d.cat !== 'mine') return ''; return `${d.ings ? `<p class="dings">${d.ings.map(([id, amt]) => INGS[id] ? `${String(Math.round(amt / (d.portions || 1) * 10) / 10).replace('.', ',')} ${INGS[id].unit} ${esc(INGS[id].n)}` : '').filter(Boolean).join(' · ')}${(d.portions || 1) > 1 ? ' (pro Portion)' : ''}</p>` : ''}
-      <div class="dlinks">${d.ings ? `<button class="linkbtn" data-act="dish-edit" data-id="${esc(d.id)}">${icon('pencil-simple')} Bearbeiten</button>` : ''}<button class="linkbtn" data-act="dish-del" data-id="${esc(d.id)}">Löschen</button></div>`; })()}` : '';
+      <div class="dlinks" id="dlinks-${esc(d.id)}"><button class="linkbtn" data-act="dish-rename" data-id="${esc(d.id)}">${icon('pencil-simple')}Umbenennen</button>${d.ings ? `<button class="linkbtn" data-act="dish-edit" data-id="${esc(d.id)}">${icon('cooking-pot')}Zutaten ändern</button>` : ''}<button class="linkbtn" data-act="dish-del" data-id="${esc(d.id)}">Löschen</button></div>`; })()}` : '';
   target.innerHTML = `<div class="est">
     ${dishTop}
     ${isDish ? `<details class="how" style="margin-top:0"><summary>Werte anpassen ${icon('caret-down')}</summary><div style="display:grid;gap:12px;margin-top:10px">` : ''}
