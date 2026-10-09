@@ -461,8 +461,14 @@ details.how p{margin:8px 0 0;color:var(--muted);max-width:60ch}
 .plan-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 .plan-head .btn{flex:none;margin-top:10px}
 .evf{display:grid;gap:12px}
-.evkinds{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.evkinds button{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:10px 11px;text-align:left;display:grid;gap:3px;align-content:start;color:var(--ink);transition:background .25s,border-color .25s}
+.evf input:disabled{opacity:.4}
+.evkinds{display:grid;grid-template-columns:1fr;gap:8px}
+.evkinds button{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:11px 12px;text-align:left;display:grid;grid-template-columns:22px minmax(0,1fr);gap:10px;align-items:center;color:var(--ink);transition:background .25s,border-color .25s}
+.evkinds button span{display:grid;gap:2px}
+.buy{display:grid;gap:10px;margin-top:10px}
+.buy-t{margin:0;font-size:13.5px;color:var(--muted);line-height:1.45}
+.buy-t b{color:var(--ink)}
+.buy .linkbtn{justify-self:start;font-size:13px}
 .evkinds button .ico{width:18px;height:18px;color:var(--accent)}
 .evkinds button b{font-size:14px;font-weight:650}
 .evkinds button small{font-size:12px;color:var(--muted);line-height:1.35}
@@ -1440,6 +1446,7 @@ function prevMains(d, pr) {
     prev = new Set(slotsFor(x, pr.week[dow(x)], pr, prev).filter(sl => FAM[sl.key]).map(sl => sl.key));
   return prev;
 }
+function evNoTrain(pr, d) { return (pr.events || []).some(e => e.date === isoDate(d) && e.noTrain); }
 function evWindows(pr, d) {
   const iso = isoDate(d);
   return (pr.events || []).filter(e => e.date === iso).map(e => {
@@ -1549,10 +1556,10 @@ function slotsFor(d, type, pr, prevKeys) {
       slots.splice(slots.indexOf(drop), 1); dropped.push({ id: drop.id, label: drop.label, ev: evId }); i--;
     }
     if (!slots.length) { const end = Math.max(...evs.map(e => e.e0)); slots.push({ id: 'dinner', label: 'Abendessen', spec: K.dinner, t: Math.min(23 * 60, end + 15) }); }
-    for (const sl of slots) { const ev = evs.find(e => e.kind === 'away' && sl.t >= e.s0 && sl.t < e.e0); if (ev) sl.away = ev.id; }
+    for (const sl of slots) { const ev = evs.find(e => (e.kind === 'away' || e.kind === 'buy') && sl.t >= e.s0 && sl.t < e.e0); if (ev) { if (ev.kind === 'buy') sl.buy = ev.id; else sl.away = ev.id; } }
   }
   slots.evs = evs; slots.evDropped = dropped; slots.inBusy = inBusy;
-  for (const s of slots) s.atWork = wd.on && s.id !== 'bf' && s.t >= wd.ws && s.t < wd.we;
+  for (const s of slots) s.atWork = wd.on && s.id !== 'bf' && s.t >= wd.ws && s.t < wd.we && !s.buy && !s.away;
   // Auf Arbeit: Kantine zu Mittag, sonst nur Shakes zum Mitnehmen
   if ((pr.workLunch || 'kantine') === 'kantine') for (const s of slots) if (s.atWork) {
     if (s.id === 'lunch') s.spec = { pref:'kantine', pool:'kantine' };
@@ -1611,7 +1618,7 @@ function targetFromBurned(pr, type, burned, at) {
   return { ...T, kcal, c: Math.round(c), burned: +burned, burnedTotal: total };
 }
 function planDay(d, pr, typeOverride, opts) {
-  const type = typeOverride || pr.week[dow(d)];
+  const type = typeOverride || (evNoTrain(pr, d) ? 'rest' : pr.week[dow(d)]);
   const T = opts && opts.burned > 800 ? targetFromBurned(pr, type, opts.burned, opts.burnedAt) : calcTargets(pr).per[type];
   const slots = slotsFor(d, type, pr);
   let s;
@@ -1756,7 +1763,7 @@ function shoppingCycle(today, pr) {
     const carried = [];
     days.forEach((d, off) => {
       const p = planOf(d);
-      for (const sl of p.slots) for (const it of sl.items) {
+      for (const sl of p.slots) if (!sl.buy) for (const it of sl.items) {
         const F = FOODS[it.food]; if (F.portion || (F.stock && !withStock)) continue;
         const e = map[it.food] || (map[it.food] = { food: it.food, g: 0, uses: [], days: [] });
         e.g += it.g; e.uses.push({ day: DAYSHORT[p.dow], off, label: sl.label });
@@ -1780,7 +1787,7 @@ function shoppingCycle(today, pr) {
     return list;
   };
   const stock = {};
-  for (const d of daysA.concat(daysB)) for (const sl of planOf(d).slots) for (const it of sl.items) {
+  for (const d of daysA.concat(daysB)) for (const sl of planOf(d).slots) if (!sl.buy) for (const it of sl.items) {
     const F = FOODS[it.food]; if (!F.stock || F.portion) continue;
     stock[it.food] = (stock[it.food] || 0) + it.g;
   }
@@ -2005,7 +2012,7 @@ function renderHeader() {
   const name = S.profile.name || S.userName || '';
   const g = h < 5 ? 'Gute Nacht' : h < 11 ? 'Guten Morgen' : h < 14 ? 'Mahlzeit' : h < 18 ? 'Hallo' : 'Guten Abend';
   $('#hdrHello').textContent = name ? `${g}, ${name}` : g;
-  const type = S.log.dayType || S.profile.week[dow(d)];
+  const type = S.log.dayType || (evNoTrain(planPr(), d) ? 'rest' : S.profile.week[dow(d)]);
   const btn = $('#dayTypeBtn');
   btn.innerHTML = `${icon(TYPES[type].icon)}${TYPES[type].n}`;
   btn.hidden = S.tab !== 'heute';
@@ -2049,15 +2056,14 @@ function renderToday() {
   if (next) {
     const adj = R.open.find(o => o.id === next.id);
     $('#nextCard').innerHTML = `<article class="card next">
-      <div class="spread"><span class="label">Als Nächstes</span>${next.atWork ? `<span class="chip">${icon('briefcase')}Auf Arbeit mitnehmen</span>` : ''}${next.away ? `<span class="chip warn">${icon('storefront')}Unterwegs mitnehmen</span>` : ''}</div>
+      <div class="spread"><span class="label">Als Nächstes</span>${next.atWork ? `<span class="chip">${icon('briefcase')}Auf Arbeit mitnehmen</span>` : ''}${next.away ? `<span class="chip warn">${icon('package')}Unterwegs mitnehmen</span>` : ''}${next.buy ? `<span class="chip warn">${icon('storefront')}Unterwegs kaufen</span>` : ''}</div>
       <div class="next-time" style="margin-top:8px"><span class="big num">${next.time}</span><span class="countdown">${relTime(next.t - now)}</span><span class="muted">${esc(next.label)}</span></div>
-      <h3>${esc(next.meal.n)}</h3>
+      <h3>${next.buy ? 'Unterwegs kaufen' : esc(next.meal.n)}</h3>
       ${next.meal.replaced ? `<div class="row" style="margin-top:6px"><span class="chip">${icon('swap')}statt ${esc(mealNameOf(next.meal.replaced))}</span></div>` : ''}
-      ${ingList(adj.items, adj.changed ? next.items : null, next.key)}
-      ${macroLine(adj.tot)}
-      <div class="spread" style="flex-wrap:wrap">${next.meal.how ? `<details class="how"><summary>So geht's ${icon('caret-down')}</summary><p>${esc(next.meal.how)}</p></details>` : '<span></span>'}${tasteBtn(next.key)}</div>
-      <div class="row" style="margin-top:4px">${lazyChip(next.meal)}${cookBtn(next.meal, todayPlan.date, next.id)}</div>
-      ${next.key === 'kantine'
+      ${next.buy ? buyBlock(next, adj.tot, true) : ingList(adj.items, adj.changed ? next.items : null, next.key) + macroLine(adj.tot)}
+      ${next.buy ? '' : `<div class="spread" style="flex-wrap:wrap">${next.meal.how ? `<details class="how"><summary>So geht's ${icon('caret-down')}</summary><p>${esc(next.meal.how)}</p></details>` : '<span></span>'}${tasteBtn(next.key)}</div>
+      <div class="row" style="margin-top:4px">${lazyChip(next.meal)}${cookBtn(next.meal, todayPlan.date, next.id)}</div>`}
+      ${next.buy ? `<div class="actions" style="grid-template-columns:1fr"><button class="btn ghost" data-act="skip" data-slot="${next.id}">Nichts gekauft, auslassen</button></div>` : next.key === 'kantine'
         ? `<div class="actions"><button class="btn" data-act="log-kantine" data-slot="${next.id}">${icon('storefront')}Eintragen, was es gab</button><button class="btn ghost" data-act="eat" data-slot="${next.id}">Wie geplant</button></div>`
         : `<div class="actions"><button class="btn" data-act="eat" data-slot="${next.id}">${icon('check')}Gegessen</button><button class="btn ghost" data-act="skip" data-slot="${next.id}">Auslassen</button></div>`}
     </article>`;
@@ -2271,9 +2277,10 @@ function renderTimeline() {
       html += `<li class="tl-item ${state}">
         <span class="tl-time">${s.time}</span><span class="tl-dot"></span>
         <div class="tl-body">
-          <div class="tl-head"><span class="tl-name">${esc(s.meal.n)}</span><span class="tl-kcal">${state === 'skipped' ? 'ausgelassen' : fmt(tot.kcal) + ' kcal'}</span></div>
-          <div class="tl-sub"><span>${esc(s.label)}</span>${adj && adj.skip ? `<span class="chip">${icon('check')}Heute nicht nötig, Eiweiß ist voll</span>` : ''}${s.atWork ? `<span class="chip">${icon('briefcase')}Arbeit</span>` : ''}${s.away ? `<span class="chip warn">${icon('storefront')}Unterwegs</span>` : ''}${s.moved ? `<span class="chip warn">${icon('clock')}verschoben</span>` : ''}${s.breakEnd ? `<span class="chip">${icon('clock')}Pause bis ${s.breakEnd}</span>` : ''}${state !== 'skipped' && leuHit(tot) ? `<span class="chip">${icon('dna')}Leucin ${dec(tot.leu)} g</span>` : ''}${adj && adj.changed ? `<span class="chip">${icon('arrow-clockwise')}angepasst</span>` : ''}${lazyChip(s.meal)}${st && st.by ? `<span class="chip warn">ersetzt</span>` : ''}</div>
-          ${state === 'open' ? `<details class="how"><summary>Zutaten ${icon('caret-down')}</summary>${ingList(items, adj && adj.changed ? s.items : null, s.key)}<div class="row">${tasteBtn(s.key)}${cookBtn(s.meal, P.date, s.id)}</div></details>` : ''}
+          <div class="tl-head"><span class="tl-name">${s.buy ? 'Unterwegs kaufen' : esc(s.meal.n)}</span><span class="tl-kcal">${state === 'skipped' ? 'ausgelassen' : fmt(tot.kcal) + ' kcal'}</span></div>
+          <div class="tl-sub"><span>${esc(s.label)}</span>${adj && adj.skip ? `<span class="chip">${icon('check')}Heute nicht nötig, Eiweiß ist voll</span>` : ''}${s.atWork ? `<span class="chip">${icon('briefcase')}Arbeit</span>` : ''}${s.away ? `<span class="chip warn">${icon('package')}Unterwegs</span>` : ''}${s.buy ? `<span class="chip warn">${icon('storefront')}Kaufen</span>` : ''}${s.moved ? `<span class="chip warn">${icon('clock')}verschoben</span>` : ''}${s.breakEnd ? `<span class="chip">${icon('clock')}Pause bis ${s.breakEnd}</span>` : ''}${state !== 'skipped' && leuHit(tot) ? `<span class="chip">${icon('dna')}Leucin ${dec(tot.leu)} g</span>` : ''}${adj && adj.changed ? `<span class="chip">${icon('arrow-clockwise')}angepasst</span>` : ''}${lazyChip(s.meal)}${st && st.by ? `<span class="chip warn">ersetzt</span>` : ''}</div>
+          ${state === 'open' && s.buy ? `<details class="how" open><summary>Was kaufen? ${icon('caret-down')}</summary>${buyBlock(s, tot, true)}</details>` : ''}
+          ${state === 'open' && !s.buy ? `<details class="how"><summary>Zutaten ${icon('caret-down')}</summary>${ingList(items, adj && adj.changed ? s.items : null, s.key)}<div class="row">${tasteBtn(s.key)}${cookBtn(s.meal, P.date, s.id)}</div></details>` : ''}
           <div class="tl-acts">${state === 'open'
             ? `<button data-act="eat" data-slot="${s.id}">${icon('check')}Gegessen</button><button data-act="skip" data-slot="${s.id}">${icon('x')}Auslassen</button>`
             : `<button data-act="undo" data-slot="${s.id}">${icon('arrow-clockwise')}Rückgängig</button>`}</div>
@@ -2303,7 +2310,7 @@ function renderPlan() {
   const base = addDays(new Date(), -dow(new Date()));
   renderEvForm();
   $('#dayChips').innerHTML = DAYSHORT.map((d, i) => {
-    const t = pr.week[i];
+    const t = evNoTrain(planPr(), addDays(base, i)) ? 'rest' : pr.week[i];
     const hasEv = (S.prefs.events || []).some(e => e.date === isoDate(addDays(base, i)));
     return `<button class="dchip ${i === dow(new Date()) ? 'today' : ''} ${hasEv ? 'hasev' : ''}" data-act="plan-day" data-d="${i}" aria-pressed="${i === S.planDow}" aria-label="${DAYNAMES[i]}, ${TYPES[t].n}">${d}${icon(TYPES[t].icon)}<small>${TYPES[t].short}</small></button>`;
   }).join('');
@@ -2327,13 +2334,13 @@ function renderPlan() {
   html = evListCard(p) + html;
   html += p.slots.map(s => `<article class="card meal">
       <div class="meal-head"><span class="ico-big">${icon(s.meal.icon)}</span>
-        <div style="min-width:0;flex:1"><div class="meal-top"><span class="meal-time">${s.time}</span><span class="meal-label">${esc(s.label)}</span>${s.atWork ? `<span class="chip">${icon('briefcase')}Mitnehmen</span>` : ''}${s.away ? `<span class="chip warn">${icon('storefront')}Unterwegs</span>` : ''}${s.moved ? `<span class="chip warn">${icon('clock')}verschoben</span>` : ''}</div>
-        <h3 style="margin-top:2px">${esc(s.meal.n)}</h3></div></div>
+        <div style="min-width:0;flex:1"><div class="meal-top"><span class="meal-time">${s.time}</span><span class="meal-label">${esc(s.label)}</span>${s.atWork ? `<span class="chip">${icon('briefcase')}Mitnehmen</span>` : ''}${s.away ? `<span class="chip warn">${icon('package')}Unterwegs</span>` : ''}${s.buy ? `<span class="chip warn">${icon('storefront')}Unterwegs kaufen</span>` : ''}${s.moved ? `<span class="chip warn">${icon('clock')}verschoben</span>` : ''}</div>
+        <h3 style="margin-top:2px">${s.buy ? 'Unterwegs kaufen' : esc(s.meal.n)}</h3></div></div>
       ${s.meal.replaced ? `<div class="row"><span class="chip">${icon('swap')}statt ${esc(mealNameOf(s.meal.replaced))}</span></div>` : ''}${s.meal.blocked ? `<div class="row"><span class="chip warn">${icon('warning-circle')}Keine passende Alternative</span></div>` : ''}
-      ${ingList(s.items, null, s.key)}
-      ${macroLine(s.tot)}
-      <div class="spread" style="flex-wrap:wrap">${s.meal.how ? `<details class="how"><summary>So geht's ${icon('caret-down')}</summary><p>${esc(s.meal.how)}</p></details>` : '<span></span>'}${tasteBtn(s.key)}</div>
+      ${s.buy ? buyBlock(s, s.tot, isToday && !(S.log.meals || {})[s.id]) : ingList(s.items, null, s.key) + macroLine(s.tot)}
+      ${s.buy ? '' : `      <div class="spread" style="flex-wrap:wrap">${s.meal.how ? `<details class="how"><summary>So geht's ${icon('caret-down')}</summary><p>${esc(s.meal.how)}</p></details>` : '<span></span>'}${tasteBtn(s.key)}</div>
       <div class="row">${lazyChip(s.meal)}${cookBtn(s.meal, p.date, s.id)}</div>
+    `}
     </article>`).join('');
   if (prepTomorrow.length) html += kantineMode
     ? `<div class="card prep"><span class="ico-big">${icon('briefcase')}</span><div><h3>Morgen in die Tasche</h3><p>${[...new Set(prepTomorrow.map(s => s.meal.n))].map(esc).join(', ')}. Mittag gibt es in der Kantine.</p></div></div>`
@@ -3065,7 +3072,7 @@ document.addEventListener('click', e => {
   if (a === 'tab') return setTab(b.dataset.tab);
   if (a === 'daytype') {
     const order = ['gym', 'run', 'rest'];
-    const cur = S.log.dayType || S.profile.week[dow(new Date())];
+    const cur = S.log.dayType || (evNoTrain(planPr(), new Date()) ? 'rest' : S.profile.week[dow(new Date())]);
     const nxt = order[(order.indexOf(cur) + 1) % 3];
     return mutateLog(l => { l.dayType = nxt; }, `Heute: ${TYPES[nxt].n}`);
   }
@@ -3241,7 +3248,7 @@ document.addEventListener('click', e => {
   if (a === 'ev-new') {
     const base = addDays(new Date(), -dow(new Date())), day = addDays(base, S.planDow), iso = isoDate(day);
     const st = iso === S.today ? toHHMM(Math.ceil((nowMin() + 30) / 15) * 15) : '14:00';
-    S.evEdit = { id: null, title: '', date: iso < S.today ? S.today : iso, start: st, end: toHHMM(Math.min(23 * 60 + 45, toMin(st) + 120)), open: false, kind: 'away' };
+    S.evEdit = { id: null, title: '', date: iso < S.today ? S.today : iso, start: st, end: toHHMM(Math.min(23 * 60 + 45, toMin(st) + 120)), open: false, kind: 'buy' };
     renderEvForm(); setTimeout(() => { const i = $('#ev-title'); if (i) i.focus(); }, 50); return;
   }
   if (a === 'ev-edit') { const e = (S.prefs.events || []).find(x => x.id === b.dataset.id); if (!e) return; S.evEdit = { ...e }; renderEvForm(); window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }); return; }
@@ -3253,7 +3260,7 @@ document.addEventListener('click', e => {
     if (!date) { toast('Bitte einen Tag wählen'); return; }
     if (!start) { toast('Bitte eine Startzeit eingeben'); $('#ev-start').focus(); return; }
     if (!open && (!end || toMin(end) <= toMin(start))) { toast('Das Ende muss nach dem Start liegen, oder wähl „Ende offen“'); $('#ev-end').focus(); return; }
-    const ev = { id: E.id || 'e-' + Date.now().toString(36), title, date, start, end, open, kind: E.kind || 'away' };
+    const tr = $('#ev-train'), ev = { id: E.id || 'e-' + Date.now().toString(36), title, date, start, end, open, kind: E.kind || 'buy', noTrain: tr ? tr.checked : false };
     S.prefs = { ...S.prefs, events: (S.prefs.events || []).filter(x => x.id !== ev.id).concat(ev) };
     S.evEdit = null;
     const base = addDays(new Date(), -dow(new Date())), diff = Math.round((new Date(date + 'T12:00') - new Date(isoDate(base) + 'T12:00')) / 864e5);
@@ -3266,6 +3273,14 @@ document.addEventListener('click', e => {
     S.prefs = { ...S.prefs, events: (S.prefs.events || []).filter(x => x.id !== id) };
     if (S.evEdit && S.evEdit.id === id) S.evEdit = null;
     eventsChanged(`${evTitle(e)} gelöscht`); return;
+  }
+  if (a === 'buy-eat') {
+    const sid = b.dataset.slot, o = (S.buyOpts[sid] || [])[+b.dataset.i]; if (!o) return;
+    const r = x => Math.round(x), id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+    const entry = { id, name: o.name, time: toHHMM(nowMin()), kcal: r(o.tot.kcal), p: r(o.tot.p), c: r(o.tot.c), f: r(o.tot.f), fib: r(o.tot.fib), leu: Math.round(o.tot.leu * 10) / 10, src: 'buy', replaces: sid };
+    mutateLog(l => { l.extras = (l.extras || []).concat(entry); l.meals[sid] = { state: 'skipped', by: id }; }, 'Eingetragen, Rest des Tages angepasst');
+    if (S.tab === 'plan') renderPlan();
+    return;
   }
   if (a === 'gap-eat') {
     const o = (S.gapOpts || [])[+b.dataset.i]; if (!o) return;
@@ -3340,6 +3355,11 @@ document.addEventListener('change', e => {
 for (const evName of ['input', 'change']) document.addEventListener(evName, e => {
   const k = { 'ev-title': 'title', 'ev-date': 'date', 'ev-start': 'start', 'ev-end': 'end' }[e.target.id];
   if (k && S.evEdit) S.evEdit[k] = e.target.value;
+  if (S.evEdit && e.target.id === 'ev-train') S.evEdit.noTrain = e.target.checked;
+  if (S.evEdit && /^ev-(date|start|end|open)$/.test(e.target.id)) {
+    if (e.target.id === 'ev-date') { renderEvForm(); return; }
+    const tr = $('#ev-train'); if (tr && S.evEdit.noTrain == null) tr.checked = evOverlapsTrain(S.evEdit);
+  }
 });
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && e.target.id === 'b-q') { e.preventDefault(); const first = document.querySelector('#bRes [data-act="bld-add"]'); if (first) first.click(); }
@@ -3747,7 +3767,21 @@ document.addEventListener('toggle', e => { if (e.target.id === 'gapWhy') S.gapWh
 
 
 /* ================= Termine ================= */
-const EV_KIND = { away: ['storefront', 'Unterwegs', 'Essen geht, kochen nicht'], busy: ['lock-simple', 'Kein Essen möglich', 'Während des Termins kann ich nicht essen'] };
+const EV_KIND = {
+  buy: ['storefront', 'Unterwegs, Essen kaufen', 'Ich kaufe mir was, z. B. Leberkässemmel, Kebap oder im Supermarkt'],
+  away: ['package', 'Unterwegs, Essen mitnehmen', 'Ich nehme kaltes Essen ohne Kochen mit'],
+  busy: ['lock-simple', 'Kein Essen möglich', 'Während des Termins kann ich gar nicht essen'],
+};
+function evTrainInfo(E) {
+  if (!E || !E.date) return null;
+  const d = new Date(E.date + 'T12:00'), type = S.profile.week[dow(d)];
+  return type === 'rest' ? null : { type, T: trainTime(S.profile, type, d) };
+}
+function evOverlapsTrain(E) {
+  const ti = evTrainInfo(E); if (!ti || !E.start) return false;
+  const s0 = toMin(E.start), e0 = E.open || !E.end ? 1440 : toMin(E.end);
+  return ti.T >= s0 - 30 && ti.T < Math.max(e0, s0);
+}
 const evRange = e => `${e.start} – ${e.open || !e.end ? 'offen' : e.end}`;
 const evTitle = e => e.title || 'Termin';
 function evEffects(p, ev) {
@@ -3755,12 +3789,15 @@ function evEffects(p, ev) {
   for (const s of p.slots.filter(x => x.moved && x.moved.ev === ev.id)) out.push(`${esc(s.moved.label || s.label)} ${s.t < s.moved.from ? 'vorgezogen' : 'verschoben'} auf ${slotT(s)} (statt ${toHHMM(s.moved.from)})`);
   const drop = (p.evDropped || []).filter(x => x.ev === ev.id);
   if (drop.length) out.push(`${drop.map(x => esc(x.label)).join(', ')} fällt weg, die anderen Mahlzeiten werden etwas größer`);
+  const buy = p.slots.filter(x => x.buy === ev.id);
+  if (buy.length) out.push(`${buy.map(x => `${esc(x.label)} (${x.time})`).join(', ')}: unterwegs kaufen. Was gut passt, steht direkt bei der Mahlzeit`);
   const away = p.slots.filter(x => x.away === ev.id);
   if (away.length) out.push(`${away.map(x => `${esc(x.label)} (${x.time})`).join(', ')}: ohne Kochen, zum Mitnehmen. Isst du auswärts, trag es einfach unter Essen tracken ein`);
   if (!out.length) out.push(ev.kind === 'busy' ? 'Keine Mahlzeit fällt in diese Zeit' : 'In dieser Zeit ist keine Mahlzeit geplant');
-  if (p.type !== 'rest') {
+  if (ev.noTrain) out.push('Training fällt aus. Der Tag zählt als Ruhetag, mit etwas weniger Kalorien');
+  else if (p.type !== 'rest') {
     const T = trainTime(S.profile, p.type, new Date(p.date + 'T12:00')), s0 = toMin(ev.start), e0 = ev.open || !ev.end ? 1440 : Math.max(toMin(ev.end), s0);
-    if (T >= s0 - 30 && T < e0) out.push(`Dein ${p.type === 'gym' ? 'Training' : 'Lauf'} um ${toHHMM(T)} fällt in diese Zeit${p.date === S.today ? '. Auf Home kannst du den Tag oben rechts auf Ruhetag stellen' : ''}`);
+    if (T >= s0 - 30 && T < e0) out.push(`Dein ${p.type === 'gym' ? 'Training' : 'Lauf'} um ${toHHMM(T)} fällt in diese Zeit. Tipp auf den Stift und setz das Häkchen „Training fällt aus“`);
   }
   return out;
 }
@@ -3777,7 +3814,9 @@ function renderEvForm() {
       <div class="field"><label for="ev-end">Bis</label><input id="ev-end" type="time" value="${E.end || ''}" ${E.open ? 'disabled' : ''}></div>
     </div>
     <label class="dkeep"><input type="checkbox" id="ev-open" ${E.open ? 'checked' : ''}>Ende offen, bis spät in die Nacht</label>
-    <div class="field"><label>Was heißt das fürs Essen?</label><div class="evkinds" role="group" aria-label="Art des Termins">${Object.entries(EV_KIND).map(([k, [ic, n, d]]) => `<button data-act="ev-kind" data-k="${k}" aria-pressed="${E.kind === k}">${icon(ic)}<b>${n}</b><small>${d}</small></button>`).join('')}</div></div>
+    ${(() => { const ti = evTrainInfo(E); if (!ti) return ''; const on = E.noTrain != null ? E.noTrain : evOverlapsTrain(E);
+      return `<label class="dkeep"><input type="checkbox" id="ev-train" ${on ? 'checked' : ''}>${ti.type === 'gym' ? 'Gym-Training' : 'Laufen'} fällt an diesem Tag aus <small class="muted" style="font-weight:500">(geplant ${toHHMM(ti.T)})</small></label>`; })()}
+    <div class="field"><label>Was heißt das fürs Essen?</label><div class="evkinds" role="group" aria-label="Art des Termins">${Object.entries(EV_KIND).map(([k, [ic, n, d]]) => `<button data-act="ev-kind" data-k="${k}" aria-pressed="${E.kind === k}">${icon(ic)}<span><b>${n}</b><small>${d}</small></span></button>`).join('')}</div></div>
     <div class="row"><button class="btn" data-act="ev-save">${icon('check')}Speichern</button>${E.id ? `<button class="btn ghost" data-act="ev-del" data-id="${esc(E.id)}">Löschen</button>` : ''}</div>
   </div>`;
 }
@@ -3792,6 +3831,47 @@ function evListCard(p) {
 function eventsChanged(msg) {
   Store.savePrefs(); renderPlan(); renderToday(); if (S.tab === 'einkauf') renderShop();
   if (msg) toast(msg);
+}
+
+
+/* ================= Unterwegs kaufen: was passt zur geplanten Mahlzeit ================= */
+const BUY_EXTRA = [
+  ['b-sandwich', 'Schinken-Käse-Sandwich', 'Supermarkt, 1 Stück', 420, 20, 42, 18, 3, .09],
+  ['b-wrap', 'Hühner-Wrap aus dem Kühlregal', '1 Stück', 450, 24, 45, 18, 3, .08],
+  ['b-semmelschinken', '2 Semmeln mit Putenschinken', '100 g Schinken', 405, 30, 61, 4, 3, .075],
+  ['b-pudding', 'High-Protein-Pudding', '200-g-Becher', 150, 20, 12, 2.5, 0, .1],
+  ['b-shake', 'Protein-Milchdrink', 'fertig, 0,33 l', 200, 25, 16, 3, 0, .1],
+  ['b-skyr', 'Skyr natur', '450-g-Becher', 285, 50, 18, 1, 0, .1],
+].map(([id, n, por, kcal, p, c, f, fib, lf]) => ({ id, n, por, kcal, p, c, f, fib, leu: Math.round(p * lf * 10) / 10 }));
+const BUY_NAME = { 'k-grillhendl': '½ Grillhendl' };
+const BUY_MORNING = ['b-semmelschinken', 'f-brot-schinken', 'i-wurstsemmel', 'i-leberkaese', 'i-toast', 'f-golatsche', 'b-sandwich', 'f-joghurt'];
+const BUY_MAINS = ['i-leberkaese', 'i-doener', 'i-dueruem', 'i-wurstsemmel', 'i-kaesekrainer', 'i-toast', 'i-burger-solo', 'k-grillhendl', 'b-sandwich', 'b-wrap', 'b-semmelschinken'];
+const BUY_SIDES = ['b-pudding', 'b-shake', 'b-skyr', 's-banane', 's-proteinriegel', 's-studentenfutter'];
+const buyItem = id => BUY_EXTRA.find(x => x.id === id) || DISHES.find(x => x.id === id);
+const buyName = id => BUY_NAME[id] || buyItem(id).n;
+function buyOptions(t, morning) {
+  const ok = id => !!buyItem(id), MAINS = morning ? BUY_MORNING : BUY_MAINS;
+  const sets = MAINS.concat(BUY_SIDES).filter(ok).map(id => [id]);
+  for (const m of MAINS.filter(ok)) for (const sd of BUY_SIDES.filter(ok)) sets.push([m, sd]);
+  const K = Math.max(120, t.kcal), P = Math.max(8, t.p);
+  const scored = sets.map(ids => {
+    const tot = ids.reduce((a, id) => add(a, buyItem(id)), Z());
+    const sc = Math.abs(tot.kcal - K) / Math.max(150, K) * 100 + Math.max(0, P - tot.p) / P * 70 + Math.max(0, tot.p - P - 20) * 0.4 + Math.max(0, tot.f - t.f - 12) * 1.2 + (ids.length - 1) * 5;
+    return { ids, tot, sc };
+  }).sort((a, b) => a.sc - b.sc);
+  const out = [];
+  for (const o of scored) { if (out.some(x => x.ids[0] === o.ids[0])) continue; out.push(o); if (out.length === 3) break; }
+  return out.map(o => ({ ...o, name: o.ids.map(buyName).join(' + ') }));
+}
+S.buyOpts = {};
+function buyBlock(sl, tot, canLog) {
+  const opts = buyOptions(tot, sl.t < 10 * 60 + 30); S.buyOpts[sl.id] = opts;
+  const small = tot.kcal < 160;
+  return `<div class="buy">
+    <p class="buy-t">${small ? `Nur eine Kleinigkeit, etwa <b>${fmt(tot.kcal)} kcal</b>. Ergibt sich nichts, lass sie einfach aus, der Rest des Tages wird angepasst. Wenn doch:` : `Kauf dir unterwegs etwas mit etwa <b>${fmt(tot.kcal)} kcal</b> und <b>${fmt(tot.p)} g Eiweiß</b>. Das passt gut:`}</p>
+    <ul class="gopts">${opts.map((o, i) => `<li><span><b>${esc(o.name)}</b><small>${fmt(o.tot.kcal)} kcal · ${fmt(o.tot.p)} g Eiweiß · ${fmt(o.tot.c)} g KH · ${fmt(o.tot.f)} g Fett</small></span>${canLog ? `<button class="btn soft" data-act="buy-eat" data-slot="${sl.id}" data-i="${i}" aria-label="${esc(o.name)} als gegessen eintragen">${icon('check')}Gegessen</button>` : ''}</li>`).join('')}</ul>
+    ${canLog ? `<button class="linkbtn" data-act="log-kantine" data-slot="${sl.id}">Etwas anderes gekauft? Selbst eintragen</button>` : ''}
+  </div>`;
 }
 
 /* ---------- Schätzen mit Claude ---------- */
