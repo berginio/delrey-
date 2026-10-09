@@ -455,6 +455,31 @@ details.how p{margin:8px 0 0;color:var(--muted);max-width:60ch}
 .dchip[aria-pressed="true"] .ico,.dchip[aria-pressed="true"] small{color:var(--on)}
 .dchip:active{transform:scale(.96)}
 .dchip.today{box-shadow:inset 0 -3px 0 var(--accent2)}
+.dchip{position:relative}
+.dchip.hasev::after{content:"";position:absolute;top:6px;right:7px;width:6px;height:6px;border-radius:50%;background:var(--warn)}
+/* Termine */
+.plan-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.plan-head .btn{flex:none;margin-top:10px}
+.evf{display:grid;gap:12px}
+.evkinds{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.evkinds button{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:10px 11px;text-align:left;display:grid;gap:3px;align-content:start;color:var(--ink);transition:background .25s,border-color .25s}
+.evkinds button .ico{width:18px;height:18px;color:var(--accent)}
+.evkinds button b{font-size:14px;font-weight:650}
+.evkinds button small{font-size:12px;color:var(--muted);line-height:1.35}
+.evkinds button[aria-pressed="true"]{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 13%,var(--surface))}
+.evl{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:10px}
+.evl > li{display:grid;grid-template-columns:38px minmax(0,1fr) auto auto;gap:8px;align-items:center}
+.ev-ic{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:color-mix(in srgb,var(--warn) 15%,var(--surface));color:var(--warn)}
+.ev-ic .ico{width:19px;height:19px}
+.evl b{display:block;font-size:14.5px;font-weight:650}
+.evl small{display:block;font-size:12.5px;color:var(--muted);margin-top:1px}
+.eveff{margin:4px 0 0;padding-left:18px;font-size:13px;line-height:1.45;color:var(--muted);display:grid;gap:4px;grid-column:2 / -1}
+.tl-item.ev .tl-dot{width:24px;height:24px;margin:8px 0 0 0;background:color-mix(in srgb,var(--warn) 18%,var(--surface));border-color:var(--warn);color:var(--warn)}
+.tl-item.ev .tl-dot .ico{width:13px;height:13px}
+.tl-item.ev .tl-body{border:1px dashed color-mix(in srgb,var(--warn) 50%,transparent);background:color-mix(in srgb,var(--warn) 7%,transparent)}
+.tl-item.ev .tl-time{padding-top:12px}
+.tl-item.ev.done{opacity:.6}
+.tl-item.ev ul{margin:6px 0 0;padding-left:16px;font-size:12.5px;color:var(--muted);display:grid;gap:2px}
 .daysum{display:grid;gap:12px}
 .mbars{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .mbar{min-width:0}
@@ -865,7 +890,8 @@ details.trip[open] > summary .ico.car{transform:rotate(180deg)}
     </section>
 
     <section class="view" id="v-plan" aria-label="Wochenplan" hidden>
-      <div style="--i:0"><h2 class="sec">Wochenplan</h2><p class="sec-sub" id="planSub"></p></div>
+      <div class="plan-head" style="--i:0"><div><h2 class="sec">Wochenplan</h2><p class="sec-sub" id="planSub"></p></div><button class="btn soft sm" data-act="ev-new" aria-label="Termin eintragen"><svg class="ico"><use href="#i-plus"/></svg>Termin</button></div>
+      <div id="evForm" style="--i:1"></div>
       <div class="hscroll" id="dayChips" style="--i:1" role="group" aria-label="Tag wählen"></div>
       <div id="planDay" class="stack" style="--i:2"></div>
     </section>
@@ -1414,6 +1440,14 @@ function prevMains(d, pr) {
     prev = new Set(slotsFor(x, pr.week[dow(x)], pr, prev).filter(sl => FAM[sl.key]).map(sl => sl.key));
   return prev;
 }
+function evWindows(pr, d) {
+  const iso = isoDate(d);
+  return (pr.events || []).filter(e => e.date === iso).map(e => {
+    const s0 = toMin(e.start || '00:00'); let e0 = e.open || !e.end ? 24 * 60 : toMin(e.end);
+    if (e0 <= s0) e0 = 24 * 60;
+    return { ...e, s0, e0 };
+  }).sort((a, b) => a.s0 - b.s0);
+}
 function slotsFor(d, type, pr, prevKeys) {
   if (!prevKeys) prevKeys = prevMains(d, pr);
   const K = mealKeysFor(d, type);
@@ -1488,6 +1522,36 @@ function slotsFor(d, type, pr, prevKeys) {
   }
   const last = slots[slots.length - 1].t;
   if (last <= 20*60 + 30) slots.push({id:'late', label:'Später Snack', spec:K.late, t:Math.min(22*60 + 30, Math.max(21*60, last + 150))});
+  // Termine: 'busy' = in der Zeit kein Essen, Mahlzeiten rücken davor/danach; 'away' = essen ja, aber ohne Kochen
+  const evs = evWindows(pr, d), inBusy = t => evs.some(e => e.kind === 'busy' && t >= e.s0 - 10 && t < e.e0), dropped = [];
+  if (evs.length) {
+    for (const ev of evs.filter(e => e.kind === 'busy')) {
+      for (const sl of slots.slice()) {
+        if (!(sl.t >= ev.s0 - 10 && sl.t < ev.e0)) continue;
+        const before = Math.floor((ev.s0 - 20) / 5) * 5, after = Math.ceil((ev.e0 + 15) / 5) * 5;
+        const okB = before >= W + 10 && !inBusy(before), okA = after <= 23 * 60 && !inBusy(after);
+        let nt = null;
+        if (okB && (!okA || sl.t - before <= after - sl.t)) nt = before; else if (okA) nt = after;
+        if (nt == null) { slots.splice(slots.indexOf(sl), 1); dropped.push({ id: sl.id, label: sl.label, ev: ev.id }); continue; }
+        sl.moved = { from: sl.moved ? sl.moved.from : sl.t, ev: ev.id, label: sl.moved ? sl.moved.label : sl.label }; sl.t = nt; delete sl.pin; delete sl.breakEnd;
+        if (Math.abs(nt - sl.moved.from) > 90 && !/Training|Lauf/.test(sl.label)) sl.label = (nt < sl.moved.from ? 'Vor: ' : 'Nach: ') + (ev.title || 'Termin');
+      }
+    }
+    slots.sort((a, b) => a.t - b.t);
+    // Zu dicht beieinander: kleine Zwischenmahlzeit fällt weg, sonst rückt die spätere nach hinten
+    const LIGHT = ['snack2', 'late', 'snack', 'pre'];
+    for (let i = 1; i < slots.length; i++) {
+      const a = slots[i - 1], b = slots[i];
+      if (b.t - a.t >= 60) continue;
+      const nt = a.t + 60, evId = (b.moved || a.moved || {}).ev || '';
+      if (!LIGHT.includes(b.id) && !inBusy(nt) && nt <= 23 * 60) { b.moved = { from: b.moved ? b.moved.from : b.t, ev: evId, label: b.moved ? b.moved.label : b.label }; b.t = nt; continue; }
+      const drop = LIGHT.includes(b.id) ? b : LIGHT.includes(a.id) ? a : b;
+      slots.splice(slots.indexOf(drop), 1); dropped.push({ id: drop.id, label: drop.label, ev: evId }); i--;
+    }
+    if (!slots.length) { const end = Math.max(...evs.map(e => e.e0)); slots.push({ id: 'dinner', label: 'Abendessen', spec: K.dinner, t: Math.min(23 * 60, end + 15) }); }
+    for (const sl of slots) { const ev = evs.find(e => e.kind === 'away' && sl.t >= e.s0 && sl.t < e.e0); if (ev) sl.away = ev.id; }
+  }
+  slots.evs = evs; slots.evDropped = dropped; slots.inBusy = inBusy;
   for (const s of slots) s.atWork = wd.on && s.id !== 'bf' && s.t >= wd.ws && s.t < wd.we;
   // Auf Arbeit: Kantine zu Mittag, sonst nur Shakes zum Mitnehmen
   if ((pr.workLunch || 'kantine') === 'kantine') for (const s of slots) if (s.atWork) {
@@ -1514,7 +1578,7 @@ function slotsFor(d, type, pr, prevKeys) {
   // Ohne Kochen: generell (Body Lab) oder für einzelne Mahlzeiten
   const dkey = isoDate(d);
   for (const sl of slots) {
-    const want = pr.cook === 'no' || (pr.swaps && pr.swaps[dkey + ':' + sl.id] === 'nocook');
+    const want = pr.cook === 'no' || !!sl.away || (pr.swaps && pr.swaps[dkey + ':' + sl.id] === 'nocook');
     if (!want || !sl.meal.cook) continue;
     const isBf = sl.id === 'bf';
     const pool = (isBf ? POOLS.nocookbf : POOLS.nocook).filter(k => !usedMeals.has(k));
@@ -1523,7 +1587,7 @@ function slotsFor(d, type, pr, prevKeys) {
     const m = isBf ? pickMeal(pool.includes(pref) ? pref : pool[0], pool, pr.taste, usedFoods)
       : pickVaried(pool.includes(pref) ? pref : pool[0], pool, pr.taste, usedFoods, famOther, prevKeys);
     const orig = sl.key;
-    sl.meal = { ...m, lazy: true, orig, replaced: null }; sl.key = m.key; usedMeals.add(m.key);
+    sl.meal = { ...m, lazy: true, orig, replaced: null, awayLock: !!sl.away }; sl.key = m.key; usedMeals.add(m.key);
   }
   for (const s of slots) s.time = toHHMM(s.t);
   return slots;
@@ -1573,15 +1637,16 @@ function planDay(d, pr, typeOverride, opts) {
   if (T2.c - tot.c > 22) {
     let gi = -1, gap = 0;
     for (let i = 1; i < slots.length; i++) { const g = slots[i].t - slots[i-1].t; if (g > gap) { gap = g; gi = i; } }
-    if (gi > 0 && gap >= 120) {
-      const t = Math.round((slots[gi-1].t + slots[gi].t) / 2 / 15) * 15;
+    const tMid = gi > 0 ? Math.round((slots[gi-1].t + slots[gi].t) / 2 / 15) * 15 : 0;
+    if (gi > 0 && gap >= 120 && !(slots.inBusy && slots.inBusy(tMid))) {
+      const t = tMid;
       const wd = workDay(pr, d), atWork = wd.on && t >= wd.ws && t < wd.we;
       const meal = pickMeal(atWork ? 'prerun' : 'breadhoney', POOLS[atWork ? 'carbswork' : 'carbs'], pr.taste, new Set());
       slots.splice(gi, 0, { id:'carbs', label:'Extra-Kohlenhydrate', t, time: toHHMM(t), atWork, meal, key: meal.key, spec:{ pref: meal.key, pool:'carbs' } });
       tot = solve(T2);
     }
   }
-  return { date: isoDate(d), dow: dow(d), type, target: T, solveTarget: T2, slots, tot, scales: s };
+  return { date: isoDate(d), dow: dow(d), type, target: T, solveTarget: T2, slots, tot, scales: s, events: slots.evs || [], evDropped: slots.evDropped || [] };
 }
 
 /* Rest des Tages: gegessene Mahlzeiten (Schnappschuss) + Extras abziehen, offene Mahlzeiten neu skalieren */
@@ -1766,7 +1831,7 @@ const S = {
   planDow: dow(new Date()), est: null, sample: null, sampleImages: false, photo: null,
   prefs: { taste: { foods: {}, meals: {} }, challenge: null, challenges: [] }, userName: '', chEdit: null, chDel: null,
 };
-const planPr = () => ({ ...S.profile, taste: S.prefs.taste, swaps: S.prefs.swaps || {} });
+const planPr = () => ({ ...S.profile, taste: S.prefs.taste, swaps: S.prefs.swaps || {}, events: S.prefs.events || [] });
 
 /* ================= Speicher: claude db (privat pro Person), sonst Browser ================= */
 const Store = {
@@ -1787,7 +1852,7 @@ const Store = {
     S.log = { ...emptyLog(), ...(this.ls('day:' + S.today) || {}) };
     S.weights = this.ls('weights') || [];
     S.shop = this.ls('shop') || {};
-    const pf = this.ls('prefs'); if (pf) S.prefs = { taste: { foods: {}, meals: {}, ...(pf.taste || {}) }, challenge: pf.challenge || null, challenges: migrateCh(pf), swaps: pf.swaps || {}, creaDays: pf.creaDays || [], dishes: pf.dishes || [], recent: pf.recent || [], favs: pf.favs || [] };
+    const pf = this.ls('prefs'); if (pf) S.prefs = { taste: { foods: {}, meals: {}, ...(pf.taste || {}) }, challenge: pf.challenge || null, challenges: migrateCh(pf), swaps: pf.swaps || {}, creaDays: pf.creaDays || [], dishes: pf.dishes || [], recent: pf.recent || [], favs: pf.favs || [], events: pf.events || [] };
     renderAll(true); renderChallenge(true);
   },
   subscribeAll() {
@@ -1804,7 +1869,7 @@ const Store = {
     this.subShop();
     this.unsub.prefs = db.doc(this.base).collection('prefs').doc('main').onSnapshot(snap => {
       const d = snap.exists ? snap.data() : {};
-      S.prefs = { taste: { foods: {}, meals: {}, ...(d.taste || {}) }, challenge: d.challenge || null, challenges: migrateCh(d), swaps: d.swaps || {}, creaDays: d.creaDays || [], dishes: d.dishes || [], recent: d.recent || [], favs: d.favs || [] };
+      S.prefs = { taste: { foods: {}, meals: {}, ...(d.taste || {}) }, challenge: d.challenge || null, challenges: migrateCh(d), swaps: d.swaps || {}, creaDays: d.creaDays || [], dishes: d.dishes || [], recent: d.recent || [], favs: d.favs || [], events: d.events || [] };
       renderAll(false); renderChallenge(true);
     }, () => {});
   },
@@ -1858,7 +1923,7 @@ const Store = {
     const swaps = Object.fromEntries(Object.entries(S.prefs.swaps || {}).filter(([k]) => k.slice(0, 10) >= old));
     const chs = S.prefs.challenges || [];
     const main = chs.slice().filter(c => c.date >= S.today).sort((a, b) => a.date.localeCompare(b.date))[0] || null;
-    const d = { taste: S.prefs.taste, challenges: chs, challenge: main ? { title: main.title, with: main.with, date: main.date, start: main.start } : null, swaps, creaDays: (S.prefs.creaDays || []).slice(-120), dishes: S.prefs.dishes || [], recent: S.prefs.recent || [], favs: S.prefs.favs || [], updatedAt: Date.now() };
+    const d = { taste: S.prefs.taste, challenges: chs, challenge: main ? { title: main.title, with: main.with, date: main.date, start: main.start } : null, swaps, creaDays: (S.prefs.creaDays || []).slice(-120), dishes: S.prefs.dishes || [], recent: S.prefs.recent || [], favs: S.prefs.favs || [], events: (S.prefs.events || []).filter(e => e.date >= isoDate(addDays(new Date(), -2))), updatedAt: Date.now() };
     if (this.mode === 'db') this.write(this.base + '/prefs/main', d); else this.ls('prefs', d);
   },
   saveShop(key) {
@@ -1911,7 +1976,7 @@ function ingList(items, prev, mealKey) {
   }).join('')}</ul>`;
 }
 const cookBtn = (meal, date, slotId) => {
-  if (meal.lazy) return S.profile.cook === 'no' ? '' : `<button class="taste-btn" data-act="cook" data-key="${date}:${slotId}">${icon('cooking-pot')}Doch kochen</button>`;
+  if (meal.lazy) return S.profile.cook === 'no' || meal.awayLock ? '' : `<button class="taste-btn" data-act="cook" data-key="${date}:${slotId}">${icon('cooking-pot')}Doch kochen</button>`;
   return meal.cook ? `<button class="taste-btn" data-act="nocook" data-key="${date}:${slotId}">${icon('clock')}Keine Lust zu kochen?</button>` : '';
 };
 const lazyChip = meal => meal.lazy ? `<span class="chip">${icon('clock')}Ohne Kochen</span>` : '';
@@ -1984,7 +2049,7 @@ function renderToday() {
   if (next) {
     const adj = R.open.find(o => o.id === next.id);
     $('#nextCard').innerHTML = `<article class="card next">
-      <div class="spread"><span class="label">Als Nächstes</span>${next.atWork ? `<span class="chip">${icon('briefcase')}Auf Arbeit mitnehmen</span>` : ''}</div>
+      <div class="spread"><span class="label">Als Nächstes</span>${next.atWork ? `<span class="chip">${icon('briefcase')}Auf Arbeit mitnehmen</span>` : ''}${next.away ? `<span class="chip warn">${icon('storefront')}Unterwegs mitnehmen</span>` : ''}</div>
       <div class="next-time" style="margin-top:8px"><span class="big num">${next.time}</span><span class="countdown">${relTime(next.t - now)}</span><span class="muted">${esc(next.label)}</span></div>
       <h3>${esc(next.meal.n)}</h3>
       ${next.meal.replaced ? `<div class="row" style="margin-top:6px"><span class="chip">${icon('swap')}statt ${esc(mealNameOf(next.meal.replaced))}</span></div>` : ''}
@@ -2165,12 +2230,24 @@ function renderTimeline() {
     const t = trainTime(S.profile, P.type, new Date()), dur = P.type === 'gym' ? 75 : 50;
     rows.push({ kind: 'train', t, end: t + dur, dur });
   }
-  rows.sort((a, b) => a.t - b.t || (a.kind === 'train' ? -1 : b.kind === 'train' ? 1 : 0));
+  for (const ev of (P.events || [])) rows.push({ kind: 'event', t: ev.s0, ev });
+  rows.sort((a, b) => a.t - b.t || (a.kind === 'event' ? -1 : b.kind === 'event' ? 1 : 0) || (a.kind === 'train' ? -1 : b.kind === 'train' ? 1 : 0));
   const now = nowMin();
   let html = '', nowDone = false;
   const nowRow = `<li class="tl-now" aria-label="Jetzt"><span>${toHHMM(now)}</span><i></i><b></b></li>`;
   for (const r of rows) {
     if (!nowDone && r.t > now) { html += nowRow; nowDone = true; }
+    if (r.kind === 'event') {
+      const ev = r.ev, done = now >= ev.e0;
+      html += `<li class="tl-item ev ${done ? 'done' : ''}">
+        <span class="tl-time">${ev.start}</span><span class="tl-dot">${icon(EV_KIND[ev.kind][0])}</span>
+        <div class="tl-body">
+          <div class="tl-head"><span class="tl-name">${esc(evTitle(ev))}</span><span class="tl-kcal">${ev.open || !ev.end ? 'bis spät' : 'bis ' + ev.end}</span></div>
+          <div class="tl-sub"><span class="chip warn">${icon(EV_KIND[ev.kind][0])}${EV_KIND[ev.kind][1]}</span></div>
+          <ul>${evEffects(P, ev).map(x => `<li>${x}</li>`).join('')}</ul>
+        </div></li>`;
+      continue;
+    }
     if (r.kind === 'train') {
       const ty = TYPES[P.type], gym = P.type === 'gym';
       const state = now >= r.end ? 'done' : (now >= r.t ? 'live' : 'soon');
@@ -2195,7 +2272,7 @@ function renderTimeline() {
         <span class="tl-time">${s.time}</span><span class="tl-dot"></span>
         <div class="tl-body">
           <div class="tl-head"><span class="tl-name">${esc(s.meal.n)}</span><span class="tl-kcal">${state === 'skipped' ? 'ausgelassen' : fmt(tot.kcal) + ' kcal'}</span></div>
-          <div class="tl-sub"><span>${esc(s.label)}</span>${adj && adj.skip ? `<span class="chip">${icon('check')}Heute nicht nötig, Eiweiß ist voll</span>` : ''}${s.atWork ? `<span class="chip">${icon('briefcase')}Arbeit</span>` : ''}${s.breakEnd ? `<span class="chip">${icon('clock')}Pause bis ${s.breakEnd}</span>` : ''}${state !== 'skipped' && leuHit(tot) ? `<span class="chip">${icon('dna')}Leucin ${dec(tot.leu)} g</span>` : ''}${adj && adj.changed ? `<span class="chip">${icon('arrow-clockwise')}angepasst</span>` : ''}${lazyChip(s.meal)}${st && st.by ? `<span class="chip warn">ersetzt</span>` : ''}</div>
+          <div class="tl-sub"><span>${esc(s.label)}</span>${adj && adj.skip ? `<span class="chip">${icon('check')}Heute nicht nötig, Eiweiß ist voll</span>` : ''}${s.atWork ? `<span class="chip">${icon('briefcase')}Arbeit</span>` : ''}${s.away ? `<span class="chip warn">${icon('storefront')}Unterwegs</span>` : ''}${s.moved ? `<span class="chip warn">${icon('clock')}verschoben</span>` : ''}${s.breakEnd ? `<span class="chip">${icon('clock')}Pause bis ${s.breakEnd}</span>` : ''}${state !== 'skipped' && leuHit(tot) ? `<span class="chip">${icon('dna')}Leucin ${dec(tot.leu)} g</span>` : ''}${adj && adj.changed ? `<span class="chip">${icon('arrow-clockwise')}angepasst</span>` : ''}${lazyChip(s.meal)}${st && st.by ? `<span class="chip warn">ersetzt</span>` : ''}</div>
           ${state === 'open' ? `<details class="how"><summary>Zutaten ${icon('caret-down')}</summary>${ingList(items, adj && adj.changed ? s.items : null, s.key)}<div class="row">${tasteBtn(s.key)}${cookBtn(s.meal, P.date, s.id)}</div></details>` : ''}
           <div class="tl-acts">${state === 'open'
             ? `<button data-act="eat" data-slot="${s.id}">${icon('check')}Gegessen</button><button data-act="skip" data-slot="${s.id}">${icon('x')}Auslassen</button>`
@@ -2224,9 +2301,11 @@ function renderPlan() {
   const noVeg = GROUPS.veg.order.every(v => tasteOf(S.prefs.taste, v) === 'no');
   $('#planSub').textContent = `Ø ${fmt(T.avg)} kcal am Tag, ${fmt(T.per.gym.p)} g Eiweiß.${noVeg ? ' Ohne Gemüse.' : ''}`;
   const base = addDays(new Date(), -dow(new Date()));
+  renderEvForm();
   $('#dayChips').innerHTML = DAYSHORT.map((d, i) => {
     const t = pr.week[i];
-    return `<button class="dchip ${i === dow(new Date()) ? 'today' : ''}" data-act="plan-day" data-d="${i}" aria-pressed="${i === S.planDow}" aria-label="${DAYNAMES[i]}, ${TYPES[t].n}">${d}${icon(TYPES[t].icon)}<small>${TYPES[t].short}</small></button>`;
+    const hasEv = (S.prefs.events || []).some(e => e.date === isoDate(addDays(base, i)));
+    return `<button class="dchip ${i === dow(new Date()) ? 'today' : ''} ${hasEv ? 'hasev' : ''}" data-act="plan-day" data-d="${i}" aria-pressed="${i === S.planDow}" aria-label="${DAYNAMES[i]}, ${TYPES[t].n}">${d}${icon(TYPES[t].icon)}<small>${TYPES[t].short}</small></button>`;
   }).join('');
   const d = addDays(base, S.planDow);
   const p = planDay(d, planPr());
@@ -2245,9 +2324,10 @@ function renderPlan() {
         : barT('Wasser', 0, p.target.water, `Ziel ${dec(p.target.water / 1000)} l`)}</div>
       <div class="muted" style="font-size:12.5px">${icon('dna')} ${p.slots.filter(sl => leuHit(sl.tot)).length} Muskel-Signale an diesem Tag</div>
     </div>`;
+  html = evListCard(p) + html;
   html += p.slots.map(s => `<article class="card meal">
       <div class="meal-head"><span class="ico-big">${icon(s.meal.icon)}</span>
-        <div style="min-width:0;flex:1"><div class="meal-top"><span class="meal-time">${s.time}</span><span class="meal-label">${esc(s.label)}</span>${s.atWork ? `<span class="chip">${icon('briefcase')}Mitnehmen</span>` : ''}</div>
+        <div style="min-width:0;flex:1"><div class="meal-top"><span class="meal-time">${s.time}</span><span class="meal-label">${esc(s.label)}</span>${s.atWork ? `<span class="chip">${icon('briefcase')}Mitnehmen</span>` : ''}${s.away ? `<span class="chip warn">${icon('storefront')}Unterwegs</span>` : ''}${s.moved ? `<span class="chip warn">${icon('clock')}verschoben</span>` : ''}</div>
         <h3 style="margin-top:2px">${esc(s.meal.n)}</h3></div></div>
       ${s.meal.replaced ? `<div class="row"><span class="chip">${icon('swap')}statt ${esc(mealNameOf(s.meal.replaced))}</span></div>` : ''}${s.meal.blocked ? `<div class="row"><span class="chip warn">${icon('warning-circle')}Keine passende Alternative</span></div>` : ''}
       ${ingList(s.items, null, s.key)}
@@ -2366,7 +2446,7 @@ const gymHint = p => {
   return parts.length ? `Startet 15 Minuten nach Feierabend: ${parts.join(' · ')}. An freien Tagen wie an einem normalen Arbeitstag.` : 'Kein Gym-Tag eingeplant.';
 };
 function exportCode() {
-  const d = { v: 1, profile: { ...S.profile, example: false }, prefs: { taste: S.prefs.taste, challenges: S.prefs.challenges || [], creaDays: S.prefs.creaDays || [], dishes: S.prefs.dishes || [], recent: S.prefs.recent || [], favs: S.prefs.favs || [] }, weights: S.weights || [], today: { date: S.today, log: S.log } };
+  const d = { v: 1, profile: { ...S.profile, example: false }, prefs: { taste: S.prefs.taste, challenges: S.prefs.challenges || [], creaDays: S.prefs.creaDays || [], dishes: S.prefs.dishes || [], recent: S.prefs.recent || [], favs: S.prefs.favs || [], events: S.prefs.events || [] }, weights: S.weights || [], today: { date: S.today, log: S.log } };
   return 'DELREY1:' + btoa(unescape(encodeURIComponent(JSON.stringify(d))));
 }
 function importCode(code) {
@@ -2376,7 +2456,7 @@ function importCode(code) {
   if (!d || !d.profile) throw new Error('leer');
   S.profile = { ...DEFAULT_PROFILE, ...d.profile, example: false };
   const pf = d.prefs || {};
-  S.prefs = { taste: { foods: {}, meals: {}, ...(pf.taste || {}) }, challenge: null, challenges: pf.challenges || [], swaps: {}, creaDays: pf.creaDays || [], dishes: pf.dishes || [], recent: pf.recent || [], favs: pf.favs || [] };
+  S.prefs = { taste: { foods: {}, meals: {}, ...(pf.taste || {}) }, challenge: null, challenges: pf.challenges || [], swaps: {}, creaDays: pf.creaDays || [], dishes: pf.dishes || [], recent: pf.recent || [], favs: pf.favs || [], events: pf.events || [] };
   S.weights = (d.weights || []).filter(w => w && w.date && +w.kg > 0).sort((a, b) => a.date < b.date ? -1 : 1);
   if (d.today && d.today.date === S.today && d.today.log) S.log = { ...emptyLog(), ...d.today.log };
   Store.saveProfileSoon(); Store.savePrefs(); Store.saveLog();
@@ -3158,6 +3238,35 @@ document.addEventListener('click', e => {
   if (a === 'est-stop') { S.est && S.est.ctl && S.est.ctl.abort(); return; }
   if (a === 'est-save') return saveEstimate();
   if (a === 'est-cancel') { $('#estOut').innerHTML = ''; S.est = null; if (S.dishOpen) { S.dishOpen = null; renderDishes(); } return; }
+  if (a === 'ev-new') {
+    const base = addDays(new Date(), -dow(new Date())), day = addDays(base, S.planDow), iso = isoDate(day);
+    const st = iso === S.today ? toHHMM(Math.ceil((nowMin() + 30) / 15) * 15) : '14:00';
+    S.evEdit = { id: null, title: '', date: iso < S.today ? S.today : iso, start: st, end: toHHMM(Math.min(23 * 60 + 45, toMin(st) + 120)), open: false, kind: 'away' };
+    renderEvForm(); setTimeout(() => { const i = $('#ev-title'); if (i) i.focus(); }, 50); return;
+  }
+  if (a === 'ev-edit') { const e = (S.prefs.events || []).find(x => x.id === b.dataset.id); if (!e) return; S.evEdit = { ...e }; renderEvForm(); window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }); return; }
+  if (a === 'ev-cancel') { S.evEdit = null; renderEvForm(); return; }
+  if (a === 'ev-kind') { S.evEdit.kind = b.dataset.k; b.parentElement.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); return; }
+  if (a === 'ev-save') {
+    const E = S.evEdit; if (!E) return;
+    const title = $('#ev-title').value.trim(), date = $('#ev-date').value, start = $('#ev-start').value, open = $('#ev-open').checked, end = open ? '' : $('#ev-end').value;
+    if (!date) { toast('Bitte einen Tag wählen'); return; }
+    if (!start) { toast('Bitte eine Startzeit eingeben'); $('#ev-start').focus(); return; }
+    if (!open && (!end || toMin(end) <= toMin(start))) { toast('Das Ende muss nach dem Start liegen, oder wähl „Ende offen“'); $('#ev-end').focus(); return; }
+    const ev = { id: E.id || 'e-' + Date.now().toString(36), title, date, start, end, open, kind: E.kind || 'away' };
+    S.prefs = { ...S.prefs, events: (S.prefs.events || []).filter(x => x.id !== ev.id).concat(ev) };
+    S.evEdit = null;
+    const base = addDays(new Date(), -dow(new Date())), diff = Math.round((new Date(date + 'T12:00') - new Date(isoDate(base) + 'T12:00')) / 864e5);
+    if (diff >= 0 && diff < 7) S.planDow = diff;
+    eventsChanged(diff >= 0 && diff < 7 ? 'Termin gespeichert, Plan angepasst' : 'Termin gespeichert. Er wirkt an diesem Tag automatisch');
+    return;
+  }
+  if (a === 'ev-del') {
+    const id = b.dataset.id, e = (S.prefs.events || []).find(x => x.id === id); if (!e) return;
+    S.prefs = { ...S.prefs, events: (S.prefs.events || []).filter(x => x.id !== id) };
+    if (S.evEdit && S.evEdit.id === id) S.evEdit = null;
+    eventsChanged(`${evTitle(e)} gelöscht`); return;
+  }
   if (a === 'gap-eat') {
     const o = (S.gapOpts || [])[+b.dataset.i]; if (!o) return;
     const r = x => Math.round(x), id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
@@ -3225,6 +3334,13 @@ function profileChanged(rerenderForm) {
   if (S.tab === 'plan') renderPlan();
   if (S.tab === 'einkauf') renderShop();
 }
+document.addEventListener('change', e => {
+  if (e.target.id === 'ev-open' && S.evEdit) { S.evEdit.open = e.target.checked; const en = $('#ev-end'); if (en) en.disabled = e.target.checked; }
+});
+for (const evName of ['input', 'change']) document.addEventListener(evName, e => {
+  const k = { 'ev-title': 'title', 'ev-date': 'date', 'ev-start': 'start', 'ev-end': 'end' }[e.target.id];
+  if (k && S.evEdit) S.evEdit[k] = e.target.value;
+});
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && e.target.id === 'b-q') { e.preventDefault(); const first = document.querySelector('#bRes [data-act="bld-add"]'); if (first) first.click(); }
   if (e.key === 'Enter' && e.target.dataset && e.target.dataset.bi != null) { e.preventDefault(); e.target.blur(); }
@@ -3628,6 +3744,55 @@ function renderGap(R, T) {
   if (el.dataset.h !== html) { el.innerHTML = html; el.dataset.h = html; }
 }
 document.addEventListener('toggle', e => { if (e.target.id === 'gapWhy') S.gapWhy = e.target.open; }, true);
+
+
+/* ================= Termine ================= */
+const EV_KIND = { away: ['storefront', 'Unterwegs', 'Essen geht, kochen nicht'], busy: ['lock-simple', 'Kein Essen möglich', 'Während des Termins kann ich nicht essen'] };
+const evRange = e => `${e.start} – ${e.open || !e.end ? 'offen' : e.end}`;
+const evTitle = e => e.title || 'Termin';
+function evEffects(p, ev) {
+  const out = [], slotT = s => s.time;
+  for (const s of p.slots.filter(x => x.moved && x.moved.ev === ev.id)) out.push(`${esc(s.moved.label || s.label)} ${s.t < s.moved.from ? 'vorgezogen' : 'verschoben'} auf ${slotT(s)} (statt ${toHHMM(s.moved.from)})`);
+  const drop = (p.evDropped || []).filter(x => x.ev === ev.id);
+  if (drop.length) out.push(`${drop.map(x => esc(x.label)).join(', ')} fällt weg, die anderen Mahlzeiten werden etwas größer`);
+  const away = p.slots.filter(x => x.away === ev.id);
+  if (away.length) out.push(`${away.map(x => `${esc(x.label)} (${x.time})`).join(', ')}: ohne Kochen, zum Mitnehmen. Isst du auswärts, trag es einfach unter Essen tracken ein`);
+  if (!out.length) out.push(ev.kind === 'busy' ? 'Keine Mahlzeit fällt in diese Zeit' : 'In dieser Zeit ist keine Mahlzeit geplant');
+  if (p.type !== 'rest') {
+    const T = trainTime(S.profile, p.type, new Date(p.date + 'T12:00')), s0 = toMin(ev.start), e0 = ev.open || !ev.end ? 1440 : Math.max(toMin(ev.end), s0);
+    if (T >= s0 - 30 && T < e0) out.push(`Dein ${p.type === 'gym' ? 'Training' : 'Lauf'} um ${toHHMM(T)} fällt in diese Zeit${p.date === S.today ? '. Auf Home kannst du den Tag oben rechts auf Ruhetag stellen' : ''}`);
+  }
+  return out;
+}
+function renderEvForm() {
+  const E = S.evEdit, el = $('#evForm');
+  if (!E) { el.innerHTML = ''; el.hidden = true; return; }
+  el.hidden = false;
+  el.innerHTML = `<div class="card evf">
+    <div class="spread"><h3>${E.id ? 'Termin bearbeiten' : 'Neuer Termin'}</h3><button class="btn ghost sm" data-act="ev-cancel">Abbrechen</button></div>
+    <div class="field"><label for="ev-title">Was steht an?</label><input id="ev-title" autocomplete="off" value="${esc(E.title || '')}" placeholder="z. B. Ausflug nach Wien"></div>
+    <div class="field"><label for="ev-date">Tag</label><input id="ev-date" type="date" value="${E.date}"></div>
+    <div class="two">
+      <div class="field"><label for="ev-start">Von</label><input id="ev-start" type="time" value="${E.start}"></div>
+      <div class="field"><label for="ev-end">Bis</label><input id="ev-end" type="time" value="${E.end || ''}" ${E.open ? 'disabled' : ''}></div>
+    </div>
+    <label class="dkeep"><input type="checkbox" id="ev-open" ${E.open ? 'checked' : ''}>Ende offen, bis spät in die Nacht</label>
+    <div class="field"><label>Was heißt das fürs Essen?</label><div class="evkinds" role="group" aria-label="Art des Termins">${Object.entries(EV_KIND).map(([k, [ic, n, d]]) => `<button data-act="ev-kind" data-k="${k}" aria-pressed="${E.kind === k}">${icon(ic)}<b>${n}</b><small>${d}</small></button>`).join('')}</div></div>
+    <div class="row"><button class="btn" data-act="ev-save">${icon('check')}Speichern</button>${E.id ? `<button class="btn ghost" data-act="ev-del" data-id="${esc(E.id)}">Löschen</button>` : ''}</div>
+  </div>`;
+}
+function evListCard(p) {
+  const evs = (S.prefs.events || []).filter(e => e.date === p.date).sort((a, b) => a.start.localeCompare(b.start));
+  if (!evs.length) return '';
+  return `<div class="card"><div class="spread"><h3>Termine</h3><span class="muted" style="font-size:12.5px">${evs.length === 1 ? '1 Termin' : evs.length + ' Termine'}</span></div><ul class="evl">${evs.map(e => `<li>
+      <span class="ev-ic">${icon(EV_KIND[e.kind][0])}</span><div><b>${esc(evTitle(e))}</b><small>${evRange(e)} · ${EV_KIND[e.kind][1]}</small></div>
+      <button class="ddel" data-act="ev-edit" data-id="${esc(e.id)}" aria-label="${esc(evTitle(e))} bearbeiten">${icon('pencil-simple')}</button><button class="ddel" data-act="ev-del" data-id="${esc(e.id)}" aria-label="${esc(evTitle(e))} löschen">${icon('x')}</button>
+      <ul class="eveff">${evEffects(p, e).map(x => `<li>${x}</li>`).join('')}</ul></li>`).join('')}</ul></div>`;
+}
+function eventsChanged(msg) {
+  Store.savePrefs(); renderPlan(); renderToday(); if (S.tab === 'einkauf') renderShop();
+  if (msg) toast(msg);
+}
 
 /* ---------- Schätzen mit Claude ---------- */
 document.getElementById('estPhoto').addEventListener('change', e => {
