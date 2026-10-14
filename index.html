@@ -106,7 +106,7 @@ button,.btn,label.btn{cursor:pointer;-webkit-tap-highlight-color:transparent;tou
 .num{font-variant-numeric:tabular-nums}
 .ico{width:1.15em;height:1.15em;flex:none;fill:currentColor;vertical-align:-.2em}
 
-.app{max-width:480px;margin:0 auto;padding-inline:16px;padding-block:calc(14px + env(safe-area-inset-top,0px)) calc(108px + env(safe-area-inset-bottom,0px))}
+.app{overflow-x:clip;max-width:480px;margin:0 auto;padding-inline:16px;padding-block:calc(14px + env(safe-area-inset-top,0px)) calc(108px + env(safe-area-inset-bottom,0px))}
 
 /* ---------- Kopf ---------- */
 .top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding:6px 2px 16px}
@@ -502,6 +502,24 @@ details.how p{margin:8px 0 0;color:var(--muted);max-width:60ch}
 .pill.good i{color:var(--up)}
 .pill.bad{background:color-mix(in srgb,var(--bad) 14%,var(--surface))}
 .pill.bad i{color:var(--bad)}
+.stk-sub + .stk-sub{margin-top:14px;padding-top:12px;border-top:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
+.stk-sub .stk-n{font-size:11.5px}
+.stk-t{font-family:var(--font-display);font-size:15px;font-weight:750;letter-spacing:.06em;text-transform:uppercase;margin:0 0 10px}
+.strk{display:grid;gap:14px}
+.strk-row{display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;align-items:center}
+.strk-ic{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:var(--tint);color:var(--accent)}
+.strk-ic .ico{width:22px;height:22px}
+.strk-ic.hot{background:color-mix(in srgb,var(--warn) 18%,var(--surface));color:var(--warn)}
+.strk-n{display:flex;align-items:baseline;gap:6px;margin-top:2px}
+.strk-n b{font-family:var(--font-display);font-size:28px;font-weight:750;letter-spacing:-.02em;line-height:1}
+.strk-n span{font-size:13px;color:var(--muted);font-weight:600}
+.strk-row small{display:block;font-size:12.5px;color:var(--muted);margin-top:3px}
+.sdots{display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:4px;grid-column:2}
+.sdots i{display:block;aspect-ratio:1;border-radius:50%;background:var(--tint);max-width:16px}
+.sdots i.on{background:var(--accent)}
+.sdots i.today{box-shadow:0 0 0 2px var(--surface),0 0 0 3.5px var(--accent)}
+.strk + .strk{margin-top:0}
+.strk-note{margin:2px 0 0;font-size:12px;color:var(--muted);line-height:1.4}
 .stk-e{height:120px;display:grid;place-items:center;text-align:center;font-size:13px;color:var(--muted);padding:0 20px;border-radius:12px;background:color-mix(in srgb,var(--tint) 40%,transparent);margin-top:8px}
 .fslide{animation:viewIn .35s var(--ease) both}
 .gstep{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:6px;align-items:center}
@@ -526,8 +544,8 @@ details.how p{margin:8px 0 0;color:var(--muted);max-width:60ch}
 .chip.upc{background:color-mix(in srgb,var(--up) 16%,var(--surface));color:var(--ink)}
 .chip.upc .ico{color:var(--up)}
 /* Fortschritt */
-.fseg{grid-template-columns:repeat(4,minmax(0,1fr))}
-.fseg button{display:grid;justify-items:center;gap:2px;padding:7px 2px;font-size:12.5px}
+.fseg{grid-template-columns:minmax(0,.9fr) minmax(0,.9fr) minmax(0,.9fr) minmax(0,1.3fr)}
+.fseg button{display:grid;justify-items:center;gap:2px;padding:7px 2px;font-size:12.5px;white-space:nowrap;min-width:0}
 .fseg button .ico{width:17px;height:17px}
 .ftiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .ftile{border-radius:16px;background:var(--tint);padding:11px 10px;display:grid;gap:2px;min-width:0}
@@ -1980,7 +1998,8 @@ const Store = {
     S.weights = this.ls('weights') || [];
     S.train = { ...emptyTrain(), ...(this.ls('train') || {}) };
     S.shop = this.ls('shop') || {};
-    const pf = this.ls('prefs'); if (pf) S.prefs = { taste: { foods: {}, meals: {}, ...(pf.taste || {}) }, challenge: pf.challenge || null, challenges: migrateCh(pf), swaps: pf.swaps || {}, creaDays: pf.creaDays || [], dishes: pf.dishes || [], recent: pf.recent || [], favs: pf.favs || [], events: pf.events || [] };
+    const pf = this.ls('prefs'); if (pf) S.prefs = { taste: { foods: {}, meals: {}, ...(pf.taste || {}) }, challenge: pf.challenge || null, challenges: migrateCh(pf), swaps: pf.swaps || {}, creaDays: pf.creaDays || [], dishes: pf.dishes || [], recent: pf.recent || [], favs: pf.favs || [], events: pf.events || [], trackDays: pf.trackDays || [] };
+    backfillTracked();
     renderAll(true); renderChallenge(true);
   },
   subscribeAll() {
@@ -2001,7 +2020,7 @@ const Store = {
     this.subShop();
     this.unsub.prefs = db.doc(this.base).collection('prefs').doc('main').onSnapshot(snap => {
       const d = snap.exists ? snap.data() : {};
-      S.prefs = { taste: { foods: {}, meals: {}, ...(d.taste || {}) }, challenge: d.challenge || null, challenges: migrateCh(d), swaps: d.swaps || {}, creaDays: d.creaDays || [], dishes: d.dishes || [], recent: d.recent || [], favs: d.favs || [], events: d.events || [] };
+      S.prefs = { taste: { foods: {}, meals: {}, ...(d.taste || {}) }, challenge: d.challenge || null, challenges: migrateCh(d), swaps: d.swaps || {}, creaDays: d.creaDays || [], dishes: d.dishes || [], recent: d.recent || [], favs: d.favs || [], events: d.events || [], trackDays: d.trackDays || [] };
       renderAll(false); renderChallenge(true);
     }, () => {});
   },
@@ -2055,7 +2074,7 @@ const Store = {
     const swaps = Object.fromEntries(Object.entries(S.prefs.swaps || {}).filter(([k]) => k.slice(0, 10) >= old));
     const chs = S.prefs.challenges || [];
     const main = chs.slice().filter(c => c.date >= S.today).sort((a, b) => a.date.localeCompare(b.date))[0] || null;
-    const d = { taste: S.prefs.taste, challenges: chs, challenge: main ? { title: main.title, with: main.with, date: main.date, start: main.start } : null, swaps, creaDays: (S.prefs.creaDays || []).slice(-120), dishes: S.prefs.dishes || [], recent: S.prefs.recent || [], favs: S.prefs.favs || [], events: (S.prefs.events || []).filter(e => e.date >= isoDate(addDays(new Date(), -2))), updatedAt: Date.now() };
+    const d = { taste: S.prefs.taste, challenges: chs, challenge: main ? { title: main.title, with: main.with, date: main.date, start: main.start } : null, swaps, creaDays: (S.prefs.creaDays || []).slice(-120), dishes: S.prefs.dishes || [], recent: S.prefs.recent || [], favs: S.prefs.favs || [], events: (S.prefs.events || []).filter(e => e.date >= isoDate(addDays(new Date(), -2))), trackDays: (S.prefs.trackDays || []).slice(-400), updatedAt: Date.now() };
     if (this.mode === 'db') this.write(this.base + '/prefs/main', d); else this.ls('prefs', d);
   },
   saveTrain() { if (this.mode === 'db') this.write(this.base + '/train/main', { ...S.train, updatedAt: Date.now() }); else this.ls('train', S.train); },
@@ -2649,7 +2668,7 @@ const gymHint = p => {
   return parts.length ? `Startet 15 Minuten nach Feierabend: ${parts.join(' · ')}. An freien Tagen wie an einem normalen Arbeitstag.` : 'Kein Gym-Tag eingeplant.';
 };
 function exportCode() {
-  const d = { v: 1, profile: { ...S.profile, example: false }, prefs: { taste: S.prefs.taste, challenges: S.prefs.challenges || [], creaDays: S.prefs.creaDays || [], dishes: S.prefs.dishes || [], recent: S.prefs.recent || [], favs: S.prefs.favs || [], events: S.prefs.events || [] }, weights: S.weights || [], train: S.train || emptyTrain(), today: { date: S.today, log: S.log } };
+  const d = { v: 1, profile: { ...S.profile, example: false }, prefs: { taste: S.prefs.taste, challenges: S.prefs.challenges || [], creaDays: S.prefs.creaDays || [], dishes: S.prefs.dishes || [], recent: S.prefs.recent || [], favs: S.prefs.favs || [], events: S.prefs.events || [], trackDays: S.prefs.trackDays || [] }, weights: S.weights || [], train: S.train || emptyTrain(), today: { date: S.today, log: S.log } };
   return 'DELREY1:' + btoa(unescape(encodeURIComponent(JSON.stringify(d))));
 }
 function importCode(code) {
@@ -2659,7 +2678,7 @@ function importCode(code) {
   if (!d || !d.profile) throw new Error('leer');
   S.profile = { ...DEFAULT_PROFILE, ...d.profile, example: false };
   const pf = d.prefs || {};
-  S.prefs = { taste: { foods: {}, meals: {}, ...(pf.taste || {}) }, challenge: null, challenges: pf.challenges || [], swaps: {}, creaDays: pf.creaDays || [], dishes: pf.dishes || [], recent: pf.recent || [], favs: pf.favs || [], events: pf.events || [] };
+  S.prefs = { taste: { foods: {}, meals: {}, ...(pf.taste || {}) }, challenge: null, challenges: pf.challenges || [], swaps: {}, creaDays: pf.creaDays || [], dishes: pf.dishes || [], recent: pf.recent || [], favs: pf.favs || [], events: pf.events || [], trackDays: pf.trackDays || [] };
   S.weights = (d.weights || []).filter(w => w && w.date && +w.kg > 0).sort((a, b) => a.date < b.date ? -1 : 1);
   if (d.today && d.today.date === S.today && d.today.log) S.log = { ...emptyLog(), ...d.today.log };
   if (d.train) { S.train = { ...emptyTrain(), ...d.train }; Store.saveTrain(); }
@@ -3263,6 +3282,7 @@ function snapshotSlot(id) {
 function mutateLog(fn, msg) {
   S.log = JSON.parse(JSON.stringify(S.log));
   fn(S.log);
+  try { markTracked(); } catch (e) {}
   Store.saveLog(); renderToday(); renderHeader();
   if (msg) toast(msg);
 }
@@ -4201,7 +4221,7 @@ const emptyTrain = () => ({ gym: [], runs: [], ex: [], hide: [] });
 S.train = emptyTrain();
 S.fseg = (() => { try { return localStorage.getItem('np:fseg') || 'all'; } catch (e) { return 'all'; } })();
 S.charts = {}; S.gxOpen = {};
-const FSEGS = [['all', 'trend-up', 'Gesamt'], ['gym', 'barbell', 'Gym'], ['run', 'sneaker-move', 'Laufen'], ['weight', 'scales', 'Gewicht']];
+const FSEGS = [['all', 'trend-up', 'Gesamt'], ['gym', 'barbell', 'Gym'], ['run', 'sneaker-move', 'Laufen'], ['weight', 'scales', 'Körpergewicht']];
 const dShort = iso => { const [y, m, d] = iso.split('-').map(Number), n = MONTHS[m - 1]; return `${d}. ${n.length > 4 ? n.slice(0, 3) + '.' : n}`; };
 const daysAgo = iso => Math.round((new Date(S.today + 'T12:00') - new Date(iso + 'T12:00')) / 864e5);
 const relDay = iso => { const n = daysAgo(iso); return n <= 0 ? 'heute' : n === 1 ? 'gestern' : `vor ${n} Tagen`; };
@@ -4342,31 +4362,80 @@ function weightRate(pts) {
 }
 function runPts() { return (S.train.runs || []).slice().sort((a, b) => a.date.localeCompare(b.date)); }
 
+
+/* ---------- Serien ---------- */
+function logActive(l) { return !!l && (Object.keys(l.meals || {}).length > 0 || (l.extras || []).length > 0); }
+function markTracked() {
+  const td = S.prefs.trackDays || [], on = logActive(S.log), has = td.includes(S.today);
+  if (on === has) return;
+  S.prefs = { ...S.prefs, trackDays: on ? td.concat(S.today).sort().slice(-400) : td.filter(d => d !== S.today) };
+  Store.savePrefs();
+}
+function backfillTracked() {
+  try {
+    const td = new Set(S.prefs.trackDays || []), n0 = td.size;
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i); if (!k || !k.startsWith('np:day:')) continue;
+      const d = k.slice(7); if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) continue;
+      if (logActive(JSON.parse(localStorage.getItem(k) || 'null'))) td.add(d);
+    }
+    if (td.size !== n0) { S.prefs = { ...S.prefs, trackDays: [...td].sort().slice(-400) }; Store.savePrefs(); }
+  } catch (e) {}
+}
+function runStreak(has) {
+  const today = new Date(S.today + 'T12:00'), doneToday = has(S.today);
+  let x = doneToday ? today : addDays(today, -1), n = 0;
+  while (has(isoDate(x)) && n < 4000) { n++; x = addDays(x, -1); }
+  return { n, start: n ? isoDate(addDays(x, 1)) : null, doneToday };
+}
+function trackStreak() { const set = new Set(S.prefs.trackDays || []); if (logActive(S.log)) set.add(S.today); return { ...runStreak(d => set.has(d)), has: d => set.has(d) }; }
+function creaStreak() {
+  const c = creaInfo(), days = new Set(S.prefs.creaDays || []);
+  const has = d => days.has(d) || (d === S.today && c.taken) || (!!c.start && d >= c.start && d <= S.today && (d !== S.today || c.taken));
+  return { n: c.n, start: c.start, doneToday: c.taken, has };
+}
+function streakDots(has) {
+  const today = new Date(S.today + 'T12:00');
+  return `<div class="sdots" aria-hidden="true">${Array.from({ length: 14 }, (_, i) => { const d = isoDate(addDays(today, i - 13)); return `<i class="${has(d) ? 'on' : ''} ${d === S.today ? 'today' : ''}" title="${dShort(d)}"></i>`; }).join('')}</div>`;
+}
+function streakCard() {
+  const cOn = S.profile.creatine && S.profile.creatine !== 'off', c = creaStreak(), t = trackStreak();
+  const row = (ic, name, st, txtOn, txtOff, extra) => `<div class="strk-row"><span class="strk-ic ${st.n >= 3 ? 'hot' : ''}">${icon(st.n >= 3 ? 'fire' : ic)}</span><div><span class="stk-n">${name}</span>
+      <div class="strk-n"><b>${st.n}</b><span>${st.n === 1 ? 'Tag' : 'Tage'} in Folge</span></div>
+      <small>${st.n ? `seit ${dShort(st.start)} · ` : ''}${st.doneToday ? txtOn : txtOff}${extra || ''}</small></div>${streakDots(st.has)}</div>`;
+  return `<div class="card strk"><p class="stk-t">Serien</p>
+    ${cOn ? row('pill', 'Creatin', c, 'heute genommen', 'heute noch nicht genommen') : `<div class="strk-row"><span class="strk-ic">${icon('pill')}</span><div><span class="stk-n">Creatin</span><small>Creatin ist ausgeschaltet. Im Body Lab unter Sonstiges kannst du es einschalten.</small></div></div>`}
+    ${row('target', 'Nährwerte im Blick', t, 'heute schon eingetragen', 'heute noch nichts eingetragen')}
+    <p class="strk-note">Nährwerte im Blick zählt jeden Tag, an dem du Essen abhakst oder etwas einträgst. Ein Tag ohne Eintrag startet die Serie neu.</p>
+  </div>`;
+}
+
 /* ---------- Gesamt ---------- */
 const FRANGES = [['1m', '1M', 30], ['3m', '3M', 91], ['6m', '6M', 182], ['all', 'Alles', 0]];
 S.frange = (() => { try { return localStorage.getItem('np:frange') || 'all'; } catch (e) { return 'all'; } })();
 function inRange(pts) { const r = FRANGES.find(x => x[0] === S.frange) || FRANGES[3]; return r[2] ? pts.filter(p => daysAgo(p.d) <= r[2]) : pts; }
-function stockCard(key, name, pts, o) {
+function stockCard(key, name, pts, o) { return `<div class="card stk">${stockSub(key, name, pts, o)}</div>`; }
+function stockSub(key, name, pts, o) {
   const p = inRange(pts);
-  if (p.length < 2) return `<div class="card stk"><div class="stk-h"><span class="stk-n">${name}</span></div><div class="stk-e"><span>${pts.length ? 'Zu wenige Einträge in diesem Zeitraum. Wähl oben einen längeren.' : esc(o.empty)}</span></div></div>`;
+  if (p.length < 2) return `<div class="stk-sub"><div class="stk-h"><span class="stk-n">${name}</span></div><div class="stk-e"><span>${pts.length ? 'Zu wenige Einträge in diesem Zeitraum. Wähl oben einen längeren.' : esc(o.empty)}</span></div></div>`;
   const a = p[0].y, z = p[p.length - 1].y, d = z - a, visUp = o.invert ? d < 0 : d > 0, flat = Math.abs(d) < (o.eps || 1e-9);
   const good = o.good == null ? null : (o.good === 'up' ? d > 0 : d < 0);
   const cls = flat || good == null ? '' : good ? 'good' : 'bad';
   const color = flat || good == null ? 'var(--accent)' : good ? 'var(--up)' : 'var(--bad)';
   const pill = `<span class="pill ${cls}" title="${flat ? 'gleich' : good == null ? '' : good ? 'besser' : 'schlechter'}"><i>${flat ? '●' : visUp ? '▲' : '▼'}</i>${esc(o.delta(d))}</span>`;
-  return `<div class="card stk"><div class="stk-h"><span class="stk-n">${name}</span><span class="stk-v"><b>${esc(o.fmt(z))}</b>${pill}</span></div>
-    ${chartSlot(key, { points: p, fmt: o.fmt, tick: o.tick, invert: o.invert, minRange: o.minRange, stock: true, color, h: 150, aria: `${name}: ${o.fmt(a)} bis ${o.fmt(z)}` })}</div>`;
+  return `<div class="stk-sub"><div class="stk-h"><span class="stk-n">${name}</span><span class="stk-v"><b>${esc(o.fmt(z))}</b>${pill}</span></div>
+    ${chartSlot(key, { points: p, fmt: o.fmt, tick: o.tick, invert: o.invert, minRange: o.minRange, stock: true, color, h: o.h || 150, aria: `${name}: ${o.fmt(a)} bis ${o.fmt(z)}` })}</div>`;
 }
 function fortAll() {
   const goal = S.profile.goal || 'recomp', runs = runPts();
   const range = `<div class="frange" role="group" aria-label="Zeitraum">${FRANGES.map(([k, n]) => `<button data-act="frange" data-r="${k}" aria-pressed="${S.frange === k}">${n}</button>`).join('')}</div>`;
   const kg = v => dec1(v) + ' kg';
-  return range
-    + stockCard('sw', 'Körpergewicht', weightPts(), { fmt: kg, tick: v => dec1(v), delta: d => signKg(d), good: goal === 'bulk' ? 'up' : goal === 'cut' ? 'down' : null, minRange: 2, eps: .05, empty: 'Noch kein Gewicht. Wisch zu Gewicht und trag es ein.' })
-    + stockCard('sg', 'Kraft im Gym', strengthSeries(), { fmt: v => Math.round(v) + ' %', tick: v => Math.round(v) + ' %', delta: d => pct(d), good: 'up', minRange: 10, eps: .5, empty: 'Noch kein Training. Wisch zu Gym und trag dein erstes ein.' })
-    + stockCard('sp', 'Lauftempo', runs.map(r => ({ d: r.date, y: r.sec / r.km, label: `${dec1(r.km)} km in ${mmss(r.sec)}` })), { fmt: v => mmss(v) + ' /km', tick: v => mmss(v), delta: d => `${mmss(Math.abs(d))} ${d < 0 ? 'schneller' : 'langsamer'}`, good: 'down', invert: true, minRange: 30, eps: 1, empty: 'Noch kein Lauf. Wisch zu Laufen und trag km und Zeit ein.' })
-    + stockCard('sd', 'Laufdistanz', runs.map(r => ({ d: r.date, y: r.km, label: `${mmss(r.sec / r.km)} min/km` })), { fmt: v => dec1(v) + ' km', tick: v => dec1(v), delta: d => (d > 0 ? '+' : d < 0 ? '−' : '±') + dec1(Math.abs(d)) + ' km', good: 'up', minRange: 2, eps: .05, empty: 'Hier siehst du, ob du weiter läufst.' })
-    + `<p class="fhint" style="text-align:center;margin:2px 0 0">Wisch nach links, um Gym, Laufen oder Gewicht einzutragen.</p>`;
+  return streakCard() + range
+    + stockCard('sw', 'Körpergewicht', weightPts(), { fmt: kg, tick: v => dec1(v), delta: d => signKg(d), good: goal === 'bulk' ? 'up' : goal === 'cut' ? 'down' : null, minRange: 2, eps: .05, empty: 'Noch kein Gewicht. Wisch zu Körpergewicht und trag es ein.' })
+    + stockCard('sg', 'Gym', strengthSeries(), { fmt: v => Math.round(v) + ' %', tick: v => Math.round(v) + ' %', delta: d => pct(d), good: 'up', minRange: 10, eps: .5, empty: 'Noch kein Training. Wisch zu Gym und trag dein erstes ein.' })
+    + `<div class="card stk"><p class="stk-t">Laufen</p>` + stockSub('sp', 'Tempo', runs.map(r => ({ d: r.date, y: r.sec / r.km, label: `${dec1(r.km)} km in ${mmss(r.sec)}` })), { fmt: v => mmss(v) + ' /km', tick: v => mmss(v), delta: d => `${mmss(Math.abs(d))} ${d < 0 ? 'schneller' : 'langsamer'}`, good: 'down', invert: true, minRange: 30, eps: 1, empty: 'Noch kein Lauf. Wisch zu Laufen und trag km und Zeit ein.', h: 130 })
+    + stockSub('sd', 'Distanz', runs.map(r => ({ d: r.date, y: r.km, label: `${mmss(r.sec / r.km)} min/km` })), { fmt: v => dec1(v) + ' km', tick: v => dec1(v), delta: d => (d > 0 ? '+' : d < 0 ? '−' : '±') + dec1(Math.abs(d)) + ' km', good: 'up', minRange: 2, eps: .05, empty: 'Hier siehst du, ob du weiter läufst.', h: 130 }) + `</div>`
+    + `<p class="fhint" style="text-align:center;margin:2px 0 0">Wisch nach links, um Gym, Laufen oder Körpergewicht einzutragen.</p>`;
 }
 
 /* ---------- Gewicht ---------- */
