@@ -489,7 +489,7 @@ details.how p{margin:8px 0 0;color:var(--muted);max-width:60ch}
 .tl-item.ev.done{opacity:.6}
 /* Fortschritt v2 */
 .frange{display:flex;gap:6px;justify-content:flex-end}
-.frange button{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:5px 11px;font-size:12.5px;font-weight:650}
+.frange button{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:4px 11px;font-size:12px;font-weight:650}
 .frange button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 .stk{padding:14px 14px 10px}
 .stk-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
@@ -505,21 +505,30 @@ details.how p{margin:8px 0 0;color:var(--muted);max-width:60ch}
 .stk-sub + .stk-sub{margin-top:14px;padding-top:12px;border-top:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
 .stk-sub .stk-n{font-size:11.5px}
 .stk-t{font-family:var(--font-display);font-size:15px;font-weight:750;letter-spacing:.06em;text-transform:uppercase;margin:0 0 10px}
-.strk{display:grid;gap:14px}
-.strk-row{display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;align-items:center}
-.strk-ic{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:var(--tint);color:var(--accent)}
-.strk-ic .ico{width:22px;height:22px}
-.strk-ic.hot{background:color-mix(in srgb,var(--warn) 18%,var(--surface));color:var(--warn)}
-.strk-n{display:flex;align-items:baseline;gap:6px;margin-top:2px}
-.strk-n b{font-family:var(--font-display);font-size:28px;font-weight:750;letter-spacing:-.02em;line-height:1}
-.strk-n span{font-size:13px;color:var(--muted);font-weight:600}
-.strk-row small{display:block;font-size:12.5px;color:var(--muted);margin-top:3px}
-.sdots{display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:4px;grid-column:2}
-.sdots i{display:block;aspect-ratio:1;border-radius:50%;background:var(--tint);max-width:16px}
-.sdots i.on{background:var(--accent)}
-.sdots i.today{box-shadow:0 0 0 2px var(--surface),0 0 0 3.5px var(--accent)}
-.strk + .strk{margin-top:0}
-.strk-note{margin:2px 0 0;font-size:12px;color:var(--muted);line-height:1.4}
+.schips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.schip{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:16px;background:var(--surface);border:1px solid color-mix(in srgb,var(--line) 75%,transparent);min-width:0}
+.schip-ic{flex:none;width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:var(--tint);color:var(--accent)}
+.schip-ic .ico{width:18px;height:18px}
+.schip.hot .schip-ic{background:color-mix(in srgb,var(--warn) 18%,var(--surface));color:var(--warn)}
+.schip-t{display:grid;min-width:0;line-height:1.15}
+.schip-t small{font-size:11.5px;font-weight:650;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.schip-t b{font-family:var(--font-display);font-size:18px;font-weight:750;letter-spacing:-.01em;white-space:nowrap}
+.schip.off .schip-t b{color:var(--muted);font-size:15px}
+.otiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (max-height:759px){.otile{padding:10px 12px 8px}.ft-v{font-size:18px}.schip{padding:7px 10px}.schip-ic{width:28px;height:28px}}
+.otile{display:grid;align-content:start;width:100%;min-width:0;text-align:left;font:inherit;color:inherit;cursor:pointer;padding:12px 12px 10px;-webkit-tap-highlight-color:transparent;transition:transform .15s var(--ease)}
+.otile:active{transform:scale(.985)}
+.otile.wide{grid-column:1/-1}
+.ft-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.ft-two > .ft-sub + .ft-sub{border-left:1px solid color-mix(in srgb,var(--line) 70%,transparent);padding-left:14px}
+.ft-sub{display:block;min-width:0}
+.ft-n{display:block;font-size:11.5px;font-weight:650;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ft-h{display:block;font-size:11.5px;font-weight:750;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);margin-bottom:6px}
+.ft-two .ft-n{font-size:11px}
+.ft-v{display:block;font-family:var(--font-display);font-size:20px;font-weight:750;letter-spacing:-.02em;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ft-sub .pill{margin-top:4px;font-size:11.5px;padding:2px 8px}
+.ft-sub .fchart{display:block;margin-top:6px}
+.ft-e{display:grid;place-items:center;height:96px;margin-top:6px;border-radius:10px;background:color-mix(in srgb,var(--tint) 40%,transparent);font-size:12px;color:var(--muted);text-align:center;padding:0 8px;line-height:1.3}
 .stk-e{height:120px;display:grid;place-items:center;text-align:center;font-size:13px;color:var(--muted);padding:0 20px;border-radius:12px;background:color-mix(in srgb,var(--tint) 40%,transparent);margin-top:8px}
 .fslide{animation:viewIn .35s var(--ease) both}
 .gstep{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:6px;align-items:center}
@@ -1028,7 +1037,7 @@ details.trip[open] > summary .ico.car{transform:rotate(180deg)}
     </section>
 
     <section class="view" id="v-fort" aria-label="Fortschritt" hidden>
-      <div style="--i:0"><h2 class="sec">Fortschritt</h2><p class="sec-sub" id="fortSub">Alle Kurven unter Gesamt. Wisch nach links oder rechts zum Eintragen.</p></div>
+      <div style="--i:0"><h2 class="sec">Fortschritt</h2></div>
       <div class="seg fseg" id="fortSeg" role="group" aria-label="Bereich" style="--i:1"></div>
       <div id="fortBody" class="stack" style="--i:2"></div>
     </section>
@@ -1126,6 +1135,7 @@ const FOODS = {
   mozza:    {n:'Mozzarella light', nom:'Mozzarella', dat:'Mozzarella', kcal:165, p:19, c:1, f:9, fib:0, cat:'milch', grp:'cheese', pack:125, packLabel:'125-g-Kugel'},
   parmesan: {n:'Parmesan', nom:'Parmesan', dat:'Parmesan', kcal:392, p:33, c:0, f:28, fib:0, cat:'vorrat', grp:'cheese', pack:100, packLabel:'100-g-Stück', stock:true},
   creamch:  {n:'Frischkäse leicht', nom:'Frischkäse', dat:'Frischkäse', kcal:146, p:7.4, c:4, f:11, fib:0, cat:'milch', grp:'cheese', pack:175, packLabel:'175-g-Packung'},
+  raclette: {n:'Raclettekäse', nom:'Raclettekäse', dat:'Raclettekäse', pre:'Raclette', kcal:343, p:25, c:0, f:28, fib:0, cat:'milch', grp:'cheese', pack:400, packLabel:'400-g-Packung Scheiben'},
   butter:   {n:'Butter', nom:'Butter', dat:'Butter', kcal:741, p:0.7, c:0.6, f:82, fib:0, cat:'vorrat', grp:'fat', pack:250, packLabel:'250-g-Packung', stock:true, spoon:10},
   // Obst
   banana:   {n:'Banane', nom:'Banane', dat:'Banane', kcal:93, p:1.2, c:20, f:0.2, fib:2, cat:'obst', grp:'fruit', sub:'fresh', piece:120, pn:['Banane','Bananen']},
@@ -1141,6 +1151,12 @@ const FOODS = {
   rice:     {n:'Basmatireis', nom:'Reis', dat:'Reis', pre:'Reis', kcal:350, p:8, c:77, f:0.7, fib:1.4, cat:'vorrat', grp:'side', pack:1000, packLabel:'1-kg-Packung', stock:true, raw:true},
   potato:   {n:'Erdäpfel', nom:'Erdäpfel', dat:'Erdäpfeln', pre:'Erdäpfel', kcal:77, p:2, c:17, f:0.1, fib:2.1, cat:'vorrat', grp:'side', pack:2000, packLabel:'2-kg-Sack', stock:true, raw:true},
   pasta:    {n:'Vollkornnudeln', nom:'Nudeln', dat:'Nudeln', pre:'Nudel', kcal:350, p:13, c:64, f:2.5, fib:8, cat:'vorrat', grp:'side', pack:500, packLabel:'500-g-Packung', stock:true, raw:true},
+  fries:    {n:'Pommes frites (TK)', nom:'Pommes', dat:'Pommes', pre:'Pommes', kcal:140, p:2.5, c:22, f:4.5, fib:2.3, cat:'tk', grp:'side', pack:750, packLabel:'750-g-Beutel', raw:true},
+  roesti:   {n:'Rösti (TK)', nom:'Rösti', dat:'Rösti', pre:'Rösti', kcal:194, p:3, c:23, f:9.5, fib:2, cat:'tk', grp:'side', pack:550, packLabel:'550-g-Packung', raw:true},
+  wedges:   {n:'Kartoffel-Wedges (TK)', nom:'Wedges', dat:'Wedges', pre:'Wedges', kcal:130, p:2.5, c:20, f:4, fib:2.5, cat:'tk', grp:'side', pack:750, packLabel:'750-g-Beutel', raw:true},
+  kroketten:{n:'Kroketten (TK)', nom:'Kroketten', dat:'Kroketten', pre:'Kroketten', kcal:148, p:2.4, c:20, f:6, fib:2.2, cat:'tk', grp:'side', pack:750, packLabel:'750-g-Beutel', raw:true},
+  gnocchi:  {n:'Gnocchi', nom:'Gnocchi', dat:'Gnocchi', pre:'Gnocchi', kcal:155, p:4, c:33, f:0.5, fib:1.5, cat:'vorrat', grp:'side', pack:500, packLabel:'500-g-Packung'},
+  spaetzle: {n:'Eierspätzle', nom:'Spätzle', dat:'Spätzle', pre:'Spätzle', kcal:360, p:13, c:69, f:3, fib:3, cat:'vorrat', grp:'side', pack:500, packLabel:'500-g-Packung', stock:true, raw:true},
   couscous: {n:'Couscous', nom:'Couscous', dat:'Couscous', pre:'Couscous', kcal:355, p:12, c:68, f:2, fib:6, cat:'vorrat', grp:'side', pack:500, packLabel:'500-g-Packung', stock:true, raw:true},
   oats:     {n:'Haferflocken', nom:'Haferflocken', dat:'Haferflocken', kcal:372, p:13.5, c:58.7, f:7.0, fib:10, cat:'vorrat', grp:'oats', pack:500, packLabel:'500-g-Packung', stock:true, raw:true},
   ricecake: {n:'Reiswaffeln', nom:'Reiswaffeln', dat:'Reiswaffeln', kcal:387, p:8, c:81, f:3, fib:3, cat:'vorrat', grp:'crisp', pack:100, packLabel:'100-g-Packung', stock:true, piece:8, pn:['Reiswaffel','Reiswaffeln']},
@@ -1172,11 +1188,27 @@ const FOODS = {
   honey:    {n:'Honig', nom:'Honig', dat:'Honig', kcal:304, p:0.4, c:82, f:0, fib:0, cat:'vorrat', grp:'sweet', pack:500, packLabel:'500-g-Glas', stock:true, spoon:10},
   teriyaki: {n:'Teriyaki-Sauce', nom:'Teriyaki-Sauce', dat:'Teriyaki-Sauce', pre:'Teriyaki', kcal:120, p:4, c:25, f:0.2, fib:0, cat:'vorrat', grp:'sauce', pack:250, packLabel:'250-ml-Flasche', stock:true, spoon:15, unit:'ml'},
   soy:      {n:'Sojasauce', nom:'Sojasauce', dat:'Sojasauce', pre:'Soja', kcal:60, p:8, c:5, f:0, fib:0, cat:'vorrat', grp:'sauce', pack:250, packLabel:'250-ml-Flasche', stock:true, spoon:15, unit:'ml'},
+  ketchup:  {n:'Ketchup', nom:'Ketchup', dat:'Ketchup', pre:'Ketchup', kcal:102, p:1.2, c:23, f:0.1, fib:0.5, cat:'vorrat', grp:'sauce', pack:500, packLabel:'500-ml-Flasche', stock:true, spoon:15},
+  mayo:     {n:'Mayonnaise', nom:'Mayo', dat:'Mayo', pre:'Mayo', kcal:690, p:1, c:1.5, f:76, fib:0, cat:'vorrat', grp:'sauce', pack:250, packLabel:'250-ml-Tube', stock:true, spoon:15},
+  sriracha: {n:'Sriracha', nom:'Sriracha', dat:'Sriracha', pre:'Sriracha', kcal:95, p:1.9, c:19, f:0.9, fib:1, cat:'vorrat', grp:'sauce', pack:455, packLabel:'455-ml-Flasche', stock:true, spoon:5},
+  srirachamayo:{n:'Sriracha-Mayo', nom:'Sriracha-Mayo', dat:'Sriracha-Mayo', pre:'Sriracha-Mayo', kcal:275, p:0.9, c:26, f:19, fib:0, cat:'vorrat', grp:'sauce', pack:455, packLabel:'455-ml-Flasche', stock:true, spoon:15},
+  // Fertigprodukte
+  tomsauce5:{n:'Tomatensauce 5 Kräuter (Glas)', nom:'Tomatensauce', dat:'Tomatensauce', pre:'Tomaten', kcal:66, p:1.4, c:6.4, f:3.5, fib:1.5, cat:'vorrat', grp:'ready', pack:400, packLabel:'400-g-Glas'},
+  arrabbiata:{n:'Sugo Arrabbiata (Glas)', nom:'Arrabbiata-Sauce', dat:'Arrabbiata-Sauce', pre:'Arrabbiata', kcal:55, p:1.4, c:5.5, f:2.6, fib:1.5, cat:'vorrat', grp:'ready', pack:400, packLabel:'400-g-Glas'},
+  passata:  {n:'Passierte Tomaten', nom:'Passata', dat:'Passata', pre:'Tomaten', kcal:35, p:1.5, c:5.5, f:0.2, fib:1.5, cat:'vorrat', grp:'ready', pack:500, packLabel:'500-g-Packung'},
+  pesto:    {n:'Pesto Genovese', nom:'Pesto', dat:'Pesto', pre:'Pesto', kcal:480, p:5, c:5, f:48, fib:2, cat:'vorrat', grp:'ready', pack:190, packLabel:'190-g-Glas', stock:true, spoon:15},
+  coconut:  {n:'Kokosmilch', nom:'Kokosmilch', dat:'Kokosmilch', pre:'Kokos', kcal:180, p:1.5, c:3, f:18, fib:0, cat:'vorrat', grp:'ready', pack:400, packLabel:'400-ml-Dose', unit:'ml'},
+  kidney:   {n:'Kidneybohnen (Dose)', nom:'Kidneybohnen', dat:'Kidneybohnen', pre:'Bohnen', kcal:95, p:7, c:13, f:0.5, fib:6.5, cat:'vorrat', grp:'ready', pack:250, packLabel:'Dose (250 g abgetropft)'},
+  corn:     {n:'Mais (Dose)', nom:'Mais', dat:'Mais', pre:'Mais', kcal:85, p:3, c:15, f:1.2, fib:3, cat:'vorrat', grp:'ready', pack:285, packLabel:'Dose (285 g abgetropft)'},
 };
+/* Mindestmenge Fleisch/Fisch in einem Hauptgericht: ein Steak bleibt ein ganzes Steak, ein Lachsfilet ein ganzes Filet */
+const MEATMIN = { steak:200, salmon:125 };
 
 /* Sinnvolle Höchstmengen pro Portion, damit nichts absurd groß wird */
 const MAXG = { potato:500, rice:150, pasta:150, couscous:150, oats:120, bread:200, roll:180, wrap:186, ricecake:48, zwieback:50,
-  chicken:250, turkey:250, pork:250, beef:250, steak:250, salmon:250, shrimp:250, tofu:250, skyr:350, topfen:350, greekyog:350, cottage:300,
+  chicken:250, turkey:250, pork:250, beef:250, steak:200, salmon:250,
+  fries:300, roesti:250, wedges:300, kroketten:250, gnocchi:400, spaetzle:150, raclette:80, ketchup:40, mayo:20, sriracha:15, srirachamayo:30,
+  tomsauce5:250, arrabbiata:250, passata:300, pesto:40, coconut:150, kidney:200, corn:150, shrimp:250, tofu:250, skyr:350, topfen:350, greekyog:350, cottage:300,
   eggs:300, whey:45, isoclear:45, vegprot:45, pb:40, almonds:40, walnuts:40, cashews:40, oil:20, butter:20, cheese:50, mozza:125, creamch:80, honey:30, kantine:130 };
 
 /* Tauschgruppen: by = welcher Nährwert beim Tausch gleich bleiben soll (g = gleiche Menge) */
@@ -1186,9 +1218,9 @@ const GROUPS = {
   dairy:  {n:'Topfen, Skyr & Co.', by:'p', order:['skyr','topfen','greekyog','cottage']},
   egg:    {n:'Eier', by:'g', order:['eggs']},
   milk:   {n:'Milch & Drinks', by:'g', order:['milk','oatdrink','soydrink']},
-  cheese: {n:'Käse', by:'f', order:['cheese','mozza','parmesan','creamch']},
+  cheese: {n:'Käse', by:'f', order:['cheese','mozza','parmesan','creamch','raclette']},
   fruit:  {n:'Obst', by:'c', order:['banana','apple','orange','pear','kiwi','berries']},
-  side:   {n:'Beilagen', by:'c', order:['rice','potato','pasta','couscous']},
+  side:   {n:'Beilagen', by:'c', order:['rice','potato','pasta','couscous','gnocchi','spaetzle','fries','wedges','roesti','kroketten']},
   bread:  {n:'Brot', by:'c', order:['bread','roll']},
   wrap:   {n:'Wraps', by:'c', order:['wrap']},
   oats:   {n:'Haferflocken', by:'c', order:['oats']},
@@ -1199,9 +1231,10 @@ const GROUPS = {
   fat:    {n:'Öl & Butter', by:'f', order:['oil','butter']},
   seeds:  {n:'Samen', by:'f', order:['chia','linseed']},
   sweet:  {n:'Süßes', by:'c', order:['honey']},
-  sauce:  {n:'Saucen', by:'g', order:['teriyaki','soy']},
+  sauce:  {n:'Saucen', by:'g', order:['teriyaki','soy','sriracha','srirachamayo','ketchup','mayo']},
+  ready:  {n:'Fertigprodukte', by:'g', order:['tomsauce5','arrabbiata','passata','pesto','coconut','kidney','corn']},
 };
-const GROUP_ORDER = ['meat','cut','dairy','egg','milk','cheese','fruit','veg','side','bread','wrap','oats','crisp','powder','nuts','fat','seeds','sweet','sauce'];
+const GROUP_ORDER = ['meat','cut','dairy','egg','milk','cheese','fruit','veg','side','bread','wrap','oats','crisp','powder','nuts','fat','seeds','sweet','sauce','ready'];
 
 const CATS = [
   ['fleisch','Fleisch, Fisch & Tofu'], ['milch','Milch, Eier & Käse'], ['obst','Obst'], ['gemuese','Gemüse'],
@@ -1230,9 +1263,9 @@ const MEALS = {
                how:'{0n} dick mit {1d} bestreichen, Salz und Pfeffer drauf. {4n} in Scheiben drauf. {2n} dazu. {3n} als Snack.'},
   shake:      {n:'Protein-Shake', icon:'drop', items:[['whey',30,0,'main'],['milk',300,0],['almonds',15,'F']],
                how:'{0n} mit {1d} shaken. {2n} dazu, das hält satt.'},
-  chickenbox: {n:'{2p}-{0n} mit {1d}', cook:true, icon:'bowl-food', items:[['chicken',150,'P','main'],['rice',85,'C','main'],['teriyaki',25,0,'main'],['oil',8,'F'],['broccoli',150,0]],
+  chickenbox: {n:'{2p}-{0n} mit {1d}', cook:true, icon:'bowl-food', items:[['chicken',180,'P','main'],['rice',85,'C','main'],['teriyaki',25,0,'main'],['oil',8,'F'],['broccoli',150,0]],
                how:'{1n} kochen. {4n} kurz mitdünsten. {0n} in Streifen anbraten. Mit {2d} ablöschen.'},
-  turkeywrap: {n:'Wraps mit {0d}', cook:true, icon:'bread', items:[['turkey',130,'P','main'],['wrap',124,'C','core'],['cheese',20,'F'],['skyr',60,0],['oil',5,'F'],['salad',30,0],['tomato',60,0]],
+  turkeywrap: {n:'Wraps mit {0d}', cook:true, icon:'bread', items:[['turkey',150,'P','main'],['wrap',124,'C','core'],['cheese',20,'F'],['skyr',60,0],['oil',5,'F'],['salad',30,0],['tomato',60,0]],
                how:'{0n} in Streifen braten. Mit {2d} einrollen. {5n} mit rein. {6n} mit rein. {3n} mit Salz und Knoblauch als Dip dazu.'},
   tunabowl:   {n:'{1p}-Bowl mit {0d}', cook:true, icon:'fish', items:[['tuna',110,0,'main'],['rice',80,'C','main'],['eggs',60,'F'],['teriyaki',20,0],['cucumber',100,0]],
                how:'{1n} kochen und {0n} drauf. Ein Spiegelei dazu{2x}. {4n} in Würfeln dazu. {3n} drüber.'},
@@ -1240,18 +1273,20 @@ const MEALS = {
                how:'60 bis 90 Minuten vor dem Training. Schnelle Kohlenhydrate, kaum Fett, liegt nicht schwer im Magen. {1n} drauf.'},
   prerun:     {n:'{0n} & {1n}', icon:'lightning', items:[['banana',120,0,'main'],['ricecake',16,'C','main'],['honey',10,0]],
                how:'45 bis 60 Minuten vor dem Lauf. Leicht verdaulich und gibt Energie für die Beine. {2n} drauf.'},
-  pasta:      {n:'Pasta mit {1d} in {2n}-Sauce', cook:true, icon:'cooking-pot', items:[['pasta',100,'C','core'],['chicken',160,'P','main'],['creamch',40,'F','main'],['parmesan',10,0],['spinach',120,0]],
+  pasta:      {n:'Pasta mit {1d} in {2n}-Sauce', cook:true, icon:'cooking-pot', items:[['pasta',110,'C','core'],['chicken',170,'P','main'],['creamch',50,'F','main'],['parmesan',10,0],['spinach',120,0]],
                how:'Nudeln kochen. {1n} in Würfeln anbraten. {4n} mit in die Pfanne. {2n} mit einem Schuss Nudelwasser einrühren. {3n} drüber.'},
   burgerbowl: {n:'Burger-Bowl mit {0d}', cook:true, icon:'fork-knife', items:[['beef',180,'P','main'],['potato',300,'C','main'],['cheese',25,'F'],['oil',5,'F'],['salad',40,0],['tomato',80,0]],
                how:'{1n} zubereiten. {0n} in der Pfanne braten. {2n} drauf schmelzen. {4n} als Beilage. {5n} als Beilage.'},
-  salmon:     {n:'{0n} mit {1d}', cook:true, icon:'fish', items:[['salmon',150,'P','main'],['potato',350,'C','main'],['skyr',80,0],['oil',5,'F'],['beans',150,0]],
+  salmon:     {n:'{0n} mit {1d}', cook:true, icon:'fish', items:[['salmon',125,'P','main'],['potato',350,'C','main'],['skyr',80,0],['oil',5,'F'],['beans',150,0]],
                how:'{1n} kochen. {0n} in der Pfanne braten. {4n} dämpfen. {2n} mit Salz und Dill als Dip.'},
   turkeyrice: {n:'{2p}-{0n} mit {1d}', cook:true, icon:'bowl-food', items:[['turkey',180,'P','main'],['rice',90,'C','main'],['teriyaki',25,0,'main'],['oil',8,'F'],['paprika',120,0]],
                how:'{1n} kochen. {0n} in Würfeln anbraten. {4n} in Streifen mitbraten. Mit {2d} glasieren.'},
   wraps:      {n:'Wrap-Abend mit {0d}', cook:true, icon:'bread', items:[['beef',160,'P','main'],['wrap',124,'C','core'],['cheese',30,'F'],['skyr',80,0],['tomato',80,0]],
                how:'{0n} mit Salz, Kreuzkümmel und Knoblauch braten. Mit {2d} in die Wraps. {4n} dazu. {3n} als Dip.'},
-  friedrice:  {n:'Gebratener Reis mit {0d}', cook:true, icon:'cooking-pot', items:[['chicken',150,'P','main'],['rice',90,'C','core'],['eggs',120,'F'],['teriyaki',15,0],['oil',5,'F'],['peas',80,0],['carrots',60,0]],
+  friedrice:  {n:'Gebratener Reis mit {0d}', cook:true, icon:'cooking-pot', items:[['chicken',170,'P','main'],['rice',90,'C','core'],['eggs',120,'F'],['teriyaki',15,0],['oil',5,'F'],['peas',80,0],['carrots',60,0]],
                how:'Am besten mit Reis vom Vortag. {0n} anbraten, Reis dazu. {5n} mitbraten. {6n} mitbraten. Eier unterrühren{2x}. Mit {3d} abschmecken.'},
+  bolognese:  {n:'Spaghetti Bolognese', cook:true, icon:'cooking-pot', items:[['pasta',120,'C','core'],['beef',160,'P','main'],['tomsauce5',200,0,'main'],['oil',5,'F'],['parmesan',10,0]],
+               how:'Spaghetti in Salzwasser kochen. {1n} in der Pfanne krümelig anbraten, salzen und pfeffern. {2n} dazu und 10 Minuten köcheln lassen. {4n} drüber.'},
   steak:      {n:'{0n} mit {1d}', cook:true, icon:'fork-knife', items:[['steak',200,'P','main'],['potato',350,'C','main'],['butter',10,'F'],['mushrooms',120,0]],
                how:'{1n} kochen. {0n} pro Seite 2 bis 3 Minuten braten und 5 Minuten rasten lassen. {3n} in der Pfanne anbraten. {2n} drauf.'},
   topfen:     {n:'{0p}-Creme', icon:'bowl-food', items:[['topfen',200,'P','main'],['milk',50,0],['chia',10,0],['honey',5,0]],
@@ -1287,7 +1322,7 @@ const POOLS = {
   lunch:  ['chickenbox','turkeywrap','tunabowl','turkeyrice'],
   pregym: ['prerice','prerun'],
   prerun: ['prerun','prerice'],
-  dinner: ['burgerbowl','salmon','wraps','pasta','turkeyrice','friedrice','steak','chickenbox'],
+  dinner: ['burgerbowl','salmon','wraps','bolognese','turkeyrice','friedrice','steak','chickenbox','pasta'],
   late:   ['topfen','skyrlate','cottagelate'],
   work:   ['isoshake','wheyshake'],
   workpre:['prerun','isobanana'],
@@ -1362,7 +1397,7 @@ function pickMeal(pref, pool, taste, used) {
 /* Gericht-Familien: zwei Hauptmahlzeiten am selben Tag sollen sich klar unterscheiden
    (nicht zweimal Reis mit Teriyaki, nicht zweimal Wraps). Reste vom Mittag isst man abends sowieso. */
 const FAM = { chickenbox:'reis', tunabowl:'reis', turkeyrice:'reis', friedrice:'reis', turkeywrap:'wrap', wraps:'wrap', coldwrap:'wrap',
-  burgerbowl:'erdapfel', salmon:'erdapfel', steak:'erdapfel', pasta:'pasta', jause:'brot', lachsbrot:'brot', skyrbig:'muesli' };
+  burgerbowl:'erdapfel', salmon:'erdapfel', steak:'erdapfel', pasta:'pasta', bolognese:'pasta', jause:'brot', lachsbrot:'brot', skyrbig:'muesli' };
 const mainProtein = meal => { const it = meal.items.find(i => FOODS[i[0]].grp === 'meat'); return it && it[0]; };
 function pickVaried(pref, pool, taste, usedFoods, usedFam, avoid) {
   const prefOk = !!resolveMeal(pref, taste, usedFoods);
@@ -1510,11 +1545,18 @@ function solveScales(meals, target, lim) {
   return s;
 }
 
-function scaleMeal(m, s, minMain) {
+/* Fleisch und Fisch bleiben eine echte Portion. mk = Portionsfaktor nach Tagesbedarf (kleiner Bedarf, etwas kleinere Portion) */
+const meatK = kcal => Math.max(0.75, Math.min(1, (kcal || 2800) / 2800));
+function floorG(food, base, mm, mk) {
+  if (FOODS[food].grp !== 'meat') return base * mm;
+  const k = mk || 1;
+  return mm >= 0.6 ? Math.max(base * 0.9 * k, (MEATMIN[food] || 0) * (k < 0.9 ? 0.75 : 1)) : base * 0.6;
+}
+function scaleMeal(m, s, minMain, mk) {
   const mm = minMain == null ? 0.6 : minMain;
   return m.items.map(([food, g, lev, role, from]) => {
     let raw = lev ? g * s[lev] : g;
-    if (lev && (role === 'main' || role === 'core')) raw = Math.max(raw, g * mm); // das Herzstück eines Gerichts bleibt erkennbar
+    if (lev && (role === 'main' || role === 'core')) raw = Math.max(raw, floorG(food, g, mm, mk)); // das Herzstück eines Gerichts bleibt erkennbar
     const it = { food, g: roundG(food, raw), base: g, lev, role };
     if (from) it.from = from;
     return it;
@@ -1522,7 +1564,7 @@ function scaleMeal(m, s, minMain) {
 }
 
 /* Feinabgleich nach dem Runden: Rest-Abweichung auf stufenlose Hebel-Zutaten (Reis, Nudeln, Fleisch ...) verteilen */
-function refine(itemLists, target, minMain) {
+function refine(itemLists, target, minMain, mk) {
   const mm = minMain == null ? 0.6 : minMain;
   const all = itemLists.flat();
   for (const [lev, k] of [['C','c'], ['P','p'], ['F','f']]) {
@@ -1532,7 +1574,7 @@ function refine(itemLists, target, minMain) {
     const cap = cont.reduce((t, it) => t + macrosOf(it.food, it.g)[k], 0);
     if (!cont.length || cap < 1 || Math.abs(delta) < 4) continue;
     const ratio = Math.max(-0.4, Math.min(0.4, delta / cap));
-    for (const it of cont) it.g = roundG(it.food, Math.max(it.g * (1 + ratio), it.role ? it.base * mm : 0));
+    for (const it of cont) it.g = roundG(it.food, Math.max(it.g * (1 + ratio), it.role === 'main' || it.role === 'core' ? floorG(it.food, it.base, mm, mk) : it.role ? it.base * mm : 0));
   }
   for (const list of itemLists) for (let i = list.length - 1; i >= 0; i--) if (list[i].g <= 0) list.splice(i, 1);
 }
@@ -1545,7 +1587,7 @@ function mealKeysFor(d, type) {
     snack:  { pref: w % 2 === 0 ? 'skyrbowl' : 'cottagebread', pool: 'snack' },
     lunch:  { pref: ['chickenbox','turkeywrap','chickenbox','turkeywrap','chickenbox','tunabowl','turkeywrap'][w], pool: 'lunch' },
     pre:    { pref: type === 'run' ? 'prerun' : 'prerice', pool: type === 'run' ? 'prerun' : 'pregym' },
-    dinner: { pref: ['burgerbowl','salmon','wraps','pasta','turkeyrice','friedrice','steak'][w], pool: 'dinner' },
+    dinner: { pref: ['burgerbowl','salmon','wraps','bolognese','turkeyrice','friedrice','steak'][w], pool: 'dinner' },
     late:   { pref: 'topfen', pool: 'late' },
   };
 }
@@ -1762,8 +1804,9 @@ function planDay(d, pr, typeOverride, opts) {
   let s;
   const solve = target => {
     s = solveScales(slots.map(x => x.meal), target, LIM_PLAN);
-    for (const sl of slots) sl.items = scaleMeal(sl.meal, s);
-    refine(slots.map(sl => sl.items), target);
+    const mk = meatK(T.kcal);
+    for (const sl of slots) sl.items = scaleMeal(sl.meal, s, null, mk);
+    refine(slots.map(sl => sl.items), target, null, mk);
     for (const sl of slots) sl.tot = sumItems(sl.items);
     return slots.reduce((t, sl) => add(t, sl.tot), Z());
   };
@@ -1775,6 +1818,14 @@ function planDay(d, pr, typeOverride, opts) {
     const sh = slots.filter(x => ['isoshake', 'wheyshake', 'shake'].includes(x.key) && gapIfGone(x) <= 330).sort((a, b) => b.tot.p - a.tot.p)[0];
     if (!sh) break;
     slots.splice(slots.indexOf(sh), 1); tot = solve(T);
+  }
+  // Durch echte Fleischportionen weit über dem Eiweiß-Ziel: einen Eiweiß-Snack gegen einen Kohlenhydrat-Snack tauschen
+  for (let k = 0; k < 1 && tot.p - T.p > 30; k++) {
+    const sn = slots.filter(x => ['shake', 'skyrbowl', 'cottagebread'].includes(x.key) && !x.atWork).sort((a, b) => b.tot.p - a.tot.p)[0];
+    if (!sn) break;
+    const meal = pickMeal('breadhoney', POOLS.carbs, pr.taste, new Set());
+    if (!meal || meal.blocked) break;
+    sn.meal = meal; sn.key = meal.key; sn.spec = { pref: meal.key, pool: 'carbs' }; tot = solve(T);
   }
   // Mehr Eiweiß als nötig (Shakes, Kantine): dafür weniger Kohlenhydrate, damit die Kalorien stimmen
   if (tot.p - T.p > 6) { T2 = { ...T, c: Math.max(60, T.c - (tot.p - T.p)) }; tot = solve(T2); }
@@ -1814,8 +1865,9 @@ function planRemaining(plan, log) {
   const build = (minMain, skipShakes) => {
     const act = open.filter(sl => !(skipShakes && SHAKES.includes(sl.key)));
     const s = changed ? solveScales(act.map(x => x.meal), left, LIM_LEFT) : plan.scales;
-    const lists = act.map(sl => changed ? scaleMeal(sl.meal, s, minMain) : sl.items.map(it => ({...it})));
-    if (changed) refine(lists, left, minMain);
+    const mk = meatK(plan.target.kcal);
+    const lists = act.map(sl => changed ? scaleMeal(sl.meal, s, minMain, mk) : sl.items.map(it => ({...it})));
+    if (changed) refine(lists, left, minMain, mk);
     return open.map(sl => {
       const idx = act.indexOf(sl);
       const items = idx >= 0 ? lists[idx] : sl.items.map(it => ({...it}));
@@ -1955,6 +2007,7 @@ const PALETTES = [{"id": "cloud", "n": "Clean Cloud Blue", "sw": ["#133C55", "#3
 'use strict';
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const listDe = a => a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' und ' + a[a.length - 1];
 const fmt = n => { n = Math.round(+n || 0); const s = Math.abs(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); return (n < 0 ? '−' : '') + s; };
 const icon = (n, cls = '') => `<svg class="ico ${cls}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -2574,8 +2627,8 @@ function shopList(items, key, extraStock) {
   return CATS.filter(([c]) => groups[c]).map(([c, n]) => `<div class="cat-h">${icon(CAT_ICON[c] || 'package')}${n}</div><ul class="shop">${groups[c].map(it => {
     const F = FOODS[it.food], done = !!checked[it.food];
     const q = it.stockRow ? `1 × ${F.packLabel}` : (it.qty.pieces ? `${it.qty.n} ${it.qty.label}` : `${it.qty.n} × ${it.qty.label}`);
-    const need = it.stockRow ? 'Vorrat auffüllen' : `brauchst ${F.piece && (it.qty.pieces || it.food === 'eggs') ? Math.round(it.g / F.piece) + ' ' + F.pn[Math.round(it.g / F.piece) === 1 ? 0 : 1] : fmt(it.g) + ' ' + (F.unit || 'g')} für ${it.days.join(', ')}`;
-    const rest = it.fromStock ? `, ${fmt(it.fromStock)} ${F.unit || 'g'} vom letzten Einkauf` : '';
+    const need = it.stockRow ? 'Vorrat auffüllen' : `Du brauchst ${F.piece && (it.qty.pieces || it.food === 'eggs') ? Math.round(it.g / F.piece) + ' ' + F.pn[Math.round(it.g / F.piece) === 1 ? 0 : 1] : fmt(it.g) + ' ' + (F.unit || 'g')} für ${listDe(it.days)}`;
+    const rest = it.fromStock ? `. ${fmt(it.fromStock)} ${F.unit || 'g'} hast du noch vom letzten Einkauf` : '';
     return `<li><button data-act="shop" data-key="${key}" data-food="${it.food}" class="${done ? 'done' : ''}" aria-pressed="${done}">
       <span class="box">${icon('check')}</span>
       <span class="nm">${esc(F.n)}<small>${esc(need + rest)}</small>${it.freeze ? `<span class="tag">${icon('snowflake')}Portion für ${it.freeze.join(', ')} einfrieren</span>` : ''}</span>
@@ -3870,7 +3923,7 @@ function dishResult(d, m) {
 
 /* ================= Zutaten für eigene Gerichte (pro 100 g bzw. 100 ml) =================
    Grundlage sind die Lebensmittel der App, ergänzt um typische Koch-Zutaten. lf = Leucin-Anteil am Eiweiß. */
-const ING_SYN = { chicken: 'huhn hendl haehnchen haenchen huehnchen haendl poulet huehnerbrust', turkey: 'truthahn puten', beef: 'hackfleisch hack rind', cheese: 'lightkaese kaese light gerieben', rice: 'reis roh basmati', pasta: 'nudeln spaghetti roh', potato: 'kartoffeln erdaepfel', eggs: 'ei eier', milk: 'milch', oil: 'oel', topfen: 'quark', mozza: 'mozzarella' };
+const ING_SYN = { fries: 'pommes frites fritten', wedges: 'kartoffelspalten pommes', roesti: 'roesti kartoffelpuffer', kroketten: 'kroketten', gnocchi: 'nocken', spaetzle: 'spatzle nockerl', raclette: 'kaese', ketchup: 'tomatenketchup', mayo: 'majo mayonnaise', sriracha: 'chili scharf chilisauce', srirachamayo: 'sriracha mayo majo scharf', tomsauce5: 'tomatensauce sugo sauce paradeiser kraeuter spaghetti glas', arrabbiata: 'tomatensauce sugo scharf', passata: 'passierte tomaten paradeiser sauce', pesto: 'pesto', coconut: 'kokosmilch curry', kidney: 'bohnen', corn: 'mais', chicken: 'huhn hendl haehnchen haenchen huehnchen haendl poulet huehnerbrust', turkey: 'truthahn puten', beef: 'hackfleisch hack rind', cheese: 'lightkaese kaese light gerieben', rice: 'reis roh basmati', pasta: 'nudeln spaghetti roh', potato: 'kartoffeln erdaepfel', eggs: 'ei eier', milk: 'milch', oil: 'oel', topfen: 'quark', mozza: 'mozzarella' };
 const ING_EXTRA = [
   ['x-chicken-cooked', 'Hühnerbrust gegart', 145, 31, 0, 1.8, 0, .08, 'huhn haehnchen haenchen gebraten gekocht'],
   ['x-chickthigh', 'Hühnerkeule ohne Haut', 125, 19.5, 0, 5, 0, .08, 'huhn haehnchen haenchen schenkel', { raw: 1 }],
@@ -3882,8 +3935,6 @@ const ING_EXTRA = [
   ['x-rice-cooked', 'Reis gekocht', 130, 2.7, 28, 0.3, 0.4, .07, 'reis gekocht'],
   ['x-pasta', 'Nudeln (Hartweizen)', 355, 12.5, 71, 1.5, 3, .07, 'nudeln spaghetti penne roh', { raw: 1 }],
   ['x-pasta-cooked', 'Nudeln gekocht', 150, 5.5, 30, 0.8, 1.5, .07, 'nudeln spaghetti penne gekocht'],
-  ['x-gnocchi', 'Gnocchi', 155, 4, 33, 0.5, 1.5, .07, ''],
-  ['x-fries', 'Pommes (TK)', 150, 2.5, 24, 5, 2.5, .06, 'pommes frites'],
   ['x-toast', 'Toastbrot', 260, 8, 48, 3.5, 3, .07, 'toast', { piece: 25, pn: ['Scheibe', 'Scheiben'] }],
   ['x-semmel', 'Semmel', 275, 9, 55, 1.5, 3, .07, 'broetchen semmel', { piece: 55, pn: ['Semmel', 'Semmeln'] }],
   ['x-tortilla', 'Tortilla-Wrap', 310, 8.5, 52, 7, 3, .07, 'wrap tortilla', { piece: 62, pn: ['Wrap', 'Wraps'] }],
@@ -3897,17 +3948,10 @@ const ING_EXTRA = [
   ['x-cream', 'Schlagobers 36 %', 340, 2.2, 3, 36, 0, .1, 'sahne obers schlagsahne', { unit: 'ml' }],
   ['x-cookcream', 'Kochcreme light 15 %', 160, 3, 4, 15, 0, .1, 'sahne cremefine kochsahne light obers', { unit: 'ml' }],
   ['x-sourcream', 'Sauerrahm', 160, 3, 4, 15, 0, .1, 'saure sahne rahm'],
-  ['x-passata', 'Passierte Tomaten', 35, 1.5, 5.5, 0.2, 1.5, .05, 'tomaten paradeiser passata sauce'],
-  ['x-tomsauce', 'Tomatensauce (Glas)', 65, 1.8, 9, 2, 1.5, .05, 'tomaten sauce sugo'],
-  ['x-pesto', 'Pesto Genovese', 480, 5, 5, 48, 2, .06, 'pesto'],
-  ['x-ketchup', 'Ketchup', 110, 1.2, 25, 0.2, 0.5, .03, '', { spoon: 15 }],
-  ['x-mayo', 'Mayonnaise', 680, 1, 1.5, 75, 0, .06, 'mayo', { spoon: 15 }],
   ['x-mayolight', 'Mayonnaise light', 290, 0.8, 7, 29, 0, .06, 'mayo', { spoon: 15 }],
   ['x-bbq', 'BBQ-Sauce', 160, 1, 38, 0.3, 0.5, .03, 'grillsauce', { spoon: 15 }],
   ['x-sweetchili', 'Sweet-Chili-Sauce', 220, 0.5, 52, 0.5, 0.5, .03, 'chili', { spoon: 15 }],
   ['x-rapsoil', 'Raps- / Sonnenblumenöl', 884, 0, 0, 100, 0, 0, 'oel', { spoon: 10 }],
-  ['x-corn', 'Mais (Dose)', 85, 3, 15, 1.2, 3, .07, ''],
-  ['x-kidney', 'Kidneybohnen (Dose)', 95, 7, 13, 0.5, 6.5, .07, 'bohnen'],
   ['x-onion', 'Zwiebel', 40, 1.2, 8, 0.2, 1.8, .05, '', { piece: 100, pn: ['Zwiebel', 'Zwiebeln'] }],
   ['x-avocado', 'Avocado', 160, 2, 2, 15, 6.5, .05, '', { piece: 150, pn: ['Avocado', 'Avocados'] }],
   ['x-flour', 'Mehl', 345, 10, 72, 1, 4, .07, ''],
@@ -3917,7 +3961,9 @@ const ING_EXTRA = [
 const INGS = {};
 for (const [k, F] of Object.entries(FOODS)) if (!F.portion) INGS[k] = { id: k, n: F.n, syn: (F.nom || '') + ' ' + (ING_SYN[k] || ''), kcal: F.kcal, p: F.p, c: F.c, f: F.f, fib: F.fib, leu: F.leu, unit: F.unit || 'g', piece: F.piece, pn: F.pn, spoon: F.spoon, raw: !!F.raw };
 for (const [id, n, kcal, p, c, f, fib, lf, syn, o] of ING_EXTRA) INGS[id] = { id, n, syn, kcal, p, c, f, fib, leu: p * lf, unit: 'g', raw: false, ...(o || {}) };
-const ING_QUICK = ['chicken', 'rice', 'pasta', 'potato', 'cheese', 'eggs', 'beef', 'x-cookcream', 'oil', 'x-tomsauce'];
+const ING_ALIAS = { 'x-gnocchi': 'gnocchi', 'x-fries': 'fries', 'x-passata': 'passata', 'x-tomsauce': 'tomsauce5', 'x-pesto': 'pesto', 'x-ketchup': 'ketchup', 'x-mayo': 'mayo', 'x-corn': 'corn', 'x-kidney': 'kidney' };
+for (const [o, n] of Object.entries(ING_ALIAS)) if (INGS[n]) INGS[o] = { ...INGS[n], alias: true };
+const ING_QUICK = ['chicken', 'rice', 'pasta', 'potato', 'cheese', 'eggs', 'beef', 'x-cookcream', 'oil', 'tomsauce5'];
 const ingDefault = I => I.piece || I.spoon || (I.unit === 'ml' ? 200 : 100);
 const ingMac = (I, amt) => { const k = (+amt || 0) / 100; return { kcal: I.kcal * k, p: I.p * k, c: I.c * k, f: I.f * k, fib: I.fib * k, leu: I.leu * k }; };
 function bldTotals() {
@@ -3980,7 +4026,7 @@ function renderBldRes() {
   }
   $('#bQuick').innerHTML = '';
   const words = q.split(/\s+/);
-  const hits = Object.values(INGS).filter(I => { const h = normQ(I.n + ' ' + I.syn); return words.every(w => h.includes(w)); })
+  const hits = Object.values(INGS).filter(I => { if (I.alias) return false; const h = normQ(I.n + ' ' + I.syn); return words.every(w => h.includes(w)); })
     .map(I => { const ws = normQ(I.n + ' ' + I.syn).split(/[\s/(),.-]+/), w = words[0]; return [ws.includes(w) ? 0 : ws.some(x => x.startsWith(w)) ? 1 : 2, I]; })
     .sort((a, b) => a[0] - b[0]).map(x => x[1]).slice(0, 8);
   $('#bRes').innerHTML = hits.length ? hits.map(I => `<li><button data-act="bld-add" data-id="${I.id}"><span>${esc(I.n)}${I.raw ? ' <small>roh</small>' : ''}</span><small>${fmt(I.kcal)} kcal · ${dec(I.p)} g Eiweiß / 100 ${I.unit} ${icon('plus')}</small></button></li>`).join('')
@@ -4289,13 +4335,13 @@ function gymDraft() {
 const saveDraft = () => { try { localStorage.setItem('np:gymDraft', JSON.stringify(S.gymDraft)); } catch (e) {} };
 
 /* ---------- Diagramm (eine Reihe, ein Achse, Fadenkreuz mit Tooltip) ---------- */
-function chartSlot(key, spec) { S.charts[key] = spec; return `<div class="fchart" data-chart="${key}" style="height:${spec.h || 170}px" role="img" aria-label="${esc(spec.aria || '')}"></div>`; }
+function chartSlot(key, spec) { S.charts[key] = spec; const t = spec.tile ? 'span' : 'div'; return `<${t} class="fchart" data-chart="${key}" style="height:${spec.h || 170}px" role="img" aria-label="${esc(spec.aria || '')}"></${t}>`; }
 function niceStep(range, n) { const raw = range / Math.max(1, n), p = Math.pow(10, Math.floor(Math.log10(raw))), m = raw / p; return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p; }
 function drawCharts(root) { (root || document).querySelectorAll('.fchart[data-chart]').forEach(el => drawChart(el, S.charts[el.dataset.chart])); }
 function drawChart(el, sp) {
   if (!sp || !sp.points || !sp.points.length) { el.innerHTML = ''; return; }
-  const W = Math.max(200, el.clientWidth || 320), H = sp.h || 170, mini = !!sp.mini, stock = !!sp.stock;
-  const padL = mini ? 4 : stock ? 4 : 40, padR = mini ? 8 : stock ? 44 : 16, padT = mini ? 8 : stock ? 14 : 26, padB = mini ? 6 : 22;
+  const tile = !!sp.tile, W = Math.max(tile ? 60 : 200, el.clientWidth || 320), H = sp.h || 170, mini = !!sp.mini, stock = !!sp.stock;
+  const padL = tile ? 2 : mini ? 4 : stock ? 4 : 40, padR = tile ? 10 : mini ? 8 : stock ? 44 : 16, padT = tile ? 10 : mini ? 8 : stock ? 14 : 26, padB = tile ? 3 : mini ? 6 : 22;
   const pts = sp.points, n = pts.length, col = sp.color || 'var(--accent)';
   const tms = pts.map(p => new Date(p.d + 'T12:00').getTime());
   const t0 = Math.min(...tms), t1 = Math.max(...tms), span = t1 - t0;
@@ -4307,7 +4353,8 @@ function drawChart(el, sp) {
   const Y = v => { const k = (v - lo) / (hi - lo || 1); return sp.invert ? padT + k * (H - padT - padB) : H - padB - k * (H - padT - padB); };
   const gid = 'g' + Math.random().toString(36).slice(2, 8);
   let g = '';
-  if (!mini) {
+  if (tile && n > 1) g += `<line x1="${padL}" x2="${W - padR}" y1="${Y(pts[0].y)}" y2="${Y(pts[0].y)}" style="stroke:var(--muted);stroke-width:1;stroke-dasharray:2 3;opacity:.45"/>`;
+  if (!mini && !tile) {
     for (let v = lo; v <= hi + step / 2; v += step) {
       g += `<line x1="${padL}" x2="${W - padR}" y1="${Y(v)}" y2="${Y(v)}" style="stroke:var(--line);stroke-width:1;opacity:${stock ? .6 : 1}"/>`;
       g += stock ? `<text x="${W - padR + 8}" y="${Y(v) + 4}" text-anchor="start" style="fill:var(--muted);font-size:11px;font-variant-numeric:tabular-nums">${esc(sp.tick ? sp.tick(v) : String(Math.round(v * 10) / 10).replace('.', ','))}</text>`
@@ -4324,11 +4371,11 @@ function drawChart(el, sp) {
     marks += `<path d="${line}" style="fill:none;stroke:${col};stroke-width:2;stroke-linejoin:round;stroke-linecap:round"/>`;
   }
   const showDots = !mini && !stock && n <= 24;
-  pts.forEach((p, i) => { if (showDots || i === n - 1) marks += `${stock && i === n - 1 ? `<circle cx="${X(i)}" cy="${Y(p.y)}" r="9" style="fill:${col};opacity:.18"/>` : ''}<circle cx="${X(i)}" cy="${Y(p.y)}" r="4" style="fill:${col};stroke:var(--surface);stroke-width:2"/>`; });
+  pts.forEach((p, i) => { if (showDots || i === n - 1) marks += `${stock && i === n - 1 ? `<circle cx="${X(i)}" cy="${Y(p.y)}" r="${tile ? 7 : 9}" style="fill:${col};opacity:.18"/>` : ''}<circle cx="${X(i)}" cy="${Y(p.y)}" r="${tile ? 3.5 : 4}" style="fill:${col};stroke:var(--surface);stroke-width:2"/>`; });
   if (!mini && !stock) { const lx = X(n - 1), ly = Math.max(padT - 2, Math.min(...pts.slice(-4).map(p => Y(p.y)))); marks += `<text x="${Math.min(lx, W - padR)}" y="${ly - 10}" text-anchor="${n === 1 ? 'middle' : 'end'}" style="fill:var(--ink);font-size:12px;font-weight:700">${esc(sp.fmt(pts[n - 1].y))}</text>`; }
-  const cross = mini ? '' : `<line class="xh" x1="0" x2="0" y1="${padT - 6}" y2="${H - padB}" style="stroke:var(--muted);stroke-width:1;opacity:0"/><circle class="xd" r="5" cx="-20" cy="-20" style="fill:${col};stroke:var(--surface);stroke-width:2;opacity:0"/>`;
-  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" aria-hidden="true">${g}${marks}${cross}</svg>${mini ? '' : '<div class="tip"><b></b><span></span></div>'}`;
-  if (mini) return;
+  const cross = mini || tile ? '' : `<line class="xh" x1="0" x2="0" y1="${padT - 6}" y2="${H - padB}" style="stroke:var(--muted);stroke-width:1;opacity:0"/><circle class="xd" r="5" cx="-20" cy="-20" style="fill:${col};stroke:var(--surface);stroke-width:2;opacity:0"/>`;
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" aria-hidden="true">${g}${marks}${cross}</svg>${mini || tile ? '' : '<div class="tip"><b></b><span></span></div>'}`;
+  if (mini || tile) return;
   el._geo = { xs: pts.map((p, i) => X(i)), ys: pts.map(p => Y(p.y)), pts, sp, W };
   if (el._bound) return;
   el._bound = true;
@@ -4394,48 +4441,59 @@ function creaStreak() {
   const has = d => days.has(d) || (d === S.today && c.taken) || (!!c.start && d >= c.start && d <= S.today && (d !== S.today || c.taken));
   return { n: c.n, start: c.start, doneToday: c.taken, has };
 }
-function streakDots(has) {
-  const today = new Date(S.today + 'T12:00');
-  return `<div class="sdots" aria-hidden="true">${Array.from({ length: 14 }, (_, i) => { const d = isoDate(addDays(today, i - 13)); return `<i class="${has(d) ? 'on' : ''} ${d === S.today ? 'today' : ''}" title="${dShort(d)}"></i>`; }).join('')}</div>`;
-}
+
 function streakCard() {
   const cOn = S.profile.creatine && S.profile.creatine !== 'off', c = creaStreak(), t = trackStreak();
-  const row = (ic, name, st, txtOn, txtOff, extra) => `<div class="strk-row"><span class="strk-ic ${st.n >= 3 ? 'hot' : ''}">${icon(st.n >= 3 ? 'fire' : ic)}</span><div><span class="stk-n">${name}</span>
-      <div class="strk-n"><b>${st.n}</b><span>${st.n === 1 ? 'Tag' : 'Tage'} in Folge</span></div>
-      <small>${st.n ? `seit ${dShort(st.start)} · ` : ''}${st.doneToday ? txtOn : txtOff}${extra || ''}</small></div>${streakDots(st.has)}</div>`;
-  return `<div class="card strk"><p class="stk-t">Serien</p>
-    ${cOn ? row('pill', 'Creatin', c, 'heute genommen', 'heute noch nicht genommen') : `<div class="strk-row"><span class="strk-ic">${icon('pill')}</span><div><span class="stk-n">Creatin</span><small>Creatin ist ausgeschaltet. Im Body Lab unter Sonstiges kannst du es einschalten.</small></div></div>`}
-    ${row('target', 'Nährwerte im Blick', t, 'heute schon eingetragen', 'heute noch nichts eingetragen')}
-    <p class="strk-note">Nährwerte im Blick zählt jeden Tag, an dem du Essen abhakst oder etwas einträgst. Ein Tag ohne Eintrag startet die Serie neu.</p>
-  </div>`;
+  const days = n => `${n} ${n === 1 ? 'Tag' : 'Tage'}`;
+  const chip = (ic, name, st, off) => `<div class="schip ${off ? 'off' : st.n >= 3 ? 'hot' : ''}" aria-label="${name}: ${off ? 'ausgeschaltet' : days(st.n) + ' in Folge'}"><span class="schip-ic">${icon(!off && st.n >= 3 ? 'fire' : ic)}</span><span class="schip-t"><small>${name}</small><b>${off ? 'aus' : days(st.n)}</b></span></div>`;
+  return `<div class="schips">${chip('pill', 'Creatin', c, !cOn)}${chip('target', 'Nährwerte', t, false)}</div>`;
 }
 
 /* ---------- Gesamt ---------- */
 const FRANGES = [['1m', '1M', 30], ['3m', '3M', 91], ['6m', '6M', 182], ['all', 'Alles', 0]];
 S.frange = (() => { try { return localStorage.getItem('np:frange') || 'all'; } catch (e) { return 'all'; } })();
 function inRange(pts) { const r = FRANGES.find(x => x[0] === S.frange) || FRANGES[3]; return r[2] ? pts.filter(p => daysAgo(p.d) <= r[2]) : pts; }
-function stockCard(key, name, pts, o) { return `<div class="card stk">${stockSub(key, name, pts, o)}</div>`; }
-function stockSub(key, name, pts, o) {
-  const p = inRange(pts);
-  if (p.length < 2) return `<div class="stk-sub"><div class="stk-h"><span class="stk-n">${name}</span></div><div class="stk-e"><span>${pts.length ? 'Zu wenige Einträge in diesem Zeitraum. Wähl oben einen längeren.' : esc(o.empty)}</span></div></div>`;
+function trendOf(p, o) {
   const a = p[0].y, z = p[p.length - 1].y, d = z - a, visUp = o.invert ? d < 0 : d > 0, flat = Math.abs(d) < (o.eps || 1e-9);
   const good = o.good == null ? null : (o.good === 'up' ? d > 0 : d < 0);
   const cls = flat || good == null ? '' : good ? 'good' : 'bad';
   const color = flat || good == null ? 'var(--accent)' : good ? 'var(--up)' : 'var(--bad)';
   const pill = `<span class="pill ${cls}" title="${flat ? 'gleich' : good == null ? '' : good ? 'besser' : 'schlechter'}"><i>${flat ? '●' : visUp ? '▲' : '▼'}</i>${esc(o.delta(d))}</span>`;
-  return `<div class="stk-sub"><div class="stk-h"><span class="stk-n">${name}</span><span class="stk-v"><b>${esc(o.fmt(z))}</b>${pill}</span></div>
-    ${chartSlot(key, { points: p, fmt: o.fmt, tick: o.tick, invert: o.invert, minRange: o.minRange, stock: true, color, h: o.h || 150, aria: `${name}: ${o.fmt(a)} bis ${o.fmt(z)}` })}</div>`;
+  return { a, z, color, pill };
+}
+function tileSub(key, name, pts, o, h) {
+  const p = inRange(pts), short = (window.innerHeight || 800) < 760;
+  h = short ? Math.round((h || 64) * 0.62) : h;
+  if (p.length < 2) return `<span class="ft-sub"><span class="ft-n">${name}</span><span class="ft-e" style="height:${(h || 64) + 32}px">${pts.length ? 'Zu wenige Einträge im Zeitraum' : 'Tippen zum Eintragen'}</span></span>`;
+  const T = trendOf(p, o);
+  return `<span class="ft-sub"><span class="ft-n">${name}</span><span class="ft-v">${esc(o.fmt(T.z))}</span>${T.pill}${chartSlot(key, { points: p, fmt: o.fmt, invert: o.invert, minRange: o.minRange, stock: true, tile: true, color: T.color, h: h || 64, aria: `${name}: ${o.fmt(T.a)} bis ${o.fmt(T.z)}` })}</span>`;
+}
+function fortSpecs() {
+  const goal = S.profile.goal || 'recomp', kg = v => dec1(v) + ' kg', runs = runPts();
+  return {
+    w: { pts: weightPts(), o: { fmt: kg, tick: v => dec1(v), delta: d => signKg(d), good: goal === 'bulk' ? 'up' : goal === 'cut' ? 'down' : null, minRange: 2, eps: .05, empty: 'Noch kein Gewicht. Trag oben dein erstes ein.' } },
+    g: { pts: strengthSeries(), o: { fmt: v => Math.round(v) + ' %', tick: v => Math.round(v) + ' %', delta: d => pct(d), good: 'up', minRange: 10, eps: .5, empty: 'Noch kein Training.' } },
+    p: { pts: runs.map(r => ({ d: r.date, y: r.sec / r.km, label: `${dec1(r.km)} km in ${mmss(r.sec)}` })), o: { fmt: v => mmss(v) + ' /km', tick: v => mmss(v), delta: d => `${mmss(Math.abs(d))} ${d < 0 ? 'schneller' : 'langsamer'}`, good: 'down', invert: true, minRange: 30, eps: 1, empty: 'Noch kein Lauf. Trag oben deinen ersten ein.' } },
+    dk: { pts: runs.map(r => ({ d: r.date, y: r.km, label: `${mmss(r.sec / r.km)} min/km` })), o: { fmt: v => dec1(v) + ' km', tick: v => dec1(v), delta: d => (d > 0 ? '+' : d < 0 ? '−' : '±') + dec1(Math.abs(d)) + ' km', good: 'up', minRange: 2, eps: .05, empty: 'Hier siehst du, ob du weiter läufst.' } }
+  };
+}
+function rangeRow() { return `<div class="frange" role="group" aria-label="Zeitraum">${FRANGES.map(([k, n]) => `<button data-act="frange" data-r="${k}" aria-pressed="${S.frange === k}">${n}</button>`).join('')}</div>`; }
+function stockCard(key, name, pts, o) { return `<div class="card stk">${stockSub(key, name, pts, o)}</div>`; }
+function stockSub(key, name, pts, o) {
+  const p = inRange(pts);
+  if (p.length < 2) return `<div class="stk-sub"><div class="stk-h"><span class="stk-n">${name}</span></div><div class="stk-e"><span>${pts.length ? 'Zu wenige Einträge in diesem Zeitraum. Wähl oben einen längeren.' : esc(o.empty)}</span></div></div>`;
+  const T = trendOf(p, o);
+  return `<div class="stk-sub"><div class="stk-h"><span class="stk-n">${name}</span><span class="stk-v"><b>${esc(o.fmt(T.z))}</b>${T.pill}</span></div>
+    ${chartSlot(key, { points: p, fmt: o.fmt, tick: o.tick, invert: o.invert, minRange: o.minRange, stock: true, color: T.color, h: o.h || 150, aria: `${name}: ${o.fmt(T.a)} bis ${o.fmt(T.z)}` })}</div>`;
 }
 function fortAll() {
-  const goal = S.profile.goal || 'recomp', runs = runPts();
-  const range = `<div class="frange" role="group" aria-label="Zeitraum">${FRANGES.map(([k, n]) => `<button data-act="frange" data-r="${k}" aria-pressed="${S.frange === k}">${n}</button>`).join('')}</div>`;
-  const kg = v => dec1(v) + ' kg';
-  return streakCard() + range
-    + stockCard('sw', 'Körpergewicht', weightPts(), { fmt: kg, tick: v => dec1(v), delta: d => signKg(d), good: goal === 'bulk' ? 'up' : goal === 'cut' ? 'down' : null, minRange: 2, eps: .05, empty: 'Noch kein Gewicht. Wisch zu Körpergewicht und trag es ein.' })
-    + stockCard('sg', 'Gym', strengthSeries(), { fmt: v => Math.round(v) + ' %', tick: v => Math.round(v) + ' %', delta: d => pct(d), good: 'up', minRange: 10, eps: .5, empty: 'Noch kein Training. Wisch zu Gym und trag dein erstes ein.' })
-    + `<div class="card stk"><p class="stk-t">Laufen</p>` + stockSub('sp', 'Tempo', runs.map(r => ({ d: r.date, y: r.sec / r.km, label: `${dec1(r.km)} km in ${mmss(r.sec)}` })), { fmt: v => mmss(v) + ' /km', tick: v => mmss(v), delta: d => `${mmss(Math.abs(d))} ${d < 0 ? 'schneller' : 'langsamer'}`, good: 'down', invert: true, minRange: 30, eps: 1, empty: 'Noch kein Lauf. Wisch zu Laufen und trag km und Zeit ein.', h: 130 })
-    + stockSub('sd', 'Distanz', runs.map(r => ({ d: r.date, y: r.km, label: `${mmss(r.sec / r.km)} min/km` })), { fmt: v => dec1(v) + ' km', tick: v => dec1(v), delta: d => (d > 0 ? '+' : d < 0 ? '−' : '±') + dec1(Math.abs(d)) + ' km', good: 'up', minRange: 2, eps: .05, empty: 'Hier siehst du, ob du weiter läufst.', h: 130 }) + `</div>`
-    + `<p class="fhint" style="text-align:center;margin:2px 0 0">Wisch nach links, um Gym, Laufen oder Körpergewicht einzutragen.</p>`;
+  const F = fortSpecs();
+  const tile = (seg, label, inner, wide) => `<button class="card otile ${wide ? 'wide' : ''}" data-act="fort-seg" data-s="${seg}" aria-label="${label} öffnen">${inner}</button>`;
+  return streakCard() + rangeRow() + `<div class="otiles">`
+    + tile('weight', 'Körpergewicht', tileSub('tw', 'Körpergewicht', F.w.pts, F.w.o))
+    + tile('gym', 'Gym', tileSub('tg', 'Gym', F.g.pts, F.g.o))
+    + tile('run', 'Laufen', `<span class="ft-h">Laufen</span><span class="ft-two">${tileSub('tp', 'Tempo', F.p.pts, F.p.o, 56)}${tileSub('td', 'Distanz', F.dk.pts, F.dk.o, 56)}</span>`, true)
+    + `</div>`;
 }
 
 /* ---------- Gewicht ---------- */
@@ -4448,6 +4506,7 @@ function fortWeight() {
       <div class="gstep" style="margin-top:8px"><button data-act="fw-step" data-d="-0.1" aria-label="0,1 kg weniger">−</button><span class="muted" style="text-align:center;font-size:12.5px">± 0,1 kg</span><button data-act="fw-step" data-d="0.1" aria-label="0,1 kg mehr">+</button></div>
       <button class="btn" data-act="fw-save" style="margin-top:12px">${icon('check')}Speichern</button>
       <p class="fhint">Täglich oder einmal pro Woche, am besten morgens nach dem Aufstehen. ${esc(tip)} Was du im Gym Wiki einträgst, landet auch hier.</p></div>
+    ${w.length > 1 ? (() => { const F = fortSpecs(); return rangeRow() + stockCard('sw', 'Verlauf', F.w.pts, F.w.o); })() : ''}
     ${w.length ? `<div class="card"><h3>Einträge</h3><ul class="flist">${w.slice().reverse().slice(0, 12).map((p, i, arr) => { const prev = arr[i + 1]; return `<li><div><b>${dShort(p.d)}</b><small>${relDay(p.d)}</small></div><span class="muted" style="font-size:12.5px">${prev ? signKg(p.y - prev.y) : ''}</span><span class="num">${dec1(p.y)} kg</span></li>`; }).join('')}</ul></div>` : ''}`;
 }
 
@@ -4462,6 +4521,7 @@ function fortRun() {
       <div class="field" style="margin-top:10px"><label for="fr-date">Tag</label><input id="fr-date" type="date" value="${S.today}" max="${S.today}"></div>
       <button class="btn" data-act="fr-save" style="margin-top:12px">${icon('check')}Lauf speichern</button>
       ${best ? `<p class="fhint">Dein bestes Tempo bisher: <b>${mmss(best.sec / best.km)} min/km</b> (${dShort(best.date)}).</p>` : ''}</div>
+    ${runs.length > 1 ? (() => { const F = fortSpecs(); return rangeRow() + `<div class="card stk">${stockSub('sp', 'Tempo', F.p.pts, { ...F.p.o, h: 130 })}${stockSub('sd', 'Distanz', F.dk.pts, { ...F.dk.o, h: 130 })}</div>`; })() : ''}
     ${runs.length ? `<div class="card"><h3>Deine Läufe</h3><ul class="flist">${runs.slice().reverse().slice(0, 15).map(r => `<li><div><b>${dec1(r.km)} km in ${mmss(r.sec)}</b><small>${dShort(r.date)} · ${mmss(r.sec / r.km)} min/km</small></div><span></span><button class="ddel" data-act="fr-del" data-id="${esc(r.id)}" aria-label="Lauf löschen">${icon('x')}</button></li>`).join('')}</ul></div>` : ''}`;
 }
 
