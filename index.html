@@ -1006,6 +1006,39 @@ div.htile{cursor:default}
 .chc .cd div:first-child b{font-size:26px}
 .chc .cd small{font-size:10px}
 .chc .bar{margin-top:8px;height:4px}
+.seg.wrap3{grid-auto-flow:row;grid-template-columns:repeat(3,minmax(0,1fr))}
+.chs-bar{display:flex;gap:3px;margin-top:9px}
+.chs-seg{display:block;height:5px;border-radius:999px;background:color-mix(in srgb,var(--on) 22%,transparent);overflow:hidden;min-width:4px}
+.chs-seg i{display:block;height:100%;background:var(--on);border-radius:inherit}
+.chs-seg.cur{height:7px;margin-top:-1px;box-shadow:0 0 0 1.5px color-mix(in srgb,var(--on) 55%,transparent)}
+.chp{all:unset;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr) auto;row-gap:2px;column-gap:8px;align-items:center;width:100%;margin-top:8px;font-size:12.5px;cursor:pointer;color:color-mix(in srgb,var(--on) 85%,transparent)}
+.chp-a,.chp-n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chp-n{font-size:12px;color:color-mix(in srgb,var(--on) 72%,transparent)}
+.chp-l{display:inline-flex;align-items:center;gap:3px;justify-self:end;white-space:nowrap;font-weight:650;color:var(--on)}
+.chp b{color:var(--on);font-weight:700}
+.chp .ico{width:14px;height:14px}
+.chp:focus-visible{outline:2px solid var(--on);outline-offset:2px;border-radius:6px}
+.chdet{padding:14px 16px}
+.phl{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:0}
+.phl li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;padding:10px 0;position:relative}
+.phl li + li{border-top:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
+.phl-dot{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:12.5px;font-weight:750;background:color-mix(in srgb,var(--pc) 16%,var(--surface));color:var(--pc);border:1.5px solid var(--pc)}
+.phl-dot .ico{width:14px;height:14px}
+.phl li.cur .phl-dot{background:var(--pc);color:var(--surface)}
+.phl li.done{opacity:.6}
+.phl b{font-family:var(--font-display);font-size:15px;font-weight:700}
+.phl-st{font-size:12px;font-weight:650;color:var(--muted);white-space:nowrap}
+.phl li.cur .phl-st{color:var(--ink)}
+.phl small{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.phl p{margin:5px 0 0;font-size:13px;line-height:1.4}
+.phr-list{display:grid;gap:8px}
+.phr{display:grid;grid-template-columns:24px minmax(0,1fr) auto auto;gap:8px;align-items:center;padding:8px 10px;border-radius:14px;border:1px solid var(--line);border-left:4px solid var(--pc)}
+.phr-n{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:750;background:color-mix(in srgb,var(--pc) 16%,transparent);color:var(--pc)}
+.phr select{padding:7px 8px;font-size:14px;min-width:0}
+.phr small{grid-column:2/-1;font-size:12px;color:var(--muted);margin-top:-2px}
+.phr-st{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;font-weight:650;white-space:nowrap}
+.phr-st button{width:28px;height:28px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-size:16px;line-height:1;cursor:pointer}
+.phr-w{font-size:12.5px;font-weight:650;color:var(--muted);white-space:nowrap;padding:0 6px}
 .challenge{position:relative;overflow:hidden;color:var(--on);border:0;
   background:radial-gradient(120% 140% at 100% 0%,var(--accent2) 0%,transparent 55%),linear-gradient(135deg,var(--ink) 0%,color-mix(in srgb,var(--ink) 70%,var(--accent)) 100%)}
 .challenge .label{color:color-mix(in srgb,var(--on) 75%,transparent)}
@@ -1052,6 +1085,7 @@ div.htile{cursor:default}
   <main id="views">
     <section class="view" id="v-heute" aria-label="Home">
       <div id="challengeCard" style="--i:0"></div>
+      <div id="chDetail" style="--i:0" hidden></div>
       <div class="card hero hc" style="--i:0">
         <div class="hero-grid">
           <div class="rings" id="rings" role="img" aria-label="Fortschritt Kalorien und Makros">
@@ -1522,7 +1556,11 @@ const GOALS = {
   bulk:   {n:'Lean Bulk', d:'Muskeln aufbauen, wenig Fett dazu', adj:0.07, pk:2.0, fk:1.0},
   recomp: {n:'Recomp', d:'Fett runter, Muskeln rauf', adj:-0.12, pk:2.2, fk:0.9},
   cut:    {n:'Cut', d:'Fett verlieren, Muskeln halten', adj:-0.20, pk:2.4, fk:0.8},
+  minicut:{n:'Mini Cut', d:'Kurz und deutlich Fett runter, Muskeln und Kraft halten', adj:-0.25, pk:2.5, fk:0.8},
+  maint:  {n:'Erhaltung', d:'Gewicht halten, Form zeigen', adj:0, pk:2.2, fk:1.0},
 };
+/* Gewichtstempo pro Woche in % vom Körpergewicht, das zum Ziel passt */
+const GOAL_RATE = { mass:[0.25, 0.75], bulk:[0.15, 0.5], recomp:[-0.5, 0.1], cut:[-1, -0.4], minicut:[-1.2, -0.5], maint:[-0.3, 0.3] };
 /* Ziele mit Kalorienüberschuss (Gewicht soll steigen) */
 const GAIN = goal => goal === 'bulk' || goal === 'mass';
 const JOBS = { sit:{n:'Sitzend', pal:1.35}, mixed:{n:'Gemischt', pal:1.45}, active:{n:'Aktiv', pal:1.55} };
@@ -1895,6 +1933,8 @@ function targetFromBurned(pr, type, burned, at) {
   return { ...T, kcal, c: Math.round(c), burned: +burned, burnedTotal: total };
 }
 function planDay(d, pr, typeOverride, opts) {
+  // Phasen-Plan: kommende Phasen bringen ihr eigenes Ziel mit (z. B. Mini Cut ab Februar)
+  if (pr.phaseList && pr.phaseList.length) { const k = isoDate(d), ph = pr.phaseList.find(p => k >= p.start && k <= p.end); if (ph && ph.goal !== pr.goal) pr = { ...pr, goal: ph.goal }; }
   const type = typeOverride || (evNoTrain(pr, d) ? 'rest' : pr.week[dow(d)]);
   const T = opts && opts.burned > 800 ? targetFromBurned(pr, type, opts.burned, opts.burnedAt) : calcTargets(pr).per[type];
   const slots = slotsFor(d, type, pr);
@@ -2127,7 +2167,7 @@ const S = {
   planDow: dow(new Date()), est: null, sample: null, sampleImages: false, photo: null,
   prefs: { taste: { foods: {}, meals: {} }, challenge: null, challenges: [] }, userName: '', chEdit: null, chDel: null,
 };
-const planPr = () => ({ ...S.profile, taste: S.prefs.taste, swaps: S.prefs.swaps || {}, events: S.prefs.events || [] });
+const planPr = () => ({ ...S.profile, taste: S.prefs.taste, swaps: S.prefs.swaps || {}, events: S.prefs.events || [], phaseList: typeof phaseListAll === 'function' ? phaseListAll() : [] });
 
 /* ================= Speicher: claude db (privat pro Person), sonst Browser ================= */
 const Store = {
@@ -2872,7 +2912,7 @@ function renderForm() {
       <div class="field"><label for="f-age">Alter</label><input id="f-age" name="alter" autocomplete="off" inputmode="numeric" data-k="age" value="${esc(p.age)}"></div>
     </div>
     <div class="field"><label>Geschlecht</label>${seg('sex', [['m', 'Mann'], ['w', 'Frau']], 'Geschlecht')}</div>
-    <div class="field"><label>Dein Ziel</label>${seg('goal', Object.entries(GOALS).map(([k, v]) => [k, v.n]), 'Ziel')}<p class="fhint">${esc((GOALS[p.goal] || GOALS.recomp).d)}</p></div>
+    <div class="field"><label>Dein Ziel</label>${seg('goal', Object.entries(GOALS).map(([k, v]) => [k, v.n]), 'Ziel').replace('class="seg"', 'class="seg wrap3"')}<p class="fhint">${esc((GOALS[p.goal] || GOALS.recomp).d)}${(() => { const A = activePhase(); return A ? ` Dein Phasen-Plan stellt das Ziel automatisch um: gerade ${esc(GOALS[A.ph.goal].n)} bis ${dShort(A.ph.end)}${A.next ? `, dann ${esc(GOALS[A.next.goal].n)}` : ''}.` : ''; })()}</p></div>
     <div class="field"><label>Training (antippen zum Wechseln)</label><div class="weekrow">${DAYSHORT.map((d, i) => `<button data-act="week" data-i="${i}" aria-label="${DAYNAMES[i]}: ${TYPES[p.week[i]].n}">${d}${icon(TYPES[p.week[i]].icon)}<small>${TYPES[p.week[i]].short}</small></button>`).join('')}</div></div>
     <div class="field"><label>Gym</label>${seg('gymMode', [['afterwork', 'Direkt nach der Arbeit'], ['custom', 'Feste Uhrzeit']], 'Gym')}${custom ? '' : `<p class="fhint" id="gymHint">${gymHint(p)}</p>`}</div>
     <div class="two">
@@ -2956,8 +2996,10 @@ function weightBlock() {
     if (span >= 10) {
       let msg, adj = 0;
       const goal = p.goal;
-      const gain = GAIN(goal), hi = goal === 'mass' ? 0.9 : 0.5, lo = goal === 'mass' ? 0.2 : 0.05;
-      if (!gain && pct < -1) { msg = 'Du verlierst schneller als 1 % pro Woche. Das kostet Muskeln.'; adj = 150; }
+      const gain = GAIN(goal), hi = goal === 'mass' ? 0.9 : 0.5, lo = goal === 'mass' ? 0.2 : 0.05, fast = goal === 'minicut' ? -1.3 : -1;
+      if (goal === 'maint' && Math.abs(pct) > 0.4) { msg = pct > 0 ? 'Dein Gewicht steigt, obwohl du es halten willst.' : 'Du nimmst ab, obwohl du dein Gewicht halten willst.'; adj = pct > 0 ? -150 : 150; }
+      else if (goal === 'maint') msg = 'Dein Gewicht bleibt stabil, genau richtig.';
+      else if (!gain && pct < fast) { msg = 'Du verlierst schneller als 1 % pro Woche. Das kostet Muskeln.'; adj = 150; }
       else if (!gain && pct > 0.1) { msg = 'Dein Gewicht steigt leicht, obwohl du Fett verlieren willst.'; adj = -150; }
       else if (gain && pct > hi) { msg = goal === 'mass' ? 'Du nimmst schneller zu als nötig, auch im Bulk wäre das zu viel Fett.' : 'Du nimmst schneller zu als nötig, das wäre vor allem Fett.'; adj = -150; }
       else if (gain && pct < lo) { msg = 'Für den Aufbau tut sich zu wenig.'; adj = 150; }
@@ -3055,8 +3097,9 @@ function weekTrend() {
   if (!ref) return null;
   const days = (new Date(last.date) - new Date(ref.date)) / 864e5;
   const perWeek = (last.kg - ref.kg) / days * 7, pct = perWeek / ref.kg * 100, goal = S.profile.goal;
-  const range = goal === 'mass' ? [0.25, 0.75] : goal === 'bulk' ? [0.15, 0.5] : goal === 'cut' ? [-1, -0.4] : [-0.5, 0.1];
-  const verdict = pct < range[0] ? (GAIN(goal) ? 'Etwas zu wenig für Muskelaufbau. Iss an Trainingstagen eine Portion Kohlenhydrate mehr.' : 'Schneller runter als nötig. Achte darauf, deine Kalorien voll zu essen.')
+  const range = GOAL_RATE[goal] || GOAL_RATE.recomp;
+  const verdict = goal === 'maint' && (pct < range[0] || pct > range[1]) ? (pct < 0 ? 'Etwas mehr essen, du willst dein Gewicht gerade halten.' : 'Etwas weniger essen, du willst dein Gewicht gerade halten.')
+    : pct < range[0] ? (GAIN(goal) ? 'Etwas zu wenig für Muskelaufbau. Iss an Trainingstagen eine Portion Kohlenhydrate mehr.' : 'Schneller runter als nötig. Achte darauf, deine Kalorien voll zu essen.')
     : pct > range[1] ? (GAIN(goal) ? 'Schneller als nötig, das wäre zum Teil Fett. Etwas weniger Kohlenhydrate an Ruhetagen.' : 'Dein Gewicht steigt. Achte auf die Portionen an Ruhetagen.')
     : 'Genau im richtigen Bereich für dein Ziel.';
   return { perWeek, pct, verdict, ok: pct >= range[0] && pct <= range[1] };
@@ -3073,7 +3116,7 @@ function renderInfo() {
   const wakeMin = toMin(pr.wake), bed = toHHMM((wakeMin - 7.5 * 60 + 1440) % 1440);
   const rangeTxt = (a, b, u) => a === b ? `${fmt(a)} ${u}` : `${fmt(Math.min(a, b))} bis ${fmt(Math.max(a, b))} ${u}`;
   const tile = (k, val, sub) => `<div class="itile"><span>${icon(NUTRI[k].icon)}${NUTRI[k].n}</span><b class="num" data-k="${k}" data-count="${val}">${fmt(val)}</b><small>${sub}</small></div>`;
-  const goalSeg = `<div class="seg" role="group" aria-label="Ziel">${Object.entries(GOALS).map(([k, v]) => `<button data-act="info-goal" data-v="${k}" aria-pressed="${pr.goal === k}">${v.n}</button>`).join('')}</div>`;
+  const goalSeg = `<div class="seg wrap3" role="group" aria-label="Ziel">${Object.entries(GOALS).map(([k, v]) => `<button data-act="info-goal" data-v="${k}" aria-pressed="${pr.goal === k}">${v.n}</button>`).join('')}</div>`;
   const heroHtml = `
   <div class="card ihero" style="--i:1">
     <span class="label">Berechnet für ${String(kg).replace('.', ',')} kg, ${pr.height} cm, ${pr.age} Jahre</span>
@@ -3095,7 +3138,7 @@ function renderInfo() {
     <div class="row" style="margin-top:12px;flex-wrap:nowrap"><div class="field" style="flex:1"><label for="i-w">${ws.due ? 'Gewicht diese Woche (kg)' : 'Neuer Wert (kg)'}</label><input id="i-w" name="gewicht-woche" autocomplete="off" inputmode="decimal" placeholder="${esc(String(kg).replace('.', ','))}"></div>
     <button class="btn" data-act="info-weight" style="align-self:flex-end">Speichern</button></div>
     ${weightBlock()}
-    <p class="hint">${icon('info')}<span>Immer am gleichen Wochentag, morgens nach dem Klo und vor dem Frühstück. Für ${esc(g.n)} ist ${pr.goal === 'mass' ? 'ein Plus von etwa 0,25 bis 0,5 kg pro Woche ideal' : pr.goal === 'bulk' ? 'ein Plus von etwa 0,1 bis 0,3 kg pro Woche ideal' : pr.goal === 'cut' ? 'ein Minus von etwa 0,3 bis 0,7 kg pro Woche ideal' : 'ein gleichbleibendes oder leicht sinkendes Gewicht ideal, während die Kraft steigt'}.</span></p>
+    <p class="hint">${icon('info')}<span>Immer am gleichen Wochentag, morgens nach dem Klo und vor dem Frühstück. Für ${esc(g.n)} ist ${pr.goal === 'minicut' ? 'ein Minus von etwa 0,5 bis 0,8 kg pro Woche ideal' : pr.goal === 'maint' ? 'ein gleichbleibendes Gewicht ideal' : pr.goal === 'mass' ? 'ein Plus von etwa 0,25 bis 0,5 kg pro Woche ideal' : pr.goal === 'bulk' ? 'ein Plus von etwa 0,1 bis 0,3 kg pro Woche ideal' : pr.goal === 'cut' ? 'ein Minus von etwa 0,3 bis 0,7 kg pro Woche ideal' : 'ein gleichbleibendes oder leicht sinkendes Gewicht ideal, während die Kraft steigt'}.</span></p>
   `)}
 
   ${accSec('i-goals', 'target', 'Worauf es ankommt', 'Sixpack, breiter Oberkörper, straffe Beine', 2, `<div class="stack">${goalsHtml()}</div>`)}
@@ -3332,6 +3375,18 @@ function challengeParts(c) {
   const passed = Math.max(0, Math.min(totalDays, (now - start) / 864e5));
   return { c, end, ms, totalDays, passed };
 }
+function chPhaseHtml(c, pct, week, totalDays) {
+  const pl = phasePlan(c);
+  if (!pl) return `<div class="bar" title="Woche ${week} von ${Math.ceil(totalDays / 7)}, ${Math.floor(pct)} % geschafft"><i style="width:${pct.toFixed(1)}%"></i></div>`;
+  const i = Math.max(0, pl.findIndex(p => S.today >= p.start && S.today <= p.end)), cur = pl.findIndex(p => S.today >= p.start && S.today <= p.end) >= 0 ? pl[i] : null;
+  const nx = cur ? pl[i + 1] : pl.find(p => p.start > S.today), left = cur ? dBetween(S.today, cur.end) + 1 : 0, all = pl.reduce((t, p) => t + p.days, 0);
+  const segs = pl.map(p => { const done = S.today > p.end ? 1 : S.today < p.start ? 0 : (dBetween(p.start, S.today) + 0.5) / p.days; return `<span class="chs-seg ${p === cur ? 'cur' : ''}" style="flex:${p.days}"><i style="width:${(done * 100).toFixed(1)}%"></i></span>`; }).join('');
+  const exp = S.homeOpen === 'ch';
+  return `<div class="chs-bar" aria-hidden="true">${segs}</div>
+    <button class="chp" data-act="home-open" data-k="ch" aria-expanded="${exp}" aria-label="Phasen anzeigen">
+      <span class="chp-a">${cur ? `Phase ${i + 1} von ${pl.length}: <b>${esc(GOALS[cur.goal].n)}</b>` : '<b>Phasen-Plan</b>'}</span><span class="chp-l">${cur ? `noch ${left} ${left === 1 ? 'Tag' : 'Tage'}` : ''}</span>
+      <span class="chp-n">${nx ? `Danach ${esc(GOALS[nx.goal].n)} ab ${DAYSHORT[dow(new Date(nx.start + 'T12:00'))]}, ${dShort(nx.start)}` : cur ? 'Letzte Phase bis zum Foto' : ''}</span><span class="chp-l">Plan${icon('caret-down', exp ? '' : 'rot')}</span></button>`;
+}
 function chCardHtml(P) {
   const { c, end, ms, totalDays, passed } = P;
   const d = Math.max(0, Math.floor(ms / 864e5)), h = Math.max(0, Math.floor(ms / 36e5) % 24), m = Math.max(0, Math.floor(ms / 6e4) % 60), sec = Math.max(0, Math.floor(ms / 1e3) % 60);
@@ -3350,15 +3405,17 @@ function chCardHtml(P) {
   return `<div class="card challenge chc" data-ch="${esc(c.id)}" role="timer" aria-label="Noch ${d} Tage bis ${dateTxt}: ${goal}${withTxt}">
     <div class="chc-row"><div style="min-width:0"><span class="label">${esc(c.title || 'Challenge')}</span><b class="ttl">${goal}${withTxt}</b></div>
     <div class="cd" aria-hidden="true"><div><b data-cd="d">${d}</b><small>Tage</small></div><div><b data-cd="h">${String(h).padStart(2, '0')}</b><small>Std</small></div><div><b data-cd="m">${String(m).padStart(2, '0')}</b><small>Min</small></div><div><b data-cd="s">${String(sec).padStart(2, '0')}</b><small>Sek</small></div></div></div>
-    <div class="bar" title="Woche ${week} von ${Math.ceil(totalDays / 7)}, ${Math.floor(pct)} % geschafft"><i style="width:${pct.toFixed(1)}%"></i></div></div>`;
+    ${chPhaseHtml(c, pct, week, totalDays)}</div>`;
 }
 function renderChallenge(full) {
   const box = $('#challengeCard');
+  { const det = $('#chDetail'), A = chList().find(c => phasePlan(c) && c.date >= S.today);
+    if (det) { const on = S.homeOpen === 'ch' && !!A, dsig = on ? S.today + JSON.stringify(A) + S.profile.goal : ''; det.hidden = !on; if (det.dataset.sig !== dsig) { det.dataset.sig = dsig; det.innerHTML = on ? phaseDetailHtml(A) : ''; } } }
   // Laufende Challenges, abgeschlossene noch eine Woche lang
   const parts = chList().map(challengeParts).filter(P => P && P.ms > -7 * 864e5);
   if (!parts.length) { box.innerHTML = ''; box.hidden = true; return; }
   box.hidden = false;
-  const sig = parts.map(P => P.c.id + ':' + (P.ms > 0 ? 1 : 0) + ':' + P.c.title + P.c.date + P.c.with + P.c.goal + P.c.kind).join('|');
+  const sig = parts.map(P => P.c.id + ':' + (P.ms > 0 ? 1 : 0) + ':' + P.c.title + P.c.date + P.c.with + P.c.goal + P.c.kind + JSON.stringify(P.c.phases || '') + (P.c.pstart || '')).join('|') + S.today + (S.homeOpen === 'ch' ? 'o' : '');
   if (full || box.dataset.sig !== sig) {
     box.dataset.sig = sig;
     box.innerHTML = parts.length === 1 ? chCardHtml(parts[0])
@@ -3373,6 +3430,98 @@ function renderChallenge(full) {
     for (const k in v) { const b = el.querySelector(`[data-cd="${k}"]`); if (b && b.textContent !== v[k]) { b.textContent = v[k]; if (!reduce) { b.classList.remove('tick'); void b.offsetWidth; b.classList.add('tick'); } } }
   }
 }
+/* ---------- Phasen-Plan ---------- */
+const dBetween = (a, b) => Math.round((new Date(b + 'T12:00') - new Date(a + 'T12:00')) / 864e5);
+const isoPlus = (a, n) => isoDate(addDays(new Date(a + 'T12:00'), n));
+const PHASE_GOALS = ['bulk', 'mass', 'recomp', 'minicut', 'cut', 'maint'];
+const PHASE_TIP = {
+  bulk: 'Kleiner Kalorienüberschuss. Schwer trainieren und die Gewichte steigern. Ziel: etwa 0,15 bis 0,3 kg mehr pro Woche.',
+  mass: 'Größerer Überschuss für schnellen Aufbau. Ziel: etwa 0,25 bis 0,5 kg mehr pro Woche.',
+  recomp: 'Leichtes Defizit, viel Eiweiß. Das Gewicht bleibt etwa gleich, die Form wird besser.',
+  minicut: 'Deutliches Defizit, aber nur kurz. Gleich schwer weitertrainieren, viel Eiweiß, mehr Schritte. Ziel: etwa 0,5 bis 0,8 kg weniger pro Woche.',
+  cut: 'Moderates Defizit über längere Zeit. Ziel: etwa 0,3 bis 0,7 kg weniger pro Woche.',
+  maint: 'Kalorien auf Erhaltung. Normal essen und trinken, gut schlafen. Kein Wasser weglassen und keine Crash-Diät vor dem Foto.',
+};
+const PHASE_COL = { bulk: 'var(--accent)', mass: 'var(--accent)', recomp: 'var(--accent2)', minicut: 'var(--warn)', cut: 'var(--warn)', maint: 'var(--up)' };
+/* Phasen mit echten Daten. Die letzte Phase läuft immer bis zum Challenge-Tag. */
+function phasePlan(c, draft) {
+  const src = draft || c; if (!src || !src.phases || !src.phases.length || !c.date) return null;
+  const pstart = src.pstart || c.start || S.today, total = dBetween(pstart, c.date) + 1;
+  if (total < 1) return null;
+  let used = 0;
+  const out = src.phases.map((p, i, a) => {
+    const last = i === a.length - 1, days = last ? Math.max(1, total - used) : Math.max(1, Math.min(p.days, total - used - (a.length - 1 - i)));
+    const start = isoPlus(pstart, used); used += days;
+    return { i, goal: p.goal, days, start, end: isoPlus(start, days - 1), last };
+  });
+  return out;
+}
+/* Vorschlag: so viel Aufbau wie möglich, am Ende genug Zeit für einen Mini Cut und eine ruhige Foto-Woche */
+function suggestPhases(from, to) {
+  const total = dBetween(from, to) + 1;
+  if (total < 14) return [{ goal: 'maint', days: total }];
+  const foto = total >= 56 ? 7 : 0;
+  const cut = total >= 140 ? 42 : total >= 98 ? 35 : total >= 56 ? 28 : total - foto;
+  const bulk = total - cut - foto;
+  return [bulk >= 28 ? { goal: 'bulk', days: bulk } : null, { goal: 'minicut', days: bulk >= 28 ? cut : cut + bulk }, foto ? { goal: 'maint', days: foto } : null].filter(Boolean);
+}
+function activePhase() {
+  for (const c of chList()) {
+    const pl = phasePlan(c); if (!pl) continue;
+    const i = pl.findIndex(p => S.today >= p.start && S.today <= p.end);
+    if (i >= 0) return { c, pl, i, ph: pl[i], next: pl[i + 1] || null, left: dBetween(S.today, pl[i].end) + 1 };
+  }
+  return null;
+}
+/* Kommende Phasen für die Planung (heute zählt das eingestellte Ziel) */
+function phaseListAll() {
+  const out = [];
+  for (const c of chList()) { const pl = phasePlan(c); if (pl) for (const p of pl) if (p.end > S.today) out.push({ start: p.start > S.today ? p.start : isoPlus(S.today, 1), end: p.end, goal: p.goal }); }
+  return out;
+}
+/* Beim Start einer neuen Phase das Ziel umstellen. Wer innerhalb der Phase selbst etwas anderes wählt, behält das. */
+function syncPhaseGoal(quiet) {
+  const A = activePhase(); if (!A) return false;
+  const key = A.c.id + ':' + A.ph.start + ':' + A.ph.goal;
+  if (S.profile.phaseKey === key) return false;
+  const changed = S.profile.goal !== A.ph.goal;
+  S.profile.goal = A.ph.goal; S.profile.phaseKey = key;
+  if (!S.profile.example) Store.saveProfileSoon();
+  if (changed && !quiet) toast(`Neue Phase: ${GOALS[A.ph.goal].n}`);
+  return changed;
+}
+function phaseKcal(goal) { return calcTargets({ ...S.profile, goal }).avg; }
+function phaseDetailHtml(c) {
+  const pl = phasePlan(c); if (!pl) return '';
+  return `<div class="card chdet"><div class="spread"><h3>Dein Weg bis ${dShort(c.date)}</h3><button class="linkbtn" data-act="home-open" data-k="ch" style="font-size:13px">Schließen</button></div>
+    <ol class="phl">${pl.map(p => {
+      const st = S.today > p.end ? 'done' : S.today >= p.start ? 'cur' : '', wk = p.days >= 14 ? `${Math.round(p.days / 7)} Wochen` : `${p.days} Tage`;
+      const left = dBetween(S.today, p.end) + 1, until = dBetween(S.today, p.start);
+      return `<li class="${st}" style="--pc:${PHASE_COL[p.goal] || 'var(--accent)'}"><span class="phl-dot">${st === 'done' ? icon('check') : p.i + 1}</span><div>
+        <div class="spread"><b>${esc(GOALS[p.goal].n)}</b><span class="phl-st">${st === 'done' ? 'geschafft' : st === 'cur' ? `läuft, noch ${left} ${left === 1 ? 'Tag' : 'Tage'}` : `in ${until} ${until === 1 ? 'Tag' : 'Tagen'}`}</span></div>
+        <small>${dShort(p.start)} bis ${dShort(p.end)} · ${wk} · etwa ${fmt(phaseKcal(p.goal))} kcal am Tag</small>
+        <p>${esc(PHASE_TIP[p.goal] || GOALS[p.goal].d)}</p></div></li>`;
+    }).join('')}</ol>
+    <p class="fhint">Das Ziel stellt sich zum Start jeder Phase von selbst um. Ändern kannst du den Plan im Body Lab unter Challenge.</p></div>`;
+}
+
+/* ---------- Challenge ---------- */
+function phaseEditorHtml(c) {
+  const D = S.chDraftPh, dateNow = ($('#c-date') && $('#c-date').value) || c.date || isoDate(addDays(new Date(), 90));
+  const cc = { ...c, date: dateNow }, pl = D ? phasePlan(cc, D) : null;
+  const opt = g => PHASE_GOALS.map(k => `<option value="${k}" ${k === g ? 'selected' : ''}>${esc(GOALS[k].n)}</option>`).join('');
+  return `<div class="field phed"><label>Phasen bis zum Ziel</label>
+    ${pl ? `<div class="phr-list">${pl.map(p => `<div class="phr" style="--pc:${PHASE_COL[p.goal] || 'var(--accent)'}">
+        <span class="phr-n">${p.i + 1}</span>
+        <select class="fsel" data-ph="${p.i}" aria-label="Ziel für Phase ${p.i + 1}">${opt(p.goal)}</select>
+        ${p.last ? `<span class="phr-w">${p.days >= 14 ? Math.round(p.days / 7) + ' Wo.' : p.days + ' T.'}</span>` : `<span class="phr-st"><button data-act="ph-wk" data-i="${p.i}" data-d="-7" aria-label="Eine Woche kürzer">−</button><span>${Math.round(p.days / 7)} Wo.</span><button data-act="ph-wk" data-i="${p.i}" data-d="7" aria-label="Eine Woche länger">+</button></span>`}
+        <button class="ddel" data-act="ph-del" data-i="${p.i}" aria-label="Phase ${p.i + 1} entfernen">${icon('x')}</button>
+        <small>${dShort(p.start)} bis ${dShort(p.end)}${p.last ? ' · läuft bis zum Ziel-Tag' : ''}</small></div>`).join('')}</div>` : ''}
+    <div class="row" style="flex-wrap:wrap;margin-top:8px"><button class="btn soft sm" data-act="ph-suggest">${icon('sparkle')}${pl ? 'Neu vorschlagen' : 'Plan vorschlagen'}</button>${pl ? `<button class="linkbtn" data-act="ph-add" style="font-size:13px">${icon('plus')}Phase</button><button class="linkbtn" data-act="ph-clear" style="font-size:13px">Ohne Phasen</button>` : ''}</div>
+    <p class="fhint">${pl ? 'Das Ziel stellt sich zum Start jeder Phase automatisch um. Die letzte Phase läuft immer bis zum Ziel-Tag.' : 'Für die Form zum Ziel-Tag: erst Muskeln aufbauen, dann kurz Fett runter. Die App schlägt dir die Phasen vor und stellt das Ziel automatisch um.'}</p></div>`;
+}
+function chKeepInputs() { const keep = {}; for (const k of ['title', 'goal', 'with', 'date', 'start']) { const el = $('#c-' + k); if (el) keep[k] = el.value; } return keep; }
+function chRestoreInputs(keep) { for (const [k, v] of Object.entries(keep)) { const el = $('#c-' + k); if (el) el.value = v; } }
 function renderChallengeForm() {
   const list = chList(), ed = S.chEdit;
   const editor = c => {
@@ -3386,6 +3535,7 @@ function renderChallengeForm() {
         <div class="field"><label for="c-date">Bis wann?</label><input id="c-date" type="date" value="${esc(c.date || isoDate(addDays(new Date(), 90)))}"></div>
       </div>
       <div class="field"><label for="c-start">Start (für den Fortschritt)</label><input id="c-start" type="date" value="${esc(c.start || S.today)}"></div>
+      ${phaseEditorHtml(c)}
       <div class="row" style="flex-wrap:wrap">
         <button class="btn sm" data-act="ch-save" data-id="${esc(c.id || '')}">${icon('check')}${c.id ? 'Speichern' : 'Challenge starten'}</button>
         <button class="btn ghost sm" data-act="ch-cancel">Abbrechen</button>
@@ -3394,7 +3544,7 @@ function renderChallengeForm() {
   };
   const row = c => {
     const P = challengeParts(c), days = P ? (P.ms > 0 ? Math.max(1, Math.floor(P.ms / 864e5)) : Math.ceil(P.ms / 864e5)) : 0, [ic] = CH_KINDS[c.kind] || CH_KINDS.andere;
-    return `<div class="ch-row"><span class="ch-ico">${icon(ic)}</span><div style="min-width:0"><b>${esc(c.title || 'Challenge')}</b><small>${days > 0 ? `noch ${fmt(days)} Tage` : days === 0 ? 'heute' : 'abgeschlossen'}${c.with ? ` · mit ${esc(c.with)}` : ''}${c.goal ? ` · ${esc(c.goal)}` : ''}</small></div><button class="btn ghost sm" data-act="ch-edit" data-id="${esc(c.id)}">Bearbeiten</button></div>`;
+    return `<div class="ch-row"><span class="ch-ico">${icon(ic)}</span><div style="min-width:0"><b>${esc(c.title || 'Challenge')}</b><small>${days > 0 ? `noch ${fmt(days)} Tage` : days === 0 ? 'heute' : 'abgeschlossen'}${c.with ? ` · mit ${esc(c.with)}` : ''}${c.goal ? ` · ${esc(c.goal)}` : ''}${(() => { const pl = phasePlan(c), cur = pl && pl.find(p => S.today >= p.start && S.today <= p.end); return cur ? ` · jetzt ${esc(GOALS[cur.goal].n)}` : pl ? ` · ${pl.length} Phasen` : ''; })()}</small></div><button class="btn ghost sm" data-act="ch-edit" data-id="${esc(c.id)}">Bearbeiten</button></div>`;
   };
   $('#zChallenge').innerHTML = `<p class="muted" style="margin:0 0 12px;font-size:13.5px">Jede Challenge bekommt auf Home einen eigenen Countdown. Bei mehreren wischst du zur Seite.</p>
     <div class="ch-list">${list.map(c => ed === c.id ? editor(c) : row(c)).join('') || (ed === 'new' ? '' : '<p class="muted" style="margin:0;font-size:13.5px">Noch keine Challenge.</p>')}</div>
@@ -3402,6 +3552,7 @@ function renderChallengeForm() {
 }
 
 function renderAll(full) {
+  try { syncPhaseGoal(true); } catch (e) {}
   document.documentElement.dataset.pal = palFor(S.tab);
   renderHeader();
   renderToday();
@@ -3546,13 +3697,33 @@ document.addEventListener('click', e => {
   if (a === 'rate') return setTaste(b.dataset.food, b.dataset.v);
   if (a === 'meal-toggle') { const k = b.dataset.meal; return setMealTaste(k, !((S.prefs.taste.meals || {})[k] === 'no')); }
   if (a === 'meal-back') return setMealTaste(b.dataset.meal, false);
-  if (a === 'ch-new' || a === 'ch-edit') { S.chEdit = a === 'ch-new' ? 'new' : b.dataset.id; S.chDel = null; S.chDraftKind = null; renderChallengeForm(); setTimeout(() => { const t = $('#c-title'); if (t && a === 'ch-new') t.focus(); }, 50); return; }
-  if (a === 'ch-cancel') { S.chEdit = null; S.chDel = null; S.chDraftKind = null; renderChallengeForm(); return; }
+  if (a === 'ch-new' || a === 'ch-edit') { S.chEdit = a === 'ch-new' ? 'new' : b.dataset.id; S.chDel = null; S.chDraftKind = null;
+    { const c0 = a === 'ch-edit' ? (S.prefs.challenges || []).find(x => x.id === b.dataset.id) : null; S.chDraftPh = c0 && c0.phases ? { pstart: c0.pstart, phases: c0.phases.map(p => ({ ...p })) } : null; }
+    renderChallengeForm(); setTimeout(() => { const t = $('#c-title'); if (t && a === 'ch-new') t.focus(); }, 50); return; }
+  if (a === 'ch-cancel') { S.chEdit = null; S.chDel = null; S.chDraftKind = null; S.chDraftPh = null; renderChallengeForm(); return; }
+  if (a === 'ph-suggest' || a === 'ph-add' || a === 'ph-del' || a === 'ph-wk' || a === 'ph-clear') {
+    const keep = chKeepInputs(), date = keep.date, from = [S.today, keep.start || S.today].sort()[1];
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date || '') || date <= from) { toast('Wähl zuerst ein Ziel-Datum in der Zukunft'); return; }
+    if (a === 'ph-suggest') S.chDraftPh = { pstart: from, phases: suggestPhases(from, date) };
+    else if (a === 'ph-clear') S.chDraftPh = null;
+    else if (S.chDraftPh) {
+      const D = S.chDraftPh, pl = phasePlan({ date, start: keep.start }, D) || [], i = +b.dataset.i;
+      D.phases = pl.map(p => ({ goal: p.goal, days: p.days }));
+      if (a === 'ph-add') { const last = D.phases[D.phases.length - 1]; if (last.days < 14) { toast('Für eine weitere Phase ist zu wenig Zeit'); return; } const w = Math.max(7, Math.floor(last.days / 14) * 7); last.days -= w; D.phases.push({ goal: 'maint', days: w }); }
+      if (a === 'ph-del') { if (D.phases.length <= 1) S.chDraftPh = null; else D.phases.splice(i, 1); }
+      if (a === 'ph-wk') {
+        const d = +b.dataset.d, p = D.phases[i], last = D.phases[D.phases.length - 1];
+        if (p.days + d < 7) { toast('Kürzer als eine Woche geht nicht'); return; }
+        if (last.days - d < 3) { toast('Die letzte Phase braucht noch ein paar Tage'); return; }
+        p.days += d; last.days -= d;
+      }
+    }
+    renderChallengeForm(); chRestoreInputs(keep); return;
+  }
   if (a === 'ch-kind') {
     // Eingaben behalten, nur die Art wechseln
-    const keep = { title: $('#c-title').value, goal: $('#c-goal').value, with: $('#c-with').value, date: $('#c-date').value, start: $('#c-start').value };
-    S.chDraftKind = b.dataset.v; renderChallengeForm();
-    for (const [k, v] of Object.entries(keep)) { const el = $('#c-' + k); if (el) el.value = v; }
+    const keep = chKeepInputs();
+    S.chDraftKind = b.dataset.v; renderChallengeForm(); chRestoreInputs(keep);
     return;
   }
   if (a === 'ch-save') {
@@ -3562,10 +3733,14 @@ document.addEventListener('click', e => {
     const id = b.dataset.id || ('c' + Date.now().toString(36));
     const old = (S.prefs.challenges || []).find(c => c.id === id) || {};
     const c = { ...old, id, title: $('#c-title').value.trim() || 'Challenge', kind: S.chDraftKind || old.kind || 'foto', goal: $('#c-goal').value.trim(), with: $('#c-with').value.trim(), date, start };
+    if (S.chDraftPh && S.chDraftPh.phases.length) { const pl = phasePlan(c, S.chDraftPh); c.pstart = S.chDraftPh.pstart || start; c.phases = (pl || []).map(p => ({ goal: p.goal, days: p.days })); } else { delete c.phases; delete c.pstart; }
     const list = (S.prefs.challenges || []).filter(x => x.id !== id).concat(c);
     S.prefs = { ...S.prefs, challenges: list }; Store.savePrefs();
-    S.chEdit = null; S.chDel = null; S.chDraftKind = null;
-    renderChallengeForm(); renderChallenge(true); renderAccSummaries(); toast(b.dataset.id ? 'Challenge gespeichert' : 'Countdown läuft'); return;
+    S.chEdit = null; S.chDel = null; S.chDraftKind = null; S.chDraftPh = null;
+    S.profile.phaseKey = null; const switched = syncPhaseGoal(true);
+    renderChallengeForm(); renderChallenge(true); renderAccSummaries();
+    if (switched || c.phases) profileChanged(true);
+    toast(c.phases ? `Plan gespeichert${activePhase() ? `, jetzt: ${GOALS[activePhase().ph.goal].n}` : ''}` : b.dataset.id ? 'Challenge gespeichert' : 'Countdown läuft'); return;
   }
   if (a === 'ch-del-ask') { S.chDel = b.dataset.id; renderChallengeForm(); return; }
   if (a === 'ch-del') {
@@ -3713,7 +3888,8 @@ document.addEventListener('click', e => {
   if (a === 'home-open') {
     S.homeOpen = S.homeOpen === b.dataset.k ? null : b.dataset.k;
     renderToday();
-    const id = { gap: 'gapCard', crea: 'creaCard', garmin: 'garminCard' }[S.homeOpen];
+    if (b.dataset.k === 'ch' || S.homeOpen === 'ch' || $('#chDetail').innerHTML) renderChallenge(true);
+    const id = { gap: 'gapCard', crea: 'creaCard', garmin: 'garminCard', ch: 'chDetail' }[S.homeOpen];
     const el = id && document.getElementById(id);
     if (el && !el.hidden && el.style.display !== 'none') setTimeout(() => el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'nearest' }), 30);
     return;
@@ -3855,6 +4031,12 @@ function profileChanged(rerenderForm) {
   if (S.tab === 'einkauf') renderShop();
 }
 document.addEventListener('change', e => {
+  if (e.target.matches && e.target.matches('select[data-ph]') && S.chDraftPh) {
+    const i = +e.target.dataset.ph, keep = chKeepInputs();
+    const pl = phasePlan({ date: keep.date, start: keep.start }, S.chDraftPh) || [];
+    S.chDraftPh.phases = pl.map(p => ({ goal: p.goal, days: p.days })); if (S.chDraftPh.phases[i]) S.chDraftPh.phases[i].goal = e.target.value;
+    renderChallengeForm(); chRestoreInputs(keep); return;
+  }
   if (e.target.id === 'ev-open' && S.evEdit) { S.evEdit.open = e.target.checked; const en = $('#ev-end'); if (en) en.disabled = e.target.checked; }
 });
 document.addEventListener('input', e => {
@@ -4613,7 +4795,7 @@ function tileSub(key, name, pts, o, h) {
 function fortSpecs() {
   const goal = S.profile.goal || 'recomp', kg = v => dec1(v) + ' kg', runs = runPts();
   return {
-    w: { pts: weightPts(), o: { fmt: kg, tick: v => dec1(v), delta: d => signKg(d), good: GAIN(goal) ? 'up' : goal === 'cut' ? 'down' : null, minRange: 2, eps: .05, empty: 'Noch kein Gewicht. Trag oben dein erstes ein.' } },
+    w: { pts: weightPts(), o: { fmt: kg, tick: v => dec1(v), delta: d => signKg(d), good: GAIN(goal) ? 'up' : goal === 'cut' || goal === 'minicut' ? 'down' : null, minRange: 2, eps: .05, empty: 'Noch kein Gewicht. Trag oben dein erstes ein.' } },
     g: { pts: strengthSeries(), o: { fmt: v => Math.round(v) + ' %', tick: v => Math.round(v) + ' %', delta: d => pct(d), good: 'up', minRange: 10, eps: .5, empty: 'Noch kein Training.' } },
     p: { pts: runs.map(r => ({ d: r.date, y: r.sec / r.km, label: `${dec1(r.km)} km in ${mmss(r.sec)}` })), o: { fmt: v => mmss(v) + ' /km', tick: v => mmss(v), delta: d => `${mmss(Math.abs(d))} ${d < 0 ? 'schneller' : 'langsamer'}`, good: 'down', invert: true, minRange: 30, eps: 1, empty: 'Noch kein Lauf. Trag oben deinen ersten ein.' } },
     dk: { pts: runs.map(r => ({ d: r.date, y: r.km, label: `${mmss(r.sec / r.km)} min/km` })), o: { fmt: v => dec1(v) + ' km', tick: v => dec1(v), delta: d => (d > 0 ? '+' : d < 0 ? '−' : '±') + dec1(Math.abs(d)) + ' km', good: 'up', minRange: 2, eps: .05, empty: 'Hier siehst du, ob du weiter läufst.' } }
@@ -4641,7 +4823,7 @@ function fortAll() {
 /* ---------- Gewicht ---------- */
 function fortWeight() {
   const w = weightPts(), last = w[w.length - 1], goal = S.profile.goal || 'recomp';
-  const tip = { mass: 'Im Bulk ist ein Plus von etwa 0,25 bis 0,5 kg pro Woche ein guter Richtwert. Mehr wäre vor allem Fett.', bulk: 'Im Lean Bulk ist ein kleines Plus von etwa 0,1 bis 0,3 kg pro Woche ein guter Richtwert.', cut: 'Im Cut sind etwa 0,3 bis 0,8 kg weniger pro Woche ein guter Richtwert.', recomp: 'Beim Recomp bleibt das Gewicht oft fast gleich, während Fett weniger und Muskeln mehr werden.' }[goal];
+  const tip = { minicut: 'Im Mini Cut sind etwa 0,5 bis 0,8 kg weniger pro Woche ein guter Richtwert. Die Gewichte im Gym bleiben gleich schwer.', maint: 'In der Erhaltung bleibt dein Gewicht gleich. Kleine Schwankungen sind normal.', mass: 'Im Bulk ist ein Plus von etwa 0,25 bis 0,5 kg pro Woche ein guter Richtwert. Mehr wäre vor allem Fett.', bulk: 'Im Lean Bulk ist ein kleines Plus von etwa 0,1 bis 0,3 kg pro Woche ein guter Richtwert.', cut: 'Im Cut sind etwa 0,3 bis 0,8 kg weniger pro Woche ein guter Richtwert.', recomp: 'Beim Recomp bleibt das Gewicht oft fast gleich, während Fett weniger und Muskeln mehr werden.' }[goal];
   return `<div class="card"><h3>Gewicht eintragen</h3>
       <div class="two" style="margin-top:10px"><div class="field"><label for="fw-kg">Gewicht</label><label class="gin"><input id="fw-kg" inputmode="decimal" autocomplete="off" value="${last ? dec1(last.y) : ''}" placeholder="80,0"><em>kg</em></label></div>
         <div class="field"><label for="fw-date">Tag</label><input id="fw-date" type="date" value="${S.today}" max="${S.today}"></div></div>
@@ -4967,7 +5149,7 @@ function saveEstimate(keepIt) {
 /* ================= Start ================= */
 function tick() {
   const t = isoDate(new Date());
-  if (t !== S.today) { S.today = t; S.log = emptyLog(); Store.subDay(); Store.subShop(); }
+  if (t !== S.today) { S.today = t; S.log = emptyLog(); Store.subDay(); Store.subShop(); if (syncPhaseGoal()) { renderAll(true); return; } }
   renderHeader(); renderToday();
 }
 const start = location.hash.replace('#', '');
