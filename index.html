@@ -694,20 +694,7 @@ details.trip[open] > summary .ico.car{transform:rotate(180deg)}
 .weekrow button .ico{width:18px;height:18px;color:var(--accent)}
 .weekrow button small{font-size:9.5px;color:var(--muted);font-weight:600}
 .weekrow button:active{transform:scale(.95)}
-.rh-list{display:grid;gap:6px;margin-top:10px}
-.rh-row{display:grid;grid-template-columns:50px minmax(0,1fr) 30px;gap:8px;align-items:center;padding:6px 6px 6px 10px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
-.rh-row.today{border-color:color-mix(in srgb,var(--accent) 55%,transparent)}
-.rh-n{display:grid;font-size:13px;font-weight:700;line-height:1.15}
-.rh-n small{font-size:10.5px;font-weight:650;color:var(--accent)}
-.rh-types{padding:3px;gap:3px}
-.rh-types button{display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:6px 2px;font-size:12px}
-.rh-types button .ico{width:14px;height:14px}
-.rh-row .ddel{justify-self:center}
-.rh-f{grid-column:1 / -1;display:grid;gap:6px;padding:0 0 2px}
-.rh-f select,.rh-f input{padding:7px 9px;font-size:14px}
-.rh-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap}
-.rh-start{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--muted)}
-.rh-start select{width:auto;padding:6px 8px;font-size:14px}
+.weekrow button.today{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--surface))}
 .rh-prev{margin-top:12px;display:grid;gap:6px}
 .weekrow.rh-pv > span{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:6px 0 5px;display:grid;justify-items:center;gap:2px;font-size:11.5px;font-weight:650;min-width:0}
 .weekrow.rh-pv > span .ico{width:15px;height:15px;color:var(--accent)}
@@ -1307,7 +1294,7 @@ div.htile{cursor:default}
       <p class="foot" style="--i:9">Richtwerte nach der Mifflin-St-Jeor-Formel. Kein Ersatz für ärztliche Beratung.</p>
       <div class="reset-wrap" style="--i:10">
         <button class="hold-btn reset-btn" data-hold="reset" data-ms="5000" data-label="Alle Einstellungen zurücksetzen" aria-label="5 Sekunden gedrückt halten, um alle Einstellungen zurückzusetzen"><i aria-hidden="true"></i><span><svg class="ico" aria-hidden="true"><use href="#i-arrow-clockwise"/></svg>Alle Einstellungen zurücksetzen</span></button>
-        <p class="foot">5 Sekunden gedrückt halten. Setzt Körper &amp; Training, Arbeit und Sonstiges auf den Anfang zurück. Gewicht, Essen, Challenges und deine Gerichte bleiben.</p>
+        <p class="foot">5 Sekunden gedrückt halten. Setzt Körper &amp; Training, Arbeit, Sonstiges, deine Challenges und den Phasen-Plan auf den Anfang zurück. Gewicht, Essen und deine Gerichte bleiben.</p>
       </div>
     </section>
   </main>
@@ -1665,7 +1652,7 @@ const DEFAULT_PROFILE = {
   name: '', sex: 'm', age: 25, height: 180, weight: 80,
   job: 'mixed', goal: 'recomp', kcalAdjust: 0,
   wake: '06:30', gymMode: 'afterwork', trainGym: '17:00', trainRun: '17:00', workStart: '08:00', workEnd: '16:30', workLunch: 'kantine', cook: 'yes', breakfast: 'daily', garmin: 'off', creatine: 'off', creaDose: 5, lunchBreak: '12:00', lunchDur: 30, shortDay: -1, shortDayEnd: '12:00', bfTime: '',
-  week: ['gym','run','gym','rest','gym','run','rest'], weekFocus: [], rhythm: null,
+  week: ['gym','run','gym','rest','gym','run','rest'], weekFocus: [], loop: null,
   shopMain: 5, shopSecond: 1,
   pal: { heute:'cloud', plan:'lilac', einkauf:'emerald', ziele:'indigo' },
 };
@@ -1677,23 +1664,31 @@ const dow = d => (d.getDay() + 6) % 7; // 0 = Montag
 const isoDate = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
 
-/* ---------- Trainings-Rhythmus ----------
-   Entweder jede Woche gleich (week) oder ein eigener Rhythmus, der sich alle n Tage wiederholt (z. B. Gym, Laufen, Gym, Ruhe). */
+/* ---------- Training: jede Woche gleich oder als Loop ----------
+   Loop: Wiederholt sich in der Woche ein Muster (z. B. Push, Laufen, Pull, Ruhe), läuft es einfach Tag für Tag weiter.
+   Dadurch verschiebt sich das Training von Woche zu Woche. */
 const GYM_FOCUS = { push: ['Push', 'Brust & Trizeps'], pull: ['Pull', 'Rücken & Bizeps'], legs: ['Beine', 'Beine & Po'], upper: ['Oberkörper', 'Brust, Rücken, Schultern, Arme'], full: ['Ganzkörper', 'Alles an einem Tag'], abs: ['Bauch', 'Nur Bauch'] };
 const focusShort = f => !f ? '' : GYM_FOCUS[f] ? GYM_FOCUS[f][0] : String(f).replace(/^x:/, '').trim();
 const focusLong = f => !f ? '' : GYM_FOCUS[f] ? GYM_FOCUS[f][1] : '';
 const dayDiffISO = (a, b) => Math.round((new Date(b + 'T12:00') - new Date(a + 'T12:00')) / 864e5);
-function rhythmOf(pr) { const r = pr && pr.rhythm; return r && r.mode === 'cycle' && Array.isArray(r.days) && r.days.length >= 2 && /^\d{4}-\d{2}-\d{2}$/.test(r.start || '') ? r : null; }
+const dayKey = x => x.t + ':' + (x.t === 'gym' ? x.f || '' : '');
+function weekDays(pr) { return Array.from({ length: 7 }, (_, i) => { const t = TYPES[(pr.week || [])[i]] ? pr.week[i] : 'rest'; return { t, f: t === 'gym' ? ((pr.weekFocus || [])[i] || '') : '' }; }); }
+/* Kürzestes Muster, das sich in den 7 Tagen wiederholt (7 = keins) */
+function loopPeriod(days) { for (let n = 1; n < 7; n++) { let ok = true; for (let i = 0; i + n < 7; i++) if (dayKey(days[i]) !== dayKey(days[i + n])) { ok = false; break; } if (ok) return n; } return 7; }
+function loopOf(pr) {
+  const L = pr && pr.loop; if (!L || !L.on || !/^\d{4}-\d{2}-\d{2}$/.test(L.start || '')) return null;
+  const days = weekDays(pr), n = loopPeriod(days);
+  return n < 7 ? { seq: days.slice(0, n), n, start: L.start } : null;
+}
 function dayInfo(pr, d) {
-  const r = rhythmOf(pr);
-  if (r) { const n = r.days.length, i = ((dayDiffISO(r.start, isoDate(d)) % n) + n) % n, x = r.days[i] || {}, t = TYPES[x.t] ? x.t : 'rest'; return { t, f: t === 'gym' ? (x.f || '') : '', i, n }; }
-  const w = dow(d), t = TYPES[(pr.week || [])[w]] ? pr.week[w] : 'rest';
-  return { t, f: t === 'gym' ? ((pr.weekFocus || [])[w] || '') : '', i: w, n: 7 };
+  const L = loopOf(pr);
+  if (L) { const i = ((dayDiffISO(L.start, isoDate(d)) % L.n) + L.n) % L.n; return { ...L.seq[i], i, n: L.n }; }
+  const w = dow(d); return { ...weekDays(pr)[w], i: w, n: 7 };
 }
 const typeOn = (pr, d) => dayInfo(pr, d).t;
 function weekMix(pr) {
-  const r = rhythmOf(pr), L = r ? r.days.map(x => TYPES[x.t] ? x.t : 'rest') : pr.week, k = 7 / L.length;
-  return { sessions: L.filter(t => t !== 'rest').length * k, multSum: L.reduce((s, t) => s + TYPES[t].mult, 0) * k };
+  const L = loopOf(pr), list = (L ? L.seq : weekDays(pr)).map(x => x.t), k = 7 / list.length;
+  return { sessions: list.filter(t => t !== 'rest').length * k, multSum: list.reduce((s, t) => s + TYPES[t].mult, 0) * k };
 }
 
 /* ---------- Ziele ---------- */
@@ -2979,9 +2974,9 @@ function workSummary(p) {
 }
 function renderAccSummaries() {
   const p = S.profile, g = GOALS[p.goal] || GOALS.recomp;
-  const nTrain = weekMix(p).sessions, R = rhythmOf(p);
+  const nTrain = weekMix(p).sessions, R = loopOf(p);
   const set = (k, t) => { const el = document.getElementById('accs-' + k); if (el) el.textContent = t; };
-  set('body', `${String(p.weight).replace('.', ',')} kg · ${planRuns() ? 'Phasen-Plan' : g.n} · ${R ? `Rhythmus alle ${R.days.length} Tage` : `${dec1(Math.round(nTrain * 10) / 10)}× Training pro Woche`}`);
+  set('body', `${String(p.weight).replace('.', ',')} kg · ${planRuns() ? 'Phasen-Plan' : g.n} · ${dec1(Math.round(nTrain * 10) / 10)}× Training pro Woche${R ? ' im Loop' : ''}`);
   set('work', workSummary(p));
   set('misc', `Garmin ${p.garmin === 'on' ? 'an' : 'aus'} · Creatin ${p.creatine === 'on' ? 'an' : 'aus'} · Frühstück ${BF_N[p.breakfast || 'daily']} · ${p.cook === 'no' ? 'ohne Kochen' : 'ich koche'}`);
   const chs = chList().filter(x => x.date >= S.today), c = chs[0];
@@ -2992,7 +2987,7 @@ const gymHint = p => {
   const by = {};
   for (let i = 0; i < 7; i++) { const d = addDays(new Date(), i - dow(new Date())); if (typeOn(p, d) !== 'gym') continue; const tm = toHHMM(trainTime(p, 'gym', d)); (by[tm] = by[tm] || []).push(DAYSHORT[i]); }
   const parts = Object.entries(by).map(([tm, ds]) => `${ds.join(', ')} um ${tm}`);
-  return parts.length ? `Startet 15 Minuten nach Feierabend${rhythmOf(p) ? ', diese Woche' : ''}: ${parts.join(' · ')}. An freien Tagen wie an einem normalen Arbeitstag.` : 'Kein Gym-Tag eingeplant.';
+  return parts.length ? `Startet 15 Minuten nach Feierabend${loopOf(p) ? ', diese Woche' : ''}: ${parts.join(' · ')}. An freien Tagen wie an einem normalen Arbeitstag.` : 'Kein Gym-Tag eingeplant.';
 };
 function exportCode() {
   const d = { v: 1, profile: { ...S.profile, example: false }, prefs: { taste: S.prefs.taste, challenges: S.prefs.challenges || [], creaDays: S.prefs.creaDays || [], dishes: S.prefs.dishes || [], recent: S.prefs.recent || [], favs: S.prefs.favs || [], events: S.prefs.events || [], trackDays: S.prefs.trackDays || [], phasePlan: S.prefs.phasePlan || null }, weights: S.weights || [], train: S.train || emptyTrain(), today: { date: S.today, log: S.log } };
@@ -3013,29 +3008,33 @@ function importCode(code) {
   if (Store.mode === 'db') for (const w of S.weights) Store.write(Store.base + '/weights/' + w.date, w); else Store.ls('weights', S.weights);
   renderAll(true); renderChallenge(true);
 }
-const RH_TPL = [
-  ['Push · Laufen · Pull · Ruhe', [{ t: 'gym', f: 'push' }, { t: 'run' }, { t: 'gym', f: 'pull' }, { t: 'rest' }]],
-  ['Push · Pull · Laufen · Ruhe', [{ t: 'gym', f: 'push' }, { t: 'gym', f: 'pull' }, { t: 'run' }, { t: 'rest' }]],
-  ['Push · Pull · Beine · Ruhe', [{ t: 'gym', f: 'push' }, { t: 'gym', f: 'pull' }, { t: 'gym', f: 'legs' }, { t: 'rest' }]],
-];
 const monday = () => isoDate(addDays(new Date(), -dow(new Date())));
+/* Antippen wechselt der Reihe nach */
+const TAP = [['gym', 'push'], ['gym', 'pull'], ['run', ''], ['rest', ''], ['gym', 'legs'], ['gym', '']];
+const dayLbl = x => x.t === 'gym' ? (focusShort(x.f) || 'Gym') : TYPES[x.t].short;
+function curWeek(p) { const base = addDays(new Date(), -dow(new Date())); return DAYSHORT.map((_, i) => dayInfo(p, addDays(base, i))); }
 function trainEditorHtml(p) {
-  const R = rhythmOf(p), now = new Date(), todayI = dayInfo(p, now).i;
-  const rows = R ? R.days.map((x, i) => ({ lbl: `Tag ${i + 1}`, t: TYPES[x.t] ? x.t : 'rest', f: x.f || '' })) : DAYSHORT.map((d, i) => ({ lbl: d, t: p.week[i], f: (p.weekFocus || [])[i] || '' }));
-  const typeSeg = (i, t) => `<div class="seg rh-types" role="group" aria-label="${rows[i].lbl}">${['gym', 'run', 'rest'].map(k => `<button data-act="rh-type" data-i="${i}" data-v="${k}" aria-pressed="${t === k}">${icon(TYPES[k].icon)}<span>${TYPES[k].short}</span></button>`).join('')}</div>`;
-  const own = f => f && f.startsWith('x:');
-  const focus = (i, f) => `<div class="rh-f"><select data-rhf="${i}" aria-label="${rows[i].lbl}: Was trainierst du?"><option value="" ${!f ? 'selected' : ''}>Was trainierst du? (optional)</option>${Object.entries(GYM_FOCUS).map(([k, [n, sub]]) => `<option value="${k}" ${f === k ? 'selected' : ''}>${n}: ${sub}</option>`).join('')}<option value="x" ${own(f) ? 'selected' : ''}>Eigenes …</option></select>${own(f) ? `<input data-rho="${i}" autocomplete="off" value="${esc(f.slice(2))}" placeholder="z. B. Schultern & Bauch" aria-label="Eigener Inhalt">` : ''}</div>`;
-  const list = rows.map((x, i) => `<div class="rh-row ${i === todayI ? 'today' : ''}"><span class="rh-n">${x.lbl}${i === todayI ? '<small>heute</small>' : ''}</span>${typeSeg(i, x.t)}${R && rows.length > 2 ? `<button class="ddel" data-act="rh-del" data-i="${i}" aria-label="${x.lbl} entfernen">${icon('x')}</button>` : '<span></span>'}${x.t === 'gym' ? focus(i, x.f) : ''}</div>`).join('');
-  const base = addDays(now, -dow(now));
-  const pv = [0, 1].map(w => `<div class="weekrow rh-pv" aria-label="${w ? 'Nächste Woche' : 'Diese Woche'}">${DAYSHORT.map((d, i) => { const x = addDays(base, w * 7 + i), di = dayInfo(p, x), today = isoDate(x) === S.today; return `<span class="${today ? 'today' : ''}">${d}${icon(TYPES[di.t].icon)}<small>${di.t === 'gym' && focusShort(di.f) ? esc(focusShort(di.f)) : TYPES[di.t].short}</small></span>`; }).join('')}</div>`).join('');
-  return `<div class="field"><label>Training</label>
-    <div class="seg" role="group" aria-label="Wie wiederholt sich dein Training?"><button data-act="rh-mode" data-v="week" aria-pressed="${!R}">Jede Woche gleich</button><button data-act="rh-mode" data-v="cycle" aria-pressed="${!!R}">Eigener Rhythmus</button></div>
-    <p class="fhint">${R ? `Wiederholt sich alle ${rows.length} Tage, egal welcher Wochentag. Deshalb verschiebt sich alles von Woche zu Woche.` : 'Jeder Wochentag hat immer dasselbe Training.'}</p>
-    ${R ? `<span class="label" style="display:block;margin-top:10px">Vorlagen</span><div class="qz-chips" style="margin-top:6px">${RH_TPL.map(([n], i) => `<button class="chip-btn" data-act="rh-tpl" data-i="${i}">${esc(n)}</button>`).join('')}</div>` : ''}
-    <div class="rh-list">${list}</div>
-    ${R ? `<div class="rh-foot">${rows.length < 14 ? `<button class="btn ghost sm" data-act="rh-add">${icon('plus')}Tag dazu</button>` : '<span></span>'}<label class="rh-start">Heute ist <select data-rhs aria-label="Welcher Tag im Rhythmus ist heute?">${rows.map((_, i) => `<option value="${i}" ${i === todayI ? 'selected' : ''}>Tag ${i + 1}</option>`).join('')}</select></label></div>` : ''}
-    <div class="rh-prev"><span class="label">Diese und nächste Woche</span>${pv}</div>
-  </div>`;
+  const on = !!(p.loop && p.loop.on), L = loopOf(p), today = dow(new Date());
+  const btn = (x, i) => `<button data-act="week" data-i="${i}" class="${i === today ? 'today' : ''}" aria-label="${DAYNAMES[i]}: ${esc(dayLbl(x))}">${DAYSHORT[i]}${icon(TYPES[x.t].icon)}<small>${esc(dayLbl(x))}</small></button>`;
+  const next = on && L ? (() => { const base = addDays(new Date(), 7 - dow(new Date())); return `<div class="rh-prev"><span class="label">Nächste Woche</span><div class="weekrow rh-pv">${DAYSHORT.map((d, i) => { const x = dayInfo(p, addDays(base, i)); return `<span>${d}${icon(TYPES[x.t].icon)}<small>${esc(dayLbl(x))}</small></span>`; }).join('')}</div></div>`; })() : '';
+  const hint = !on ? 'Jede Woche sieht gleich aus.'
+    : L ? `Dein Loop: ${L.seq.map(dayLbl).join(' → ')}. Er läuft einfach weiter, deshalb verschiebt sich das Training jede Woche.`
+    : 'Noch kein Loop zu erkennen. Damit er weiterläuft, muss sich ein Muster in der Woche wiederholen, zum Beispiel Push, Laufen, Pull, Ruhe, Push, Laufen, Pull. Bis dahin bleibt jede Woche gleich.';
+  return `<div class="field"><label>Training (antippen zum Wechseln)</label>
+    <div class="weekrow">${curWeek(p).map(btn).join('')}</div>
+    <div class="seg" role="group" aria-label="Wie geht es nächste Woche weiter?" style="margin-top:10px"><button data-act="loop" data-v="0" aria-pressed="${!on}">Jede Woche gleich</button><button data-act="loop" data-v="1" aria-pressed="${on}">Loop fortsetzen</button></div>
+    <p class="fhint">${esc(hint)}</p>${next}</div>`;
+}
+/* Version mit eigenem Rhythmus (Tag 1, Tag 2 …) in Woche plus Loop umwandeln */
+function migrateTrain() {
+  const p = S.profile, R = p.rhythm; if (!R) return;
+  if (R.mode === 'cycle' && Array.isArray(R.days) && R.days.length >= 2 && R.start) {
+    const mon = monday(), n = R.days.length, wk = [], wf = [];
+    for (let i = 0; i < 7; i++) { const j = ((dayDiffISO(R.start, isoDate(addDays(new Date(mon + 'T12:00'), i))) % n) + n) % n, x = R.days[j] || {}, t = TYPES[x.t] ? x.t : 'rest'; wk.push(t); wf.push(t === 'gym' ? x.f || '' : ''); }
+    p.week = wk; p.weekFocus = wf; p.loop = { on: true, start: mon };
+  }
+  delete p.rhythm;
+  if (!p.example) Store.saveProfileSoon();
 }
 /* Läuft ein Phasen-Plan, der das Ziel automatisch stellt? */
 const planRuns = () => { const P = curPlan(); return !!(P && planPhases(P) && S.today <= P.end); };
@@ -3372,7 +3371,7 @@ function renderInfo() {
   ${accSec('i-how', 'info', 'So rechnet die App', `Grundumsatz, Verbrauch, Ziel, Gerichte`, 9, `
     <ol class="how-steps">
       <li><b>Grundumsatz</b> aus Gewicht, Größe und Alter (Mifflin-St-Jeor-Formel).</li>
-      <li><b>Verbrauch</b> mit deinem Alltag und deinen ${dec1(Math.round(weekMix(pr).sessions * 10) / 10)} Trainingstagen pro Woche${rhythmOf(pr) ? ' (im Schnitt, dein Rhythmus geht über die Wochen hinweg)' : ''}.</li>
+      <li><b>Verbrauch</b> mit deinem Alltag und deinen ${dec1(Math.round(weekMix(pr).sessions * 10) / 10)} Trainingstagen pro Woche${loopOf(pr) ? ' (im Schnitt, dein Loop läuft über die Wochen weiter)' : ''}.</li>
       <li><b>Ziel</b> je nach Modus: ${esc(g.n)} ${adjPct >= 0 ? 'plus' : 'minus'} ${Math.abs(adjPct)} %. Trainingstage bekommen mehr, Ruhetage weniger.</li>
       <li><b>Gerichte</b> werden so skaliert, dass Eiweiß, Kohlenhydrate und Fett passen. Was du nicht magst, wird getauscht. Mittag und Abend sind nie dasselbe oder ein sehr ähnliches Gericht.</li>
       <li><b>Leucin</b> wird pro Mahlzeit mitgezählt. Mahlzeiten ab ${dec(T.leuMeal)} g sind Muskel-Signale.</li>
@@ -4170,6 +4169,7 @@ function renderChallengeForm() {
 }
 
 function renderAll(full) {
+  try { migrateTrain(); } catch (e) {}
   try { migratePhasePlan(); syncPhaseGoal(true); if (S.ppRebuilt) { S.ppRebuilt = false; setTimeout(() => toast('Dein Phasen-Plan ist neu berechnet: jetzt der beste Weg zu deinem Ziel'), 900); } } catch (e) {}
   document.documentElement.dataset.pal = palFor(S.tab);
   if (S.tab === 'phasen') renderPhasen();
@@ -4489,22 +4489,19 @@ document.addEventListener('click', e => {
     if (a === 'wd-copy') toast('Montag auf Di bis Fr übertragen');
     return;
   }
-  if (a === 'rh-mode' || a === 'rh-type' || a === 'rh-del' || a === 'rh-add' || a === 'rh-tpl') {
-    const p = S.profile, R0 = p.rhythm && Array.isArray(p.rhythm.days) && p.rhythm.days.length >= 2 ? p.rhythm : null;
-    if (a === 'rh-mode') {
-      if (b.dataset.v === 'week') p.rhythm = R0 ? { ...R0, mode: 'week' } : null;
-      else p.rhythm = R0 ? { ...R0, mode: 'cycle', start: R0.start || monday() } : { mode: 'cycle', start: monday(), days: RH_TPL[0][1].map(x => ({ ...x })) };
-    } else if (a === 'rh-tpl') { const T = RH_TPL[+b.dataset.i]; if (!T) return; p.rhythm = { mode: 'cycle', start: monday(), days: T[1].map(x => ({ ...x })) }; toast('Rhythmus übernommen, Tag 1 ist dieser Montag'); }
-    else if (rhythmOf(p)) {
-      const days = p.rhythm.days.map(x => ({ ...x })), i = +b.dataset.i;
-      if (a === 'rh-type' && days[i]) days[i].t = b.dataset.v;
-      if (a === 'rh-del' && days.length > 2) days.splice(i, 1);
-      if (a === 'rh-add' && days.length < 14) days.push({ t: 'rest' });
-      p.rhythm = { ...p.rhythm, days };
-    } else if (a === 'rh-type') { const i = +b.dataset.i; p.week = p.week.slice(); p.week[i] = b.dataset.v; }
+  if (a === 'week') {
+    const p = S.profile, i = +b.dataset.i, wk = curWeek(p).map(x => ({ t: x.t, f: x.f }));
+    const k = TAP.findIndex(([t, f]) => t === wk[i].t && (t !== 'gym' || f === (wk[i].f || '')));
+    const [t, f] = TAP[(k + 1) % TAP.length]; wk[i] = { t, f };
+    p.week = wk.map(x => x.t); p.weekFocus = wk.map(x => x.f || '');
+    if (p.loop && p.loop.on) p.loop = { on: true, start: monday() };
     profileChanged(true); return;
   }
-  if (a === 'week') { const i = +b.dataset.i, o = ['gym', 'run', 'rest']; S.profile.week = S.profile.week.slice(); S.profile.week[i] = o[(o.indexOf(S.profile.week[i]) + 1) % 3]; profileChanged(true); return; }
+  if (a === 'loop') {
+    const p = S.profile, wk = curWeek(p);
+    p.week = wk.map(x => x.t); p.weekFocus = wk.map(x => x.f || ''); p.loop = { on: b.dataset.v === '1', start: monday() };
+    profileChanged(true); return;
+  }
   if (a === 'adjust') { S.profile.kcalAdjust = (+S.profile.kcalAdjust || 0) + (+b.dataset.v); profileChanged(false); toast('Kalorien angepasst'); return; }
   if (a === 'adjust-reset') { S.profile.kcalAdjust = 0; profileChanged(false); return; }
   if (a === 'est-run') return runEstimate();
@@ -4726,17 +4723,6 @@ function profileChanged(rerenderForm) {
   if (S.tab === 'einkauf') renderShop();
 }
 document.addEventListener('change', e => {
-  const tg = e.target;
-  if (tg.matches && (tg.matches('[data-rhf]') || tg.matches('[data-rho]') || tg.matches('[data-rhs]'))) {
-    const p = S.profile, R = rhythmOf(p);
-    if (tg.matches('[data-rhs]')) { if (R) p.rhythm = { ...R, start: isoDate(addDays(new Date(), -(+tg.value || 0))) }; }
-    else {
-      const i = +(tg.dataset.rhf ?? tg.dataset.rho), v = tg.matches('[data-rhf]') ? (tg.value === 'x' ? 'x:' : tg.value) : 'x:' + tg.value.trim().slice(0, 40);
-      if (R) { const days = R.days.map(x => ({ ...x })); if (days[i]) days[i].f = v; p.rhythm = { ...R, days }; }
-      else { const wf = (p.weekFocus || []).slice(); wf[i] = v; p.weekFocus = wf; }
-    }
-    profileChanged(true); return;
-  }
   if (e.target.matches && e.target.matches('select[data-pp]')) { const P = ppTarget(); if (P) { ppNormalize(P); const i = +e.target.dataset.pp; if (P.phases[i]) P.phases[i].goal = e.target.value; renderPhasen(); } return; }
   if (e.target.id === 'ev-open' && S.evEdit) { S.evEdit.open = e.target.checked; const en = $('#ev-end'); if (en) en.disabled = e.target.checked; }
 });
@@ -5810,6 +5796,8 @@ function saveEstimate(keepIt) {
       clearTimeout(Store._pt);
       S.profile = JSON.parse(JSON.stringify(DEFAULT_PROFILE));
       if (Store.mode === 'db') Store.write(Store.base, { ...S.profile, updatedAt: Date.now() }); else Store.ls('profile', S.profile);
+      S.prefs = { ...S.prefs, challenge: null, challenges: [], phasePlan: null }; S.qz = null; S.ppEdit = false; S.ppDraft = null; S.goalAsk = null; S.chEdit = null;
+      Store.savePrefs(); renderChallenge(true); renderPhasen();
       S.acc = new Set(ACC_DEFAULT); S.gtab = {};
       try { localStorage.setItem('np:acc', JSON.stringify([...S.acc])); localStorage.setItem('np:gtab', '{}'); } catch (e) {}
       document.documentElement.dataset.pal = palFor(S.tab);
