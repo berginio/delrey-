@@ -1060,6 +1060,13 @@ div.htile{cursor:default}
 .qz-dots i.on{background:var(--accent)}
 .qz-sub{margin:4px 0 0;font-size:13.5px}
 .qz-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.qz-reach{margin-top:12px;padding:12px;border-radius:14px;background:var(--tint)}
+.qz-rows{display:grid;gap:9px;margin-top:8px}
+.qz-rows > div{display:grid;grid-template-columns:20px minmax(0,1fr);gap:8px;align-items:start}
+.qz-rows .ico{width:18px;height:18px;color:var(--accent);margin-top:1px}
+.qz-rows b{display:block;font-size:14px;font-weight:650}
+.qz-rows small{display:block;font-size:12.5px;color:var(--muted);margin-top:1px}
+.qz-msg{margin:10px 0 0;font-size:13.5px;font-weight:600;line-height:1.4}
 .chip-btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:7px 12px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
 .chip-btn .ico{width:15px;height:15px;color:var(--accent)}
 .phl{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:0}
@@ -3541,7 +3548,7 @@ function ppPhaseWhy(P, bw) {
       const nextUp = ph.slice(i + 1).some(q => PP_UP(q.goal) || q.goal === 'recomp'), lastCut = !ph.slice(i + 1).some(q => PP_CUT(q.goal));
       const w = ph.length > 1 ? without(i) : null, dl = w ? end.lean - w.lean : 0, dbf = w ? w.bf - end.bf : 0;
       if (i === 0 && nextUp) {
-        if ((a.aim === 'builddef' || a.aim === 'lose') && dbf > 0.01) t += `\nWarum gleich am Anfang? Für dein Ziel muss bis zum Stichtag viel Fett weg: von etwa ${pc(s.bf0)} auf rund 12 %. Das schaffst du nur, wenn die Diät früh anfängt.`;
+        if ((a.aim === 'builddef' || a.aim === 'lose') && a.prio !== 'weight' && a.prio !== 'mid' && dbf > 0.01) t += `\nWarum gleich am Anfang? Für dein Ziel muss bis zum Stichtag viel Fett weg: von etwa ${pc(s.bf0)} auf rund 12 %. Das schaffst du nur, wenn die Diät früh anfängt.`;
         else if (dl >= 0.05) t += `\nWarum gleich am Anfang? Du startest mit etwa ${pc(s.bf0)} Körperfett. Bei mehr Körperfett geht beim Zunehmen ein größerer Teil ins Fett. Erst etwas Fett runter und dann aufbauen bringt dir laut Rechnung unterm Strich etwa ${f1(dl)} kg mehr Muskeln.`;
         else if (w && w.maxBf > 0.2 && w.maxBf > s.bf0 + 0.005) t += `\nWarum gleich am Anfang? Du startest mit etwa ${pc(s.bf0)} Körperfett. Würdest du sofort zunehmen, kämst du auf etwa ${pc(w.maxBf)}. Ab etwa 20 % geht beim Zunehmen vor allem Fett drauf, und es wird ungesund. Der ${name} hält dich in einem guten Bereich.`;
         else t += `\nWarum gleich am Anfang? Er sorgt vor allem dafür, dass du am Ende weniger Fett hast.`;
@@ -3608,9 +3615,9 @@ function ppSearch(a, bw, bf0, avail, finalM) {
   return cands;
 }
 const PP_TARGET = { builddef: 0.12 };
-function ppPick(a, cands, bf0) {
+function ppPick(a, cands, bf0, opt = {}) {
   const cap = Math.max(0.2, bf0 + 0.025);
-  const target = a.aim === 'lose' ? (bf0 <= 0.12 ? 0.1 : 0.12) : PP_TARGET[a.aim];
+  const target = opt.target != null ? opt.target : a.aim === 'lose' ? (bf0 <= 0.12 ? 0.1 : 0.12) : PP_TARGET[a.aim];
   const ok = c => (target == null || c.sim.bf <= target + 1e-9) && c.sim.maxBf <= cap + 1e-9 && (a.aim !== 'build' || c.sim.bf <= 0.19);
   const valid = cands.filter(ok);
   // Bei fast gleich vielen Muskeln (unter 0,1 kg): weniger Fett und einfachere Pläne bevorzugen
@@ -3620,27 +3627,95 @@ function ppPick(a, cands, bf0) {
   const best = cands.slice().sort((x, y) => (x.sim.bf - y.sim.bf) || (y.sim.lean - x.sim.lean))[0];
   return { best, reached: false, target };
 }
+const ppBf0 = a => (PP_BF.find(x => x[0] === a.bf) || PP_BF[1])[1];
+/* Zeitspanne mit Unsicherheit, z. B. „4 bis 6 Jahre“ */
+const ppYrs = y => { if (y < 0.9) return `${Math.max(2, Math.round(y * 12 * 0.8))} bis ${Math.max(3, Math.round(y * 12 * 1.1))} Monate`; if (y >= 9.5) return 'mehr als 10 Jahre'; const lo = Math.max(1, Math.round(y * 0.7)), hi = Math.max(lo + 1, Math.round(y * 1.1)); return `${lo} bis ${hi} Jahre`; };
+/* Wie lange bis zum Wunschgewicht mit Ziel-Körperfett? Grob: aufbauen mit kurzen Mini Cuts, am Ende Diät. Mit den Jahren geht es langsamer. */
+function ppTimeTo(bw, bf0, tw, bfT, exp) {
+  exp = PP_GAIN[exp] ? exp : 'mid';
+  const need = tw * (1 - bfT), st = { fat: bw * bf0, lean: bw * (1 - bf0), maxBf: bf0 }, up = { new: 'mid', mid: 'pro', pro: 'pro' };
+  let wk = 0, mode = bf0 >= 0.2 ? 'minicut' : 'bulk', run = 0, e = exp, fin = false, next = exp === 'pro' ? Infinity : exp === 'new' ? 52 : 104;
+  while (wk < 520) {
+    const b = st.fat / (st.fat + st.lean);
+    if (!fin && st.lean >= need) fin = true;
+    if (fin) { if (b <= bfT + 0.002) break; mode = 'cut'; }
+    else if (mode === 'bulk' && (b >= 0.18 || run >= 16)) { mode = 'minicut'; run = 0; }
+    else if (mode === 'minicut' && (run >= 6 || (run >= 2 && b <= 0.14))) { mode = 'bulk'; run = 0; }
+    ppWeek(st, mode, e, 1); wk++; run++;
+    if (wk >= next) { e = up[e]; next = e === 'pro' ? Infinity : wk + 104; }
+  }
+  return wk;
+}
+/* Was ist bis zum Stichtag drin? Für die Frage nach dem Wunschgewicht */
+function ppReach(a, bw) {
+  const bf0 = ppBf0(a), exp = a.exp || 'mid', D = Math.max(1, dBetween(S.today, a.end) + 1);
+  const abs = a.aim === 'builddef' ? buildPlan({ aim: 'builddef', end: a.end, bf: a.bf, exp }) : null;
+  return { D, bf0, abs: abs ? ppSim(bw, bf0, abs.phases, exp) : null, bulk: ppSim(bw, bf0, [{ goal: 'bulk', days: D }], exp), mass: ppSim(bw, bf0, [{ goal: 'mass', days: D }], exp) };
+}
+/* Wunschgewicht und Sixpack passen bis zum Stichtag nicht zusammen */
+function ppConflict(a, bw, R) { if (a.aim !== 'builddef' || !(+a.tw > 0)) return false; const r = R || ppReach(a, bw); return !!r.abs && +a.tw > r.abs.bw + 1.5; }
+function ppRoute(a, bw, R) {
+  const tw = +a.tw || 0;
+  if (a.aim === 'build' && tw > bw + 0.5) return 'weight';
+  if (ppConflict(a, bw, R)) return a.prio === 'weight' ? 'weight' : a.prio === 'mid' ? 'mid' : 'abs';
+  return 'std';
+}
+/* Wege zum Wunschgewicht: Lean Bulk, teils schneller Bulk, oder Lean Bulk und dann halten */
+function ppSearchW(bw, bf0, D, exp) {
+  const cands = [], W = Math.floor(D / 7);
+  const add = (kind, B, phases) => { const P = ppMerge(phases); cands.push({ kind, B, phases: P, sim: ppSim(bw, bf0, P, exp) }); };
+  for (let k = 0; k <= W; k++) { const m = k === W || D - k * 7 < 7 ? D : k * 7; add(k ? 'wmix' : 'wbulk', k ? 'mass' : 'bulk', [{ goal: 'mass', days: m }, { goal: 'bulk', days: D - m }]); }
+  for (let k = 2; k < W; k++) add('whold', 'bulk', [{ goal: 'bulk', days: k * 7 }, { goal: 'maint', days: D - k * 7 }]);
+  for (const B of ['bulk', 'mass']) add('build', B, ppBuildDyn(bw, bf0, D, B, exp));
+  if (bf0 >= 0.2) for (let pre = 2; pre <= Math.min(8, W - 4); pre++) for (const B of ['bulk', 'mass']) add('precut', B, [{ goal: 'minicut', days: pre * 7 }, { goal: B, days: D - pre * 7 }]);
+  return cands;
+}
+function ppPickW(cands, tw, bw, bf0) {
+  const cap = Math.max(0.23, bf0 + 0.04), inCap = cands.filter(c => c.sim.maxBf <= cap + 1e-9);
+  const ok = c => c.sim.bw >= tw - 0.3 && c.sim.maxBf <= cap + 1e-9;
+  const fat = c => c.sim.bw * c.sim.bf - bw * bf0;
+  const score = c => c.sim.lean - 0.4 * fat(c) - 0.3 * Math.max(0, c.sim.bw - tw - 0.5) - c.phases.length * 0.02;
+  const reach = inCap.filter(ok);
+  if (reach.length) return { best: reach.sort((x, y) => score(y) - score(x))[0], reached: true, target: null, tw, ok };
+  const pool = inCap.length ? inCap : cands;
+  return { best: pool.slice().sort((x, y) => (y.sim.bw - x.sim.bw) || (y.sim.lean - x.sim.lean))[0], reached: false, target: null, tw, ok };
+}
 function buildPlan(a, start) {
   start = start || S.today;
   const end = a.end, D = dBetween(start, end) + 1;
-  const bw = +S.profile.weight || 75, bf0 = (PP_BF.find(x => x[0] === a.bf) || PP_BF[1])[1], exp = a.exp || 'mid';
-  const base = { start, end, a: { aim: a.aim, end: a.end, bf: a.bf, exp: a.exp }, v: 3, created: S.today };
+  const bw = +S.profile.weight || 75, bf0 = ppBf0(a), exp = a.exp || 'mid', tw = +a.tw || 0;
+  const base = { start, end, a: { aim: a.aim, end: a.end, bf: a.bf, exp: a.exp, tw, prio: a.prio || null }, v: 4, created: S.today };
   if (D < 14) return { ...base, phases: [{ goal: { build: 'bulk', builddef: 'bulk', lose: 'minicut', recomp: 'recomp', keep: 'maint' }[a.aim] || 'maint', days: Math.max(1, D) }] };
   if (a.aim === 'recomp') return { ...base, phases: [{ goal: 'recomp', days: D }] };
   if (a.aim === 'keep') return { ...base, phases: [{ goal: 'maint', days: D }] };
-  const finalM = (a.aim === 'builddef' || a.aim === 'lose') && D >= 56 ? 7 : 0;
-  const cands = ppSearch(a, bw, bf0, D - finalM, finalM), pick = ppPick(a, cands, bf0);
-  return { ...base, phases: pick.best.phases, why: ppExplain(a, bw, bf0, cands, pick), sug: JSON.stringify(pick.best.phases.map(p => [p.goal, p.days])) };
+  const R = tw && (a.aim === 'builddef' || a.aim === 'build') ? ppReach(a, bw) : null, route = ppRoute(a, bw, R);
+  let cands, pick;
+  if (route === 'weight') { cands = ppSearchW(bw, bf0, D, exp); pick = ppPickW(cands, tw, bw, bf0); }
+  else {
+    const finalM = (a.aim === 'builddef' || a.aim === 'lose') && D >= 56 ? 7 : 0;
+    cands = ppSearch(a, bw, bf0, D - finalM, finalM); pick = ppPick(a, cands, bf0, route === 'mid' ? { target: bf0 + 0.005 } : {});
+  }
+  return { ...base, phases: pick.best.phases, why: ppExplain(a, bw, bf0, cands, pick, { route, tw, R, D }), sug: JSON.stringify(pick.best.phases.map(p => [p.goal, p.days])) };
 }
 /* Begründung mit Zahlen: was gewählt wurde und was die anderen Wege gebracht hätten */
-function ppExplain(a, bw, bf0, cands, pick) {
-  const B = pick.best, f1 = v => String(Math.round(v * 10) / 10).replace('.', ','), pc = v => Math.round(v * 100) + ' %';
+function ppExplain(a, bw, bf0, cands, pick, ctx = {}) {
+  const route = ctx.route || 'std', tw = ctx.tw || 0, B = pick.best, f1 = v => String(Math.round(v * 10) / 10).replace('.', ','), pc = v => Math.round(v * 100) + ' %';
   const out = { lines: [], alts: [] };
   const bestOf = kind => cands.filter(c => c.kind === kind || (kind === 'mass' && c.B === 'mass')).sort((x, y) => (y.sim.lean - x.sim.lean) - (y.sim.bf > (pick.target || 1) ? 0 : 0))[0];
   const fat0 = bw * bf0, hasCutFirst = B.phases[0] && (B.phases[0].goal === 'minicut' || B.phases[0].goal === 'cut') && B.phases.slice(1).some(p => p.goal === 'bulk' || p.goal === 'mass');
   out.lines.push(`Du startest bei etwa ${pc(bf0)} Körperfett, das sind rund ${f1(fat0)} kg Fett.`);
+  if (route !== 'std' && a.aim === 'builddef') {
+    const need = tw * 0.88 - bw * (1 - bf0), mo = Math.max(1, Math.round((ctx.D || 0) / 30.4));
+    out.lines.push(`Dein Wunschgewicht: ${f1(tw)} kg. Mit Sixpack (etwa 12 % Körperfett) heißt das rund ${f1(need)} kg mehr Muskeln als jetzt. Das dauert grob ${ppYrs(ppTimeTo(bw, bf0, tw, 0.12, a.exp) / 52)}, nicht ${mo} Monate. Bis zum Stichtag geht deshalb nur eins: Sixpack oder deutlich mehr Gewicht.`);
+  }
+  if (route === 'abs') out.lines.push(`Du hast „Sixpack am Stichtag“ gewählt. Dafür wiegst du am Stichtag eher etwas weniger als jetzt, etwa ${f1(B.sim.bw)} kg: Das Fett geht runter, die Muskeln bleiben. Danach baust du mit einem neuen Plan „Muskeln und Masse aufbauen“ Richtung ${f1(tw)} kg auf.`);
+  if (route === 'mid') out.lines.push(`Du hast den Mittelweg gewählt: Du kommst auf etwa ${f1(B.sim.bw)} kg, baust rund ${f1(B.sim.lean)} kg Muskeln auf und hast am Stichtag etwa so viel Bauch wie jetzt (${pc(B.sim.bf)}).`);
+  if (route === 'weight') {
+    out.lines.push(pick.reached ? `Du kommst bis zum Stichtag auf etwa ${f1(B.sim.bw)} kg.` : `${f1(tw)} kg sind bis zum Stichtag nicht sinnvoll drin. Noch schneller zuzunehmen bringt fast nur Fett. Du kommst auf etwa ${f1(B.sim.bw)} kg.`);
+    out.lines.push(`Von den ${f1(B.sim.bw - bw)} kg mehr sind rund ${f1(B.sim.lean)} kg Muskeln, der Rest ist vor allem Fett. Am Stichtag hast du etwa ${pc(B.sim.bf)} Körperfett${B.sim.bf > 0.15 ? ', ein Sixpack sieht man dann nicht' : ''}.`);
+  }
   if (hasCutFirst) out.lines.push(`Dein Plan startet mit einer Diät. Was sie bringt und warum sie am Anfang steht, liest du oben bei Phase 1. Du kannst sie dort auch rausnehmen.`);
-  if (a.aim === 'builddef') {
+  if (a.aim === 'builddef' && (route === 'std' || route === 'abs')) {
     const needFat = Math.max(0, fat0 - (bw * 0.12));
     out.lines.push(pick.reached ? `Für ein Sixpack brauchst du etwa 12 % oder weniger. Die App hat ${cands.length} Wege bis zum Stichtag durchgerechnet und den genommen, bei dem du das schaffst und am Ende am meisten Muskeln hast.`
       : `Für ein Sixpack brauchst du etwa 12 % oder weniger. Dafür müssten rund ${f1(needFat)} kg Fett weg. Bis zum Stichtag reicht die Zeit nicht ganz, deshalb setzt der Plan auf so viel Fettabbau wie möglich.`);
@@ -3648,11 +3723,15 @@ function ppExplain(a, bw, bf0, cands, pick) {
     const fc = B.phases.filter(p => p.goal === 'minicut' || p.goal === 'cut').slice(-1)[0];
     if (fc && B.phases.some(p => p.goal === 'bulk' || p.goal === 'mass')) out.lines.push(`Die Diät liegt am Ende, direkt vor dem Stichtag. So hast du die meiste Zeit zum Aufbauen und bist genau dann am definiertesten.`);
   }
-  if (a.aim === 'build') out.lines.push(`Aufgebaut wird mit etwa 16 Wochen am Stück, kurz vor Schluss auch etwas länger. Wird es zu viel Fett (ab etwa 18 bis 20 %), kommt ein kurzer Mini Cut. So bleibst du in einem guten Bereich und baust danach wieder sauber auf.`);
+  if (a.aim === 'build' && B.kind === 'build') out.lines.push(`Aufgebaut wird mit etwa 16 Wochen am Stück, kurz vor Schluss auch etwas länger. Wird es zu viel Fett (ab etwa 18 bis 20 %), kommt ein kurzer Mini Cut. So bleibst du in einem guten Bereich und baust danach wieder sauber auf.`);
   if (a.aim === 'lose') out.lines.push(B.phases.some(p => p.goal === 'recomp') ? `Du hast mehr Zeit als nötig. Deshalb startet die Diät erst später, damit du genau zum Stichtag am definiertesten bist. Bis dahin baust du knapp unter deinem Bedarf noch etwas Muskeln auf.` : `Die Zeit wird voll für den Fettabbau genutzt. ${B.phases.some(p => p.goal === 'cut') ? 'Ein langsamerer Cut schont die Muskeln besser als eine kurze, harte Diät.' : 'Ein kurzer, deutlicher Mini Cut passt, weil nicht viel Zeit ist.'}`);
-  if (B.B === 'bulk' && cands.some(c => c.B === 'mass')) out.lines.push(`Lean Bulk statt schnellem Bulk: Schneller zunehmen bringt kaum mehr Muskeln, aber deutlich mehr Fett, das du danach wieder runter bekommen musst.`);
-  if (B.B === 'mass') out.lines.push(`Hier lohnt sich ein schnellerer Bulk: Als Einsteiger kannst du schnell Muskeln aufbauen, und die Zeit reicht, um das Fett danach wieder loszuwerden.`);
-  if (B.phases.length > 1 && B.phases[B.phases.length - 1].goal === 'maint') out.lines.push(`Die letzte Woche isst du auf Erhaltung. So siehst du am Stichtag voll und frisch aus statt ausgehungert.`);
+  if (route === 'weight') {
+    if (B.B === 'mass') out.lines.push(`Damit du so nah wie möglich an ${f1(tw)} kg kommst, nimmt der Plan teils den schnelleren Bulk. Muskeln bringt das kaum mehr als Lean Bulk, nur mehr Gewicht. Wenn du weniger Fett willst, nimm unten „Lean Bulk“.`);
+    else if (B.phases.some(p => p.goal === 'maint')) out.lines.push(`Sobald du bei etwa ${f1(tw)} kg bist, isst du auf Erhaltung und hältst das Gewicht.`);
+    else out.lines.push('Lean Bulk reicht für dein Wunschgewicht. Schneller zunehmen würde nur mehr Fett bringen.');
+  } else if (B.B === 'bulk' && cands.some(c => c.B === 'mass')) out.lines.push(`Lean Bulk statt schnellem Bulk: Schneller zunehmen bringt kaum mehr Muskeln, aber deutlich mehr Fett, das du danach wieder runter bekommen musst.`);
+  else if (B.B === 'mass') out.lines.push(`Hier lohnt sich ein schnellerer Bulk: Als Einsteiger kannst du schnell Muskeln aufbauen, und die Zeit reicht, um das Fett danach wieder loszuwerden.`);
+  if (route !== 'weight' && B.phases.length > 1 && B.phases[B.phases.length - 1].goal === 'maint') out.lines.push(`Die letzte Woche isst du auf Erhaltung. So siehst du am Stichtag voll und frisch aus statt ausgehungert.`);
   // Vergleich mit anderen Wegen
   const label = c => {
     const g = c.phases.filter(p => p.goal !== 'maint').map(p => ({ bulk: 'Lean Bulk', mass: 'Bulk', minicut: 'Mini Cut', cut: 'Cut', recomp: 'Recomp' })[p.goal]);
@@ -3660,12 +3739,14 @@ function ppExplain(a, bw, bf0, cands, pick) {
   };
   const seen = new Set([label(B)]), alts = [];
   const pool = cands.slice().sort((x, y) => y.sim.lean - x.sim.lean);
-  for (const kind of ['bulkcut', 'precut', 'recomp', 'cut', 'mass', 'build', 'minicut']) {
-    const c = pool.filter(x => kind === 'mass' ? x.B === 'mass' : x.kind === kind && x.B !== 'mass').sort((x, y) => (pick.target ? ((x.sim.bf <= pick.target) === (y.sim.bf <= pick.target) ? (x.sim.bf <= pick.target ? y.sim.lean - x.sim.lean : x.sim.bf - y.sim.bf) : (x.sim.bf <= pick.target ? -1 : 1)) : y.sim.lean - x.sim.lean))[0];
+  const ok = pick.ok || (c => pick.target == null || c.sim.bf <= pick.target + 1e-9), close = pick.tw ? (c => -c.sim.bw) : (c => c.sim.bf);
+  const cmp = (x, y) => ok(x) === ok(y) ? (ok(x) ? y.sim.lean - x.sim.lean : close(x) - close(y)) : (ok(x) ? -1 : 1);
+  for (const kind of ['bulkcut', 'precut', 'recomp', 'cut', 'mass', 'build', 'minicut', 'wbulk', 'whold', 'wmix']) {
+    const c = pool.filter(x => kind === 'mass' ? x.B === 'mass' : x.kind === kind && x.B !== 'mass').sort(cmp)[0];
     if (!c || seen.has(label(c))) continue; seen.add(label(c)); alts.push(c);
     if (alts.length >= 3) break;
   }
-  out.alts = [B].concat(alts).map((c, i) => ({ label: label(c), lean: c.sim.lean, bf: c.sim.bf, bw: c.sim.bw, chosen: i === 0, ok: pick.target == null || c.sim.bf <= pick.target + 1e-9, phases: c.phases.map(p => ({ goal: p.goal, days: p.days })) }));
+  out.alts = [B].concat(alts).map((c, i) => ({ label: label(c), lean: c.sim.lean, bf: c.sim.bf, bw: c.sim.bw, chosen: i === 0, ok: ok(c), phases: c.phases.map(p => ({ goal: p.goal, days: p.days })) }));
   return out;
 }
 /* Phasen mit echten Daten. Die letzte Phase läuft immer bis zum Ziel-Datum. */
@@ -3707,7 +3788,13 @@ function migratePhasePlan() {
   // Ein Plan zählt nur, wenn du ihn selbst im Fragebogen erstellt hast
   if (P && !(P.a && P.a.bf)) { S.prefs = { ...S.prefs, phasePlan: null }; S.profile.phaseKey = null; ch = true; }
   // Pläne aus der ersten Version mit der neuen Berechnung (bester Weg) neu aufstellen
-  else if (P && (P.v || 1) < 3 && P.a && P.a.end > S.today) { S.prefs = { ...S.prefs, phasePlan: { ...buildPlan({ aim: P.a.aim, end: P.a.end, bf: P.a.bf, exp: P.a.exp }, P.start), created: P.created || S.today } }; S.profile.phaseKey = null; ch = true; S.ppRebuilt = true; }
+  // Alte Antwort „Da ist noch etwas Bauch“ war unklar: entspricht jetzt „Kein Sixpack, ein bisschen Fett am Bauch“
+  else if (P && (P.v || 1) < 4 && P.a && P.a.end > S.today && ((P.v || 1) < 3 || P.a.bf === 'more')) {
+    const mapped = P.a.bf === 'more';
+    S.prefs = { ...S.prefs, phasePlan: { ...buildPlan({ aim: P.a.aim, end: P.a.end, bf: mapped ? 'flat' : P.a.bf, exp: P.a.exp, tw: P.a.tw, prio: P.a.prio }, P.start), created: P.created || S.today, ...(mapped ? { bfNote: true } : {}) } };
+    S.profile.phaseKey = null; ch = true; S.ppRebuilt = true;
+  }
+  else if (P && (P.v || 1) < 4) { S.prefs = { ...S.prefs, phasePlan: { ...P, v: 4 } }; ch = true; }
   if (ch) Store.savePrefs();
 }
 function ppSegs(pl) {
@@ -3730,7 +3817,35 @@ function renderPhaseCard() {
     <span class="ppc-next"><span>${nx ? `Danach ${esc(GOALS[nx.goal].n)} ab ${DAYSHORT[dow(new Date(nx.start + 'T12:00'))]}, ${dShort(nx.start)}` : `Letzte Phase bis ${dShort(cur.end)}`}</span>${icon('caret-down', 'rot')}</span></button>`;
 }
 /* ---------- Bereich: Fragebogen, Vorschlag, Plan ---------- */
-const qzSteps = a => ['aim', 'end', 'bf', 'exp'];
+const qzBw = () => +S.profile.weight || 75;
+/* Reichweite bis zum Stichtag, zwischengespeichert, weil es beim Tippen oft gebraucht wird */
+function qzReach(a) { const k = [a.aim, a.end, a.bf, a.exp, qzBw()].join('|'); if (!S.qzR || S.qzR.k !== k) S.qzR = { k, r: ppReach(a, qzBw()), plans: {} }; return S.qzR.r; }
+function qzPlanFor(a, prio) { qzReach(a); const k = prio + '|' + a.tw; return S.qzR.plans[k] || (S.qzR.plans[k] = buildPlan({ ...a, prio })); }
+const qzSteps = a => {
+  const s = ['aim', 'end', 'bf', 'exp'];
+  if (a.aim === 'builddef' || a.aim === 'build') s.push('tw');
+  if (a.aim === 'builddef' && a.end && a.bf && +a.tw > 0 && ppConflict(a, qzBw(), qzReach(a))) s.push('prio');
+  return s;
+};
+function qzTwHint(a, tw) {
+  const bw = qzBw(), R = qzReach(a), f = v => dec1(Math.round(v * 10) / 10), pcs = v => Math.round(v * 100) + '\u00a0%';
+  const mus = v => `${v >= 0 ? '+' : '−'}${f(Math.abs(v))} kg Muskeln`;
+  const rows = [];
+  if (R.abs) rows.push(['target', 'Mit Sixpack', R.abs, `${pcs(R.abs.bf)} Körperfett, ${mus(R.abs.lean)}`]);
+  rows.push(['trend-up', 'Mit Lean Bulk', R.bulk, `${pcs(R.bulk.bf)} Körperfett, ${mus(R.bulk.lean)}`]);
+  rows.push(['barbell', 'Mit Bulk, höchstens', R.mass, `${pcs(R.mass.bf)} Körperfett, ${mus(R.mass.lean)}`]);
+  tw = +tw || 0; let msg = '';
+  if (tw > 0) {
+    if (R.abs && tw > R.abs.bw + 1.5) msg = `${f(tw)} kg mit Sixpack heißt rund ${f(tw * 0.88 - bw * (1 - R.bf0))} kg mehr Muskeln als jetzt. Das dauert grob ${ppYrs(ppTimeTo(bw, R.bf0, tw, 0.12, a.exp) / 52)}. Im nächsten Schritt wählst du, was dir bis ${dShort(a.end)} wichtiger ist.`;
+    else if (tw > R.mass.bw + 0.3) msg = `${f(tw)} kg sind bis ${dShort(a.end)} zu viel. Der Plan bringt dich so nah ran, wie es sinnvoll ist.`;
+    else if (a.aim === 'build' && tw < bw - 0.3) msg = 'Das ist weniger als jetzt. Zum Abnehmen wähl in der ersten Frage lieber „Fett verlieren“.';
+    else msg = `${f(tw)} kg sind bis ${dShort(a.end)} machbar.`;
+  }
+  return `<span class="label">Bis ${dShort(a.end)} realistisch</span>
+    <div class="qz-rows">${rows.map(([ic, n, r, sub]) => `<div>${icon(ic)}<span><b>${n}: etwa ${f(r.bw)} kg</b><small>${sub}</small></span></div>`).join('')}</div>
+    ${msg ? `<p class="qz-msg">${esc(msg)}</p>` : ''}
+    <p class="fhint" style="margin-top:8px">Grob geschätzt. Muskeln wachsen langsam: In ein paar Monaten sind es meist 1 bis 2 kg, egal wie viel du isst. Mehr Kilos auf der Waage sind dann vor allem Fett.</p>`;
+}
 function qzChoice(key, opts, cur) {
   return `<div class="choice qz-choice">${opts.map(([v, ic, n, sub]) => {
     return `<button data-act="qz-pick" data-k="${key}" data-v="${v}" aria-pressed="${cur === v}"><span class="ic">${icon(ic || 'check')}</span><span><b>${esc(n)}</b><small>${esc(sub)}</small></span></button>`; }).join('')}</div>`;
@@ -3753,6 +3868,17 @@ function qzHtml() {
   }
   if (k === 'bf') body = `<h3>Wie sieht dein Bauch gerade aus?</h3><p class="muted qz-sub">Schätzen reicht. Am besten morgens vor dem Spiegel.</p>${qzChoice('bf', PP_BF.map(([v, , n, sub]) => [v, 'target', n, sub]), a.bf)}`;
   if (k === 'exp') body = `<h3>Wie lange trainierst du schon regelmäßig?</h3>${qzChoice('exp', PP_EXP.map(([v, n, sub]) => [v, 'clock', n, sub]), a.exp)}`;
+  if (k === 'tw') body = `<h3>Welches Körpergewicht willst du erreichen?</h3><p class="muted qz-sub">Gerade wiegst du ${dec1(qzBw())} kg. Die App zeigt dir, was bis ${dLong(a.end)} realistisch ist.</p>
+      <div class="field" style="margin-top:12px"><label for="qz-tw">Wunschgewicht in kg</label><input id="qz-tw" type="number" inputmode="decimal" step="0.5" min="35" max="200" placeholder="z. B. ${Math.round(qzBw() + 5)}" value="${+a.tw > 0 ? a.tw : ''}"></div>
+      <div id="qzTwHint" class="qz-reach">${qzTwHint(a, a.tw)}</div>
+      <button class="btn" data-act="qz-next" style="margin-top:14px">Weiter</button>
+      <button class="linkbtn" data-act="qz-notw" style="margin-top:12px;font-size:13px">Kein bestimmtes Gewicht, einfach das Beste für mein Ziel</button>`;
+  if (k === 'prio') {
+    const f = v => dec1(Math.round(v * 10) / 10), pcs = v => Math.round(v * 100) + '\u00a0%', bf0 = ppBf0(a);
+    const N = { abs: ['target', `Sixpack am ${dShort(a.end)}`, '. Danach baust du weiter auf'], mid: ['scales', 'Mittelweg: mehr Muskeln, Bauch wie jetzt', ''], weight: ['barbell', `So nah wie möglich an ${f(a.tw)} kg`, '. Kein Sixpack am Stichtag'] };
+    const opts = ['abs', 'mid', 'weight'].map(p => { const r = ppSim(qzBw(), bf0, qzPlanFor(a, p).phases, a.exp); return [p, N[p][0], N[p][1], `Etwa ${f(r.bw)} kg, ${pcs(r.bf)} Körperfett, ${r.lean >= 0 ? '+' : '−'}${f(Math.abs(r.lean))} kg Muskeln${N[p][2]}`]; });
+    body = `<h3>Beides geht bis ${dShort(a.end)} nicht. Was ist dir wichtiger?</h3><p class="muted qz-sub">${f(a.tw)} kg mit Sixpack dauert grob ${ppYrs(ppTimeTo(qzBw(), bf0, +a.tw, 0.12, a.exp) / 52)}. So kommst du am Stichtag raus:</p>${qzChoice('prio', opts, a.prio)}`;
+  }
   return `<div class="card qz">${head}${body}<div class="row" style="margin-top:12px"><button class="btn ghost sm" data-act="qz-back">${icon('arrow-left')}${Q.step ? 'Zurück' : 'Abbrechen'}</button></div></div>`;
 }
 function ppWhy(P, pl) {
@@ -3812,12 +3938,18 @@ function planViewHtml(P, isDraft) {
       <span class="label">${isDraft ? 'Dein Vorschlag' : 'Dein Plan'}</span>
       <h3 style="margin-top:4px">${esc(aim)} bis ${dLong(V.end)}</h3>
       <div class="pp-bar big" aria-hidden="true">${ppSegs(pl)}</div>
+      ${!isDraft && V.bfNote ? `<div class="pp-note">${icon('info')}<div><b>Neu berechnet mit „Kein Sixpack, ein bisschen Fett am Bauch“</b>
+      <p>Du hattest „Da ist noch etwas Bauch“ gewählt. Die Antworten sind jetzt genauer, und „ein bisschen Fett am Bauch“ heißt etwa 16 bis 19 % Körperfett. Damit startet der Plan ohne Diät. Hast du eher einen deutlichen Bauch mit Röllchen im Sitzen, tipp auf „Neu planen“.</p>
+      <button class="btn soft sm" data-act="pp-bfok">${icon('check')}Passt so</button></div></div>` : ''}
+      ${!isDraft && !edit && !V.bfNote && !a.tw && (a.aim === 'builddef' || a.aim === 'build') ? `<div class="pp-note">${icon('scales')}<div><b>Neu: Wunschgewicht</b>
+      <p>Der Fragebogen fragt jetzt auch, wie viel du wiegen willst. Dann siehst du, was bis ${dShort(V.end)} realistisch ist, und der Plan richtet sich danach.</p>
+      <button class="btn soft sm" data-act="qz-start">${icon('arrow-clockwise')}Neu planen mit Wunschgewicht</button></div></div>` : ''}
       ${cutBox}
       ${edit ? ppEditorHtml(V) : list}
       <div class="pp-btns">${btns}</div>
     </div>
     ${sim ? `<div class="card"><span class="label">Schätzung für ${dLong(V.end)}</span>
-      <div class="pp-stats"><div><b>${dec1(sim.bw)} kg</b><small>Gewicht (${sim.bw - bw >= 0 ? '+' : '−'}${dec1(Math.abs(sim.bw - bw))})</small></div><div><b>${Math.round(sim.bf * 100)} %</b><small>Körperfett (jetzt ~${Math.round(bf * 100)} %)</small></div><div><b>${sim.lean >= 0 ? '+' : '−'}${dec1(Math.abs(sim.lean))} kg</b><small>Muskeln & Co.</small></div></div>
+      <div class="pp-stats"><div><b>${dec1(sim.bw)} kg</b><small>Gewicht (${sim.bw - bw >= 0 ? '+' : '−'}${dec1(Math.abs(sim.bw - bw))})${+a.tw > 0 ? `, Wunsch ${dec1(a.tw)} kg` : ''}</small></div><div><b>${Math.round(sim.bf * 100)} %</b><small>Körperfett (jetzt ~${Math.round(bf * 100)} %)</small></div><div><b>${sim.lean >= 0 ? '+' : '−'}${dec1(Math.abs(sim.lean))} kg</b><small>Muskeln & Co.</small></div></div>
       <p class="fhint">Grobe Schätzung. Wie es wirklich läuft, siehst du beim Wiegen jede Woche. Die App passt die Kalorien dann an.</p></div>` : ''}
     ${why.length ? `<div class="card"><h3>Warum ist das der beste Weg?</h3><ul class="pp-why">${why.map(t => `<li>${esc(t)}</li>`).join('')}</ul>
       ${V.why && V.why.alts && V.why.alts.length > 1 ? `<div class="pp-cmp"><span class="label">So hätten andere Wege geendet</span>${V.why.alts.map((x, i) => `<div class="pp-alt ${isCur(x) ? 'on' : ''}"><div><b>${esc(x.label)}</b>${x.chosen && !isCur(x) ? '<small style="color:var(--accent);font-weight:600">Vorschlag der App</small>' : ''}<small>${Math.round(x.lean * 10) < 0 ? '−' : '+'}${dec1(Math.abs(Math.round(x.lean * 10) / 10))} kg Muskeln · ${dec1(x.bf * 100)} % Körperfett · ${dec1(x.bw)} kg</small></div>${isCur(x) ? `<em>${icon('check')}gewählt</em>` : `<span class="pp-alt-r">${!x.ok ? '<em class="no">Ziel verfehlt</em>' : ''}${x.phases ? `<button class="linkbtn" data-act="pp-alt" data-i="${i}" style="font-size:12.5px">Diesen Weg nehmen</button>` : ''}</span>`}</div>`).join('')}
@@ -3986,10 +4118,17 @@ document.addEventListener('click', e => {
   if (a === 'track-back') return setTab('tag', -1);
   if (a === 'taste-back') return setTab('einkauf', -1);
   if (a === 'pp-back') { S.qz = null; return setTab(S.ppFrom && S.ppFrom !== 'phasen' ? S.ppFrom : 'heute', -1); }
-  if (a === 'qz-start') { const old = curPlan(); S.qz = { step: 0, a: old && old.a && old.a.bf ? { aim: old.a.aim, end: old.a.end, bf: old.a.bf, exp: old.a.exp } : {} }; S.ppEdit = false; renderPhasen(); window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }); return; }
-  if (a === 'qz-pick' || a === 'qz-date' || a === 'qz-next') {
+  if (a === 'qz-start') { const old = curPlan(); S.qz = { step: 0, a: old && old.a && old.a.bf ? { aim: old.a.aim, end: old.a.end, bf: old.a.bf, exp: old.a.exp, tw: old.a.tw || 0, prio: old.a.prio || null } : {} }; S.ppEdit = false; renderPhasen(); window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }); return; }
+  if (a === 'qz-pick' || a === 'qz-date' || a === 'qz-next' || a === 'qz-notw') {
     const Q = S.qz; if (!Q) return;
+    const k = qzSteps(Q.a)[Q.step];
     if (a === 'qz-pick') Q.a[b.dataset.k] = b.dataset.v;
+    else if (a === 'qz-notw') { Q.a.tw = -1; Q.a.prio = null; }
+    else if (k === 'tw') {
+      const v = parseFloat(String(($('#qz-tw') || {}).value || '').replace(',', '.'));
+      if (!(v >= 35 && v <= 200)) { toast('Gib dein Wunschgewicht in kg ein'); return; }
+      Q.a.tw = Math.round(v * 2) / 2;
+    }
     else {
       const v = a === 'qz-date' ? b.dataset.v : ($('#qz-end') || {}).value;
       if (!/^\d{4}-\d{2}-\d{2}$/.test(v || '') || v < isoPlus(S.today, 14)) { toast('Wähl ein Datum mindestens 2 Wochen in der Zukunft'); return; }
@@ -4020,6 +4159,7 @@ document.addEventListener('click', e => {
   }
   if (a === 'pp-remove-ask') { S.ppDel = true; renderPhasen(); return; }
   if (a === 'pp-remove') { S.prefs = { ...S.prefs, phasePlan: null }; Store.savePrefs(); S.ppDel = false; S.profile.phaseKey = null; renderPhasen(); renderToday(); toast('Plan beendet, dein Ziel bleibt wie es ist'); return; }
+  if (a === 'pp-bfok') { const P = curPlan(); if (!P) return; const N = { ...P }; delete N.bfNote; S.prefs = { ...S.prefs, phasePlan: N }; Store.savePrefs(); renderPhasen(); return; }
   if (a === 'pp-nocut' || a === 'pp-alt') {
     const inDraft = S.qz && S.qz.step === 'result';
     const P = inDraft ? S.qz.draft : curPlan(); if (!P) return;
@@ -4392,6 +4532,7 @@ document.addEventListener('change', e => {
 });
 document.addEventListener('input', e => {
   const t = e.target;
+  if (t.id === 'qz-tw' && S.qz) { const h = $('#qzTwHint'); if (h) h.innerHTML = qzTwHint(S.qz.a, parseFloat(String(t.value).replace(',', '.'))); return; }
   if (t.dataset && t.dataset.gw != null) { const D = gymDraft(), E = exDraft(exById(t.dataset.gw), D); E.w = t.value.replace(',', '.'); E.done = true; saveDraft(); }
   if (t.dataset && t.dataset.gr != null) { const D = gymDraft(), E = exDraft(exById(t.dataset.gr), D); E.r = E.r.slice(); E.r[+t.dataset.si] = t.value; E.done = true; saveDraft(); }
 });
