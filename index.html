@@ -2538,6 +2538,7 @@ function renderToday() {
   renderTimeline();
   renderGarmin(); renderCrea(); renderPhaseCard();
   renderDayCard(next);
+  Watch.soon();
   if (S.tab === 'track') renderTrack();
   if (S.tab === 'plan') renderPlan();
 }
@@ -2654,6 +2655,92 @@ function renderCrea(pop) {
       ${st.n ? `<button class="hold-btn" data-hold="streak" data-ms="3000" data-label="Serie zurücksetzen (3 Sek.)" aria-label="3 Sekunden gedrückt halten, um die Serie zurückzusetzen"><i aria-hidden="true"></i><span>${icon('fire')}Serie zurücksetzen (3 Sek.)</span></button>` : ''}
     </div>`}`;
 }
+/* ---------- Garmin-Ziffernblatt: Tageswerte in einen geheimen Gist ---------- */
+// dunkle Werte der Paletten (die Uhr hat einen schwarzen Hintergrund): Ring 1, Ring 2, Ring 3, Spur
+const WATCH_PAL = {
+  cloud: ['#59A5D8', '#9CCBEE', '#386FA4', '#15304A'], emerald: ['#3FBFA5', '#BFE5D6', '#1A7F64', '#12392D'],
+  plum: ['#D2689A', '#F6D2E2', '#A33B6A', '#341826'], violet: ['#B8A9EC', '#8B7CC4', '#5C4F94', '#2A2742'],
+  sage: ['#A8BDA3', '#6F8A78', '#D9E6D3', '#2A3833'], indigo: ['#9AA6FF', '#5E68E0', '#C9CFFF', '#141B4D'],
+  lilac: ['#C7B8FF', '#9A8FD8', '#6E5F9F', '#2B2541']
+};
+const WATCH_FILE = 'delrey.txt';
+const Watch = {
+  get() { try { return JSON.parse(localStorage.getItem('np:watch') || 'null'); } catch (e) { return null; } },
+  set(v) { try { if (v) localStorage.setItem('np:watch', JSON.stringify(v)); else localStorage.removeItem('np:watch'); } catch (e) {} },
+  // In Claude gibt es keinen Zugang zu GitHub, nur in der Vollbild-App
+  can() { return Store.mode !== 'db' && !(window.claude && claude.use); },
+  line() {
+    if (!todayPlan || !todayRem) computeToday();
+    const T = todayPlan.target, E = todayRem.eaten, r = v => Math.max(0, Math.round(+v || 0));
+    const pal = WATCH_PAL[palFor('heute')] || WATCH_PAL.cloud;
+    return ['DR1', S.today, r(E.kcal), r(T.kcal), r(E.p), r(T.p), r(E.c), r(T.c), r(E.f), r(T.f), ...pal.map(h => parseInt(h.slice(1), 16)), 'x'].join(';');
+  },
+  async api(method, path, body, token) {
+    let res;
+    try {
+      res = await fetch('https://api.github.com' + path, { method, headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    } catch (e) { const er = new Error('net'); er.status = 0; throw er; }
+    if (!res.ok) { const er = new Error('http'); er.status = res.status; throw er; }
+    return res.json();
+  },
+  err(e) {
+    const s = e && e.status;
+    return !s ? 'Keine Verbindung zu GitHub. Bist du online?' : s === 401 ? 'GitHub kennt diesen Token nicht. Prüf, ob du ihn ganz kopiert hast.' : s === 403 || s === 404 ? 'Dem Token fehlt das Recht „gist“. Erstell ihn neu und setz dort den Haken bei „gist“.' : 'GitHub meldet Fehler ' + s + '. Versuch es gleich noch einmal.';
+  },
+  async connect(token) {
+    const line = this.line();
+    const g = await this.api('POST', '/gists', { description: 'DEL REY Ziffernblatt (wird von der App geschrieben)', public: false, files: { [WATCH_FILE]: { content: line } } }, token);
+    const url = `https://gist.githubusercontent.com/${g.owner && g.owner.login}/${g.id}/raw/${WATCH_FILE}`;
+    this.set({ token, id: g.id, url, sent: line, at: Date.now(), err: '' });
+  },
+  soon() {
+    if (!this.can() || !this.get()) return;
+    clearTimeout(this._t); this._t = setTimeout(() => this.push(), 2500);
+  },
+  async push(force) {
+    const w = this.get(); if (!w || !this.can()) return false;
+    const line = this.line();
+    if (!force && line === w.sent) return true;
+    if (this._busy) { this._again = true; return false; }
+    this._busy = true;
+    let ok = false;
+    try {
+      await this.api('PATCH', '/gists/' + w.id, { files: { [WATCH_FILE]: { content: line } } }, w.token);
+      this.set({ ...this.get(), sent: line, at: Date.now(), err: '' }); ok = true;
+    } catch (e) { const cur = this.get(); if (cur) this.set({ ...cur, err: this.err(e) }); }
+    this._busy = false;
+    renderWatch();
+    if (this._again) { this._again = false; this.soon(); }
+    return ok;
+  }
+};
+function renderWatch() {
+  const el = $('#watchBox'); if (!el) return;
+  const w = Watch.get();
+  if (!Watch.can()) {
+    el.innerHTML = `<p class="fhint" style="margin:0">Zeigt deinen Kreis mit Eiweiß, Kohlenhydraten, Fett und den übrigen Kalorien auf deiner Garmin. Das richtest du in der Vollbild-App auf deinem Handy ein, denn nur von dort kann die App die Werte an die Uhr schicken.</p>`;
+    return;
+  }
+  if (!w) {
+    el.innerHTML = `
+      <p class="fhint" style="margin:0">Zeigt deinen Kreis mit Eiweiß, Kohlenhydraten, Fett und den übrigen Kalorien auf deiner Garmin. Die App legt dafür einen geheimen Gist in deinem GitHub-Konto an, aus dem sich die Uhr alle paar Minuten die Werte holt.</p>
+      <div class="field"><label for="f-wtok">GitHub-Token mit dem Recht „gist“</label><input id="f-wtok" type="password" autocomplete="off" spellcheck="false" placeholder="ghp_…"><p class="fhint">Der Token bleibt nur auf diesem Handy gespeichert.</p></div>
+      ${S.watchErr ? `<p class="fhint" role="alert" style="margin:0;color:var(--bad)">${esc(S.watchErr)}</p>` : ''}
+      <div class="row" style="margin:0"><button class="btn sm" data-act="watch-connect" ${S.watchBusy ? 'disabled' : ''}>${icon('watch')}${S.watchBusy ? 'Verbinde …' : 'Verbinden'}</button></div>`;
+    return;
+  }
+  const d = w.at ? new Date(w.at) : null;
+  const when = !d ? 'noch nie' : isoDate(d) === S.today ? `heute um ${toHHMM(d.getHours() * 60 + d.getMinutes())}` : `am ${d.getDate()}. ${MONTHS[d.getMonth()]}`;
+  el.innerHTML = `
+    <p class="fhint" style="margin:0">${w.err ? `<span style="color:var(--bad)">${esc(w.err)}</span>` : `Verbunden. Zuletzt gesendet ${when}. Die Uhr holt sich die Werte etwa alle 5 Minuten.`}</p>
+    <div class="field"><label for="f-wurl">Daten-URL für das Ziffernblatt</label><input id="f-wurl" readonly value="${esc(w.url)}" style="font-size:12.5px"><p class="fhint">Diese Adresse kommt in die Datei Settings.mc des Ziffernblatts.</p></div>
+    <div class="row" style="margin:0;flex-wrap:wrap;gap:8px">
+      <button class="btn sm" data-act="watch-copy">${icon('copy')}URL kopieren</button>
+      <button class="btn ghost sm" data-act="watch-send">Jetzt senden</button>
+      <button class="btn ghost sm" data-act="watch-off">${S.watchOffAsk ? 'Wirklich trennen?' : 'Trennen'}</button>
+    </div>`;
+}
+
 function renderGarmin() {
   const P = todayPlan, R = todayRem, burned = S.log.burned;
   const g = GOALS[S.profile.goal] || GOALS.recomp;
@@ -2978,7 +3065,7 @@ function renderAccSummaries() {
   const set = (k, t) => { const el = document.getElementById('accs-' + k); if (el) el.textContent = t; };
   set('body', `${String(p.weight).replace('.', ',')} kg · ${planRuns() ? 'Phasen-Plan' : g.n} · ${dec1(Math.round(nTrain * 10) / 10)}× Training pro Woche${R ? ' im Loop' : ''}`);
   set('work', workSummary(p));
-  set('misc', `Garmin ${p.garmin === 'on' ? 'an' : 'aus'} · Creatin ${p.creatine === 'on' ? 'an' : 'aus'} · Frühstück ${BF_N[p.breakfast || 'daily']} · ${p.cook === 'no' ? 'ohne Kochen' : 'ich koche'}`);
+  set('misc', `Garmin ${p.garmin === 'on' ? 'an' : 'aus'}${Watch.get() && Watch.can() ? ' · Ziffernblatt verbunden' : ''} · Creatin ${p.creatine === 'on' ? 'an' : 'aus'} · Frühstück ${BF_N[p.breakfast || 'daily']} · ${p.cook === 'no' ? 'ohne Kochen' : 'ich koche'}`);
   const chs = chList().filter(x => x.date >= S.today), c = chs[0];
   if (chs.length > 1) set('challenge', `${chs.length} Challenges · nächste in ${fmt(Math.max(0, Math.floor((new Date(c.date + 'T00:00') - new Date()) / 864e5)))} Tagen`); else set('challenge', c ? `${c.title || 'Challenge'}${c.date ? ` · noch ${Math.max(0, Math.floor((new Date(c.date + 'T00:00') - new Date()) / 864e5))} Tage` : ''}` : 'Kein Countdown');
   set('goals', 'Sixpack, breiter Oberkörper, straffe Beine');
@@ -3103,11 +3190,14 @@ function renderForm() {
       <div class="field"><label for="f-ss">Nachkaufen am</label><select id="f-ss" data-k="shopSecond">${opt(p.shopSecond)}</select></div>
     </div>`;
   $('#zMisc').insertAdjacentHTML('beforeend', `
+    <div class="sub-h" style="margin-top:10px">Ziffernblatt auf der Garmin</div>
+    <div id="watchBox" style="display:grid;gap:10px"></div>
     <div class="sub-h" style="margin-top:10px">Daten übertragen</div>
     <p class="fhint" style="margin:0">Mit einem Code nimmst du Einstellungen, Geschmack, Challenges, Gewicht und Creatin-Serie in die Vollbild-App mit, oder wieder zurück.</p>
     <div class="row" style="margin:0"><button class="btn sm" data-act="data-export">${icon('copy')}Code kopieren</button></div>
     <div class="field"><label for="f-imp">Code einfügen</label><textarea id="f-imp" rows="3" autocomplete="off" spellcheck="false" placeholder="DELREY1:…" style="width:100%;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:var(--r-input);padding:9px 10px;font:inherit;font-size:13px"></textarea></div>
     <div class="row" style="margin:0"><button class="btn ghost sm" data-act="data-import">${S.impAsk ? 'Wirklich übernehmen? Überschreibt die Daten hier' : 'Importieren'}</button></div>`);
+  renderWatch();
   renderAccSummaries();
 }
 function weightBlock() {
@@ -4450,6 +4540,30 @@ document.addEventListener('click', e => {
     S.prefs = { ...S.prefs, creaDays: [...days].sort().slice(-400) }; Store.savePrefs();
     mutateLog(l => { if (on) l.creatine = toHHMM(nowMin()); else delete l.creatine; }, on ? 'Creatin abgehakt' : 'Heute zurückgesetzt');
     renderCrea(on);
+    return;
+  }
+  if (a === 'watch-connect') {
+    const t = String(($('#f-wtok') || {}).value || '').trim();
+    if (!t) { S.watchErr = 'Füg zuerst deinen GitHub-Token ein.'; renderWatch(); return; }
+    S.watchBusy = true; S.watchErr = ''; renderWatch();
+    Watch.connect(t).then(() => { toast('Ziffernblatt verbunden'); }, e => { S.watchErr = Watch.err(e); })
+      .finally(() => { S.watchBusy = false; renderWatch(); renderAccSummaries(); });
+    return;
+  }
+  if (a === 'watch-copy') {
+    const w = Watch.get(), inp = $('#f-wurl'); if (!w) return;
+    const show = () => { if (inp) { inp.focus(); inp.select(); } toast('URL markiert, jetzt kopieren'); };
+    try { navigator.clipboard.writeText(w.url).then(() => toast('URL kopiert'), show); } catch (e) { show(); }
+    return;
+  }
+  if (a === 'watch-send') {
+    Watch.push(true).then(ok => toast(ok ? 'An die Uhr geschickt' : 'Senden hat nicht geklappt'));
+    return;
+  }
+  if (a === 'watch-off') {
+    if (!S.watchOffAsk) { S.watchOffAsk = true; renderWatch(); return; }
+    S.watchOffAsk = false; Watch.set(null); renderWatch(); renderAccSummaries();
+    toast('Ziffernblatt getrennt. Den Gist kannst du auf GitHub löschen.');
     return;
   }
   if (a === 'data-export') {
