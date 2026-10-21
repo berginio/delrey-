@@ -773,7 +773,32 @@ details.trip[open] > summary .ico.car{transform:rotate(180deg)}
 .gcard-h small{font-size:12px;color:var(--muted);font-weight:600;white-space:nowrap}
 .gcard-ic{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:var(--tint);color:var(--accent)}
 .gcard-ic .ico{width:17px;height:17px}
-#gLegend .tlegend{margin-top:12px}
+.gsearch{position:relative;margin-bottom:12px}
+.gsearch input{width:100%;box-sizing:border-box;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:14px;padding:12px 14px 12px 40px;font:inherit;font-size:15px}
+.gsearch .gs-ic{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);display:grid}
+.gsearch .gs-ic .ico{width:18px;height:18px}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.gtiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;grid-auto-flow:row dense;margin-bottom:12px}
+.gtile{all:unset;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;gap:6px;min-height:68px;min-width:0;padding:9px 10px;border-radius:16px;background:var(--surface);border:1px solid color-mix(in srgb,var(--line) 85%,transparent);cursor:pointer;-webkit-tap-highlight-color:transparent;scroll-margin-top:84px;transition:transform .15s var(--ease),background .2s,border-color .2s}
+.gtile:active{transform:scale(.97)}
+.gtile:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.gtile.on{background:color-mix(in srgb,var(--accent) 12%,var(--surface));border-color:color-mix(in srgb,var(--accent) 50%,transparent)}
+.gtile.on .gt-ic{background:var(--accent);color:var(--on)}
+.gt-meta{display:flex;align-items:center;justify-content:space-between;gap:4px}
+.gt-ic{width:24px;height:24px;border-radius:8px;display:grid;place-items:center;background:var(--tint);color:var(--accent)}
+.gt-ic .ico{width:14px;height:14px}
+.gt-n{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:650;color:var(--muted);font-variant-numeric:tabular-nums}
+.gt-n i{font-style:normal;display:inline-flex;align-items:center;gap:2px;color:var(--accent)}
+.gt-n .ico{width:12px;height:12px}
+.gt-name{font-size:13px;font-weight:650;line-height:1.25;color:var(--ink);hyphens:auto;-webkit-hyphens:auto;overflow-wrap:break-word;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.gpanel{grid-column:1/-1;padding:14px 16px 8px;margin:0}
+.gp-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.gp-h h3{margin:0;font-size:16px}
+.gp-h small{font-size:12px;color:var(--muted);font-weight:600;white-space:nowrap}
+.gpanel .tlegend{margin:8px 0 2px}
+.gp-close{display:inline-flex;align-items:center;gap:6px;margin:10px 0 6px;font-size:13px}
+.gp-close .ico{transform:rotate(180deg);width:15px;height:15px}
+#gList.stack .gpanel + .gpanel{margin-top:0}
 .grp-h{margin:18px 0 2px;font-weight:650;font-size:13px;color:var(--muted);letter-spacing:.02em}
 .grp-h:first-child{margin-top:8px}
 .stat-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
@@ -1272,14 +1297,11 @@ div.htile{cursor:default}
     </section>
 
     <section class="view" id="v-geschmack" aria-label="Mein Geschmack" hidden>
-      <div class="spread" style="--i:0;align-items:flex-start"><div><h2 class="sec">Mein Geschmack</h2><p class="sec-sub">Bewerte jede Zutat. Was du nicht magst, wird ersetzt, was du liebst, kommt öfter. Kalorien und Makros bleiben gleich.</p></div>
+      <div class="spread" style="--i:0;align-items:flex-start"><div><h2 class="sec">Mein Geschmack</h2><p class="sec-sub">Tipp eine Kategorie an und bewerte. Was du nicht magst, wird ersetzt.</p></div>
         <button class="btn ghost sm" data-act="taste-back" style="margin-top:8px"><svg class="ico"><use href="#i-arrow-left"/></svg>Einkauf</button></div>
-      <div class="card" id="gSummary" style="--i:1"></div>
-      <div class="card" style="--i:2">
-        <div class="field"><label for="gSearch">Zutat suchen</label><input id="gSearch" type="search" name="zutat-suche" autocomplete="off" placeholder="z. B. Thunfisch…"></div>
-        <div id="gLegend"></div>
-      </div>
-      <div id="gList" class="stack" style="--i:3"></div>
+      <div class="gsearch" style="--i:1"><label for="gSearch" class="vh">Zutat suchen</label><span class="gs-ic"><svg class="ico" aria-hidden="true"><use href="#i-magnifying-glass"/></svg></span><input id="gSearch" type="search" name="zutat-suche" autocomplete="off" placeholder="Zutat suchen, z. B. Thunfisch"></div>
+      <div id="gList" class="gtiles" lang="de" style="--i:2"></div>
+      <div class="card" id="gSummary" style="--i:3"></div>
     </section>
 
     <section class="view" id="v-info" aria-label="Gym Wiki" hidden>
@@ -3603,21 +3625,44 @@ function renderGeschmack() {
 }
 const GROUP_ICON = { meat:'fork-knife', cut:'bread', dairy:'bowl-food', egg:'egg', milk:'drop', cheese:'package', fruit:'orange-slice', veg:'carrot', side:'bowl-steam',
   bread:'bread', wrap:'bread', oats:'bowl-food', crisp:'package', powder:'flask', nuts:'package', fat:'drop', seeds:'sparkle', sweet:'heart', sauce:'drop', ready:'cooking-pot' };
+// Weiche Trennstellen, damit lange Wörter in den schmalen Kacheln sauber umbrechen
+const TILE_NAME = { cut: 'Aufschnitt & Lachs', ready: 'Fertig\u00adprodukte', powder: 'Protein\u00adpulver', oats: 'Hafer\u00adflocken' };
 function renderTasteList() {
   const q = ($('#gSearch').value || '').trim().toLowerCase();
-  const inPlan = weekFoods();
-  const html = GROUP_ORDER.map(g => {
-    const list = GROUPS[g].order.filter(f => !q || FOODS[f].n.toLowerCase().includes(q) || (FOODS[f].nom || '').toLowerCase().includes(q));
-    if (!list.length) return '';
-    const fav = list.filter(f => ['love', 'like'].includes(tasteOf(S.prefs.taste, f))).length;
-    return `<section class="card gcard" aria-label="${esc(GROUPS[g].n)}"><div class="gcard-h"><span class="gcard-ic">${icon(GROUP_ICON[g] || 'package')}</span><h3>${esc(GROUPS[g].n)}</h3><small>${fav ? `${fav} ${fav === 1 ? 'Favorit' : 'Favoriten'}` : `${list.length} ${list.length === 1 ? 'Zutat' : 'Zutaten'}`}</small></div>${list.map(f => {
-      const v = tasteOf(S.prefs.taste, f);
-      const note = (v === 'no' || v === 'meh') ? replacementText(f) : inPlan.has(f) ? 'In deinem Plan diese Woche' : 'Ersatz-Zutat';
-      return `<div class="trow ${v}"><div class="nm"><span>${esc(FOODS[f].n)}</span><small>${esc(note)}</small></div>${rateButtons(f)}</div>`;
-    }).join('')}</section>`;
+  const inPlan = weekFoods(), T = S.prefs.taste;
+  const legend = `<div class="tlegend" aria-hidden="true">${TASTE_OPTS.map(([k, ic, lbl]) => `<span>${icon(ic)}${lbl}</span>`).join('')}</div>`;
+  const rows = list => list.map(f => {
+    const v = tasteOf(T, f);
+    const note = (v === 'no' || v === 'meh') ? replacementText(f) : inPlan.has(f) ? 'In deinem Plan diese Woche' : 'Ersatz-Zutat';
+    return `<div class="trow ${v}"><div class="nm"><span>${esc(FOODS[f].n)}</span><small>${esc(note)}</small></div>${rateButtons(f)}</div>`;
   }).join('');
-  $('#gLegend').innerHTML = `<div class="tlegend" aria-hidden="true">${TASTE_OPTS.map(([k, ic, lbl]) => `<span>${icon(ic)}${lbl}</span>`).join('')}</div>`;
-  $('#gList').innerHTML = html || `<div class="card"><p class="muted" style="margin:0;font-size:13.5px">Keine Zutat gefunden. Probier einen anderen Begriff.</p></div>`;
+  const favOf = list => list.filter(f => ['love', 'like'].includes(tasteOf(T, f))).length;
+  const el = $('#gList');
+  if (q) {
+    // Beim Suchen: alle Treffer offen, nach Kategorie
+    const html = GROUP_ORDER.map(g => {
+      const list = GROUPS[g].order.filter(f => FOODS[f].n.toLowerCase().includes(q) || (FOODS[f].nom || '').toLowerCase().includes(q));
+      if (!list.length) return '';
+      return `<section class="card gpanel" aria-label="${esc(GROUPS[g].n)}"><div class="gcard-h"><span class="gcard-ic">${icon(GROUP_ICON[g] || 'package')}</span><h3>${esc(GROUPS[g].n)}</h3><small>${list.length} ${list.length === 1 ? 'Treffer' : 'Treffer'}</small></div>${rows(list)}</section>`;
+    }).join('');
+    el.className = 'stack';
+    el.innerHTML = html ? `<div class="card gpanel">${legend}</div>` + html : `<div class="card"><p class="muted" style="margin:0;font-size:13.5px">Keine Zutat gefunden. Probier einen anderen Begriff.</p></div>`;
+    return;
+  }
+  // Ohne Suche: alle Kategorien als Kacheln, eine davon aufgeklappt
+  if (S.gOpen && !GROUPS[S.gOpen]) S.gOpen = null;
+  el.className = 'gtiles';
+  el.innerHTML = GROUP_ORDER.map(g => {
+    const G = GROUPS[g], list = G.order, open = S.gOpen === g, fav = favOf(list);
+    const no = list.filter(f => tasteOf(T, f) === 'no').length;
+    const lbl = `${G.n}: ${list.length} ${list.length === 1 ? 'Zutat' : 'Zutaten'}${fav ? `, ${fav} ${fav === 1 ? 'Favorit' : 'Favoriten'}` : ''}${no ? `, ${no} magst du nicht` : ''}`;
+    const tile = `<button class="gtile ${open ? 'on' : ''}" data-act="gcat" data-g="${g}" aria-expanded="${open}" aria-controls="gp-${g}" aria-label="${esc(lbl)}">
+      <span class="gt-name">${esc(TILE_NAME[g] || G.n)}</span>
+      <span class="gt-meta"><span class="gt-ic">${icon(GROUP_ICON[g] || 'package')}</span><span class="gt-n">${list.length}${fav ? `<i>${icon('heart-fill')}${fav}</i>` : ''}</span></span></button>`;
+    if (!open) return tile;
+    return tile + `<section class="card gpanel" id="gp-${g}" aria-label="${esc(G.n)}"><div class="gp-h"><h3>${esc(G.n)}</h3><small>${list.length} ${list.length === 1 ? 'Zutat' : 'Zutaten'}${fav ? ` · ${fav} ${fav === 1 ? 'Favorit' : 'Favoriten'}` : ''}</small></div>${legend}${rows(list)}
+      <button class="linkbtn gp-close" data-act="gcat" data-g="${g}">${icon('caret-down')}${esc(G.n)} zuklappen</button></section>`;
+  }).join('');
 }
 function setTaste(food, v, silent) {
   const t = JSON.parse(JSON.stringify(S.prefs.taste));
@@ -4424,6 +4469,18 @@ document.addEventListener('click', e => {
   }
   if (a === 'undo-del') { if (S.undo) { const u = S.undo; S.undo = null; mutateLog(l => { Object.assign(l, u); }, 'Wiederhergestellt'); } return; }
   if (a === 'plan-day') { S.planDow = +b.dataset.d; return renderPlan(); }
+  if (a === 'gcat') {
+    const g = b.dataset.g, closing = S.gOpen === g, fromPanel = !!b.closest('.gpanel');
+    S.gOpen = closing ? null : g;
+    renderTasteList();
+    const t = document.querySelector(`.gtile[data-g="${g}"]`);
+    if (t) {
+      const r = t.getBoundingClientRect();
+      if (fromPanel || r.top < 70 || (!closing && r.top > innerHeight * 0.5)) t.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' });
+      if (fromPanel) t.focus({ preventScroll: true });
+    }
+    return;
+  }
   if (a === 'spice' || a === 'spice-buy') {
     const id = b.dataset.id; if (!SPICES[id]) return;
     const m = new Set(S.prefs.spiceMiss || []);
