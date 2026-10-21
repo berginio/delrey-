@@ -675,6 +675,9 @@ details.trip > summary .ico.car{transition:transform .25s var(--ease);color:var(
 details.trip[open] > summary .ico.car{transform:rotate(180deg)}
 .stock-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
 .stock-row:last-child{border-bottom:0}
+.spl{display:flex;gap:6px;align-items:flex-start;margin:8px 0 0;font-size:13px;color:var(--muted);line-height:1.4}
+.spl .ico{width:15px;height:15px;flex:none;margin-top:2px}
+.spl em{font-style:normal;font-weight:650;color:var(--warn)}
 .stock-row .nm{font-weight:600;font-size:14px}
 .stock-row small{display:block;color:var(--muted);font-size:12px;font-weight:500}
 .toggle{border:1px solid var(--line);background:transparent;border-radius:999px;padding:6px 11px;font-size:12.5px;font-weight:600;white-space:nowrap}
@@ -867,6 +870,7 @@ details.trip[open] > summary .ico.car{transform:rotate(180deg)}
 .dnm small{display:block;font-size:12px;color:var(--muted);margin-top:1px}
 .dkc{text-align:right;white-space:nowrap;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 .dkc b{display:block;font-size:14.5px;color:var(--ink);font-weight:650}
+.dkc b .u{margin-left:3px;font-size:12px;font-weight:550;color:var(--muted)}
 .ddel{flex:none;width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:transparent;display:grid;place-items:center;color:var(--muted);padding:0}
 .ddel .ico{width:14px;height:14px}
 .dform:empty{display:none}
@@ -1257,6 +1261,7 @@ div.htile{cursor:default}
       <div id="shopMain" style="--i:2"></div>
       <div id="shopSecond" style="--i:3"></div>
       <div id="shopStock" style="--i:4"></div>
+      <div id="shopSpice" style="--i:4"></div>
       <div id="shopBridge" style="--i:5"></div>
     </section>
 
@@ -1344,7 +1349,7 @@ const FOODS = {
   cheese:   {n:'Reibkäse light', nom:'Käse', dat:'Käse', kcal:270, p:30, c:0, f:16.5, fib:0, cat:'milch', grp:'cheese', pack:200, packLabel:'200-g-Beutel'},
   mozza:    {n:'Mozzarella light', nom:'Mozzarella', dat:'Mozzarella', kcal:165, p:19, c:1, f:9, fib:0, cat:'milch', grp:'cheese', pack:125, packLabel:'125-g-Kugel'},
   parmesan: {n:'Parmesan', nom:'Parmesan', dat:'Parmesan', kcal:392, p:33, c:0, f:28, fib:0, cat:'vorrat', grp:'cheese', pack:100, packLabel:'100-g-Stück', stock:true},
-  creamch:  {n:'Frischkäse leicht', nom:'Frischkäse', dat:'Frischkäse', kcal:146, p:7.4, c:4, f:11, fib:0, cat:'milch', grp:'cheese', pack:175, packLabel:'175-g-Packung'},
+  creamch:  {n:'Frischkäse light', nom:'Frischkäse', dat:'Frischkäse', kcal:146, p:7.4, c:4, f:11, fib:0, cat:'milch', grp:'cheese', pack:175, packLabel:'175-g-Packung'},
   raclette: {n:'Raclettekäse', nom:'Raclettekäse', dat:'Raclettekäse', pre:'Raclette', kcal:343, p:25, c:0, f:28, fib:0, cat:'milch', grp:'cheese', pack:400, packLabel:'400-g-Packung Scheiben'},
   butter:   {n:'Butter', nom:'Butter', dat:'Butter', kcal:741, p:0.7, c:0.6, f:82, fib:0, cat:'vorrat', grp:'fat', pack:250, packLabel:'250-g-Packung', stock:true, spoon:10},
   // Obst
@@ -1355,8 +1360,20 @@ const FOODS = {
   kiwi:     {n:'Kiwi', nom:'Kiwis', dat:'Kiwis', kcal:61, p:1, c:10.5, f:0.5, fib:3, cat:'obst', grp:'fruit', sub:'fresh', piece:75, pn:['Kiwi','Kiwis']},
   berries:  {n:'Beerenmix (TK)', nom:'Beeren', dat:'Beeren', kcal:45, p:1, c:8, f:0.5, fib:4.5, cat:'tk', grp:'fruit', sub:'berry', pack:500, packLabel:'500-g-Beutel'},
   // Brot & Beilagen
-  bread:    {n:'Vollkornbrot', nom:'Vollkornbrot', dat:'Vollkornbrot', kcal:220, p:7.5, c:38, f:2, fib:7.5, cat:'brot', grp:'bread', pack:500, packLabel:'500-g-Laib', piece:50, pn:['Scheibe','Scheiben']},
-  roll:     {n:'Vollkornsemmel', nom:'Semmeln', dat:'Semmeln', kcal:250, p:9, c:44, f:3, fib:6, cat:'brot', grp:'bread', piece:60, pn:['Semmel','Semmeln']},
+  bread:    {n:'Vollkornbrot', nom:'Vollkornbrot', dat:'Vollkornbrot', kcal:220, p:7.5, c:38, f:2, fib:7.5, cat:'brot', grp:'bread', sub:'loaf', pack:500, packLabel:'500-g-Laib', piece:50, pn:['Scheibe','Scheiben']},
+  roll:     {n:'Vollkornsemmel', nom:'Semmeln', dat:'Semmeln', kcal:250, p:9, c:44, f:3, fib:6, cat:'brot', grp:'bread', sub:'roll', piece:60, pn:['Semmel','Semmeln']},
+  ryebread: {n:'Roggenvollkornbrot', nom:'Roggenbrot', dat:'Roggenbrot', kcal:195, p:6.5, c:36, f:1.2, fib:8, cat:'brot', grp:'bread', sub:'loaf', pack:500, packLabel:'500-g-Laib', piece:50, pn:['Scheibe','Scheiben']},
+  spelt:    {n:'Dinkelvollkornbrot', nom:'Dinkelbrot', dat:'Dinkelbrot', kcal:225, p:8, c:40, f:2.5, fib:6.5, cat:'brot', grp:'bread', sub:'loaf', pack:500, packLabel:'500-g-Laib', piece:50, pn:['Scheibe','Scheiben']},
+  mixbread: {n:'Hausbrot (Roggenmischbrot)', nom:'Hausbrot', dat:'Hausbrot', kcal:220, p:6.5, c:43, f:1.2, fib:5, cat:'brot', grp:'bread', sub:'loaf', pack:1000, packLabel:'1-kg-Laib', piece:50, pn:['Scheibe','Scheiben']},
+  protbread:{n:'Eiweißbrot', nom:'Eiweißbrot', dat:'Eiweißbrot', kcal:260, p:22, c:6, f:15, fib:11, cat:'brot', grp:'bread', sub:'loaf', pack:250, packLabel:'250-g-Packung', piece:40, pn:['Scheibe','Scheiben']},
+  wholetoast:{n:'Vollkorntoast', nom:'Vollkorntoast', dat:'Vollkorntoast', kcal:245, p:8.5, c:41, f:3.8, fib:7, cat:'brot', grp:'bread', sub:'toast', pack:500, packLabel:'500-g-Packung', piece:28, pn:['Scheibe','Scheiben']},
+  toast:    {n:'Toastbrot', nom:'Toast', dat:'Toast', kcal:265, p:8, c:48, f:3.8, fib:3, cat:'brot', grp:'bread', sub:'toast', pack:500, packLabel:'500-g-Packung', piece:25, pn:['Scheibe','Scheiben']},
+  semmel:   {n:'Kaisersemmel', nom:'Semmeln', dat:'Semmeln', kcal:275, p:9, c:55, f:1.5, fib:3, cat:'brot', grp:'bread', sub:'roll', piece:55, pn:['Semmel','Semmeln']},
+  kornspitz:{n:'Kornspitz', nom:'Kornspitz', dat:'Kornspitz', kcal:280, p:10.5, c:45, f:5, fib:6.5, cat:'brot', grp:'bread', sub:'roll', piece:65, pn:['Kornspitz','Kornspitze']},
+  pretzel:  {n:'Laugenbrezel', nom:'Brezel', dat:'Brezel', kcal:270, p:8, c:55, f:1.5, fib:2.5, cat:'brot', grp:'bread', sub:'roll', piece:75, pn:['Brezel','Brezeln']},
+  bagel:    {n:'Bagel', nom:'Bagels', dat:'Bagels', kcal:255, p:10, c:49, f:1.5, fib:2.5, cat:'brot', grp:'bread', sub:'roll', piece:85, pn:['Bagel','Bagels']},
+  pita:     {n:'Pita-Brot', nom:'Pita', dat:'Pita', kcal:270, p:9, c:55, f:1.2, fib:2.5, cat:'brot', grp:'bread', sub:'roll', piece:80, pn:['Pita','Pitas']},
+  crispbread:{n:'Knäckebrot (Roggen)', nom:'Knäckebrot', dat:'Knäckebrot', kcal:330, p:9.5, c:60, f:1.5, fib:17, cat:'brot', grp:'bread', sub:'crisp', pack:250, packLabel:'250-g-Packung', piece:10, pn:['Scheibe','Scheiben']},
   wrap:     {n:'Vollkorn-Wraps', nom:'Wraps', dat:'Wraps', kcal:300, p:9, c:48, f:6.5, fib:6, cat:'vorrat', grp:'wrap', pack:372, packLabel:'6er-Packung', stock:true, piece:62, pn:['Wrap','Wraps']},
   rice:     {n:'Basmatireis', nom:'Reis', dat:'Reis', pre:'Reis', kcal:350, p:8, c:77, f:0.7, fib:1.4, cat:'vorrat', grp:'side', pack:1000, packLabel:'1-kg-Packung', stock:true, raw:true},
   potato:   {n:'Erdäpfel', nom:'Erdäpfel', dat:'Erdäpfeln', pre:'Erdäpfel', kcal:77, p:2, c:17, f:0.1, fib:2.1, cat:'vorrat', grp:'side', pack:2000, packLabel:'2-kg-Sack', stock:true, raw:true},
@@ -1396,12 +1413,23 @@ const FOODS = {
   chia:     {n:'Chiasamen', nom:'Chiasamen', dat:'Chiasamen', kcal:486, p:17, c:8, f:31, fib:34, cat:'vorrat', grp:'seeds', pack:200, packLabel:'200-g-Packung', stock:true, spoon:10},
   linseed:  {n:'Leinsamen geschrotet', nom:'Leinsamen', dat:'Leinsamen', kcal:534, p:18, c:2, f:42, fib:27, cat:'vorrat', grp:'seeds', pack:250, packLabel:'250-g-Packung', stock:true, spoon:10},
   honey:    {n:'Honig', nom:'Honig', dat:'Honig', kcal:304, p:0.4, c:82, f:0, fib:0, cat:'vorrat', grp:'sweet', pack:500, packLabel:'500-g-Glas', stock:true, spoon:10},
-  teriyaki: {n:'Teriyaki-Sauce', nom:'Teriyaki-Sauce', dat:'Teriyaki-Sauce', pre:'Teriyaki', kcal:120, p:4, c:25, f:0.2, fib:0, cat:'vorrat', grp:'sauce', pack:250, packLabel:'250-ml-Flasche', stock:true, spoon:15, unit:'ml'},
-  soy:      {n:'Sojasauce', nom:'Sojasauce', dat:'Sojasauce', pre:'Soja', kcal:60, p:8, c:5, f:0, fib:0, cat:'vorrat', grp:'sauce', pack:250, packLabel:'250-ml-Flasche', stock:true, spoon:15, unit:'ml'},
-  ketchup:  {n:'Ketchup', nom:'Ketchup', dat:'Ketchup', pre:'Ketchup', kcal:102, p:1.2, c:23, f:0.1, fib:0.5, cat:'vorrat', grp:'sauce', pack:500, packLabel:'500-ml-Flasche', stock:true, spoon:15},
-  mayo:     {n:'Mayonnaise', nom:'Mayo', dat:'Mayo', pre:'Mayo', kcal:690, p:1, c:1.5, f:76, fib:0, cat:'vorrat', grp:'sauce', pack:250, packLabel:'250-ml-Tube', stock:true, spoon:15},
-  sriracha: {n:'Sriracha', nom:'Sriracha', dat:'Sriracha', pre:'Sriracha', kcal:95, p:1.9, c:19, f:0.9, fib:1, cat:'vorrat', grp:'sauce', pack:455, packLabel:'455-ml-Flasche', stock:true, spoon:5},
-  srirachamayo:{n:'Sriracha-Mayo', nom:'Sriracha-Mayo', dat:'Sriracha-Mayo', pre:'Sriracha-Mayo', kcal:275, p:0.9, c:26, f:19, fib:0, cat:'vorrat', grp:'sauce', pack:455, packLabel:'455-ml-Flasche', stock:true, spoon:15},
+  teriyaki: {n:'Teriyaki-Sauce', nom:'Teriyaki-Sauce', dat:'Teriyaki-Sauce', pre:'Teriyaki', kcal:120, p:4, c:25, f:0.2, fib:0, cat:'vorrat', grp:'sauce', sub:'asia', pack:250, packLabel:'250-ml-Flasche', stock:true, spoon:15, unit:'ml'},
+  soy:      {n:'Sojasauce', nom:'Sojasauce', dat:'Sojasauce', pre:'Soja', kcal:60, p:8, c:5, f:0, fib:0, cat:'vorrat', grp:'sauce', sub:'asia', pack:250, packLabel:'250-ml-Flasche', stock:true, spoon:15, unit:'ml'},
+  ketchup:  {n:'Ketchup', nom:'Ketchup', dat:'Ketchup', pre:'Ketchup', kcal:102, p:1.2, c:23, f:0.1, fib:0.5, cat:'vorrat', grp:'sauce', sub:'tomato', pack:500, packLabel:'500-ml-Flasche', stock:true, spoon:15},
+  mayo:     {n:'Mayonnaise', nom:'Mayo', dat:'Mayo', pre:'Mayo', kcal:690, p:1, c:1.5, f:76, fib:0, cat:'vorrat', grp:'sauce', sub:'dip', pack:250, packLabel:'250-ml-Tube', stock:true, spoon:15},
+  sriracha: {n:'Sriracha', nom:'Sriracha', dat:'Sriracha', pre:'Sriracha', kcal:95, p:1.9, c:19, f:0.9, fib:1, cat:'vorrat', grp:'sauce', sub:'hot', pack:455, packLabel:'455-ml-Flasche', stock:true, spoon:5},
+  srirachamayo:{n:'Sriracha-Mayo', nom:'Sriracha-Mayo', dat:'Sriracha-Mayo', pre:'Sriracha-Mayo', kcal:275, p:0.9, c:26, f:19, fib:0, cat:'vorrat', grp:'sauce', sub:'dip', pack:455, packLabel:'455-ml-Flasche', stock:true, spoon:15},
+  bbq:      {n:'BBQ-Sauce', nom:'BBQ-Sauce', dat:'BBQ-Sauce', pre:'BBQ', kcal:160, p:1, c:38, f:0.3, fib:0.5, cat:'vorrat', grp:'sauce', sub:'tomato', pack:500, packLabel:'500-ml-Flasche', stock:true, spoon:15},
+  curryketchup:{n:'Curry-Ketchup', nom:'Curry-Ketchup', dat:'Curry-Ketchup', pre:'Curry-Ketchup', kcal:115, p:1.2, c:26, f:0.3, fib:1, cat:'vorrat', grp:'sauce', sub:'tomato', pack:500, packLabel:'500-ml-Flasche', stock:true, spoon:15},
+  salsa:    {n:'Salsa-Dip (Tomate)', nom:'Salsa', dat:'Salsa', pre:'Salsa', kcal:40, p:1.4, c:7, f:0.4, fib:1.5, cat:'vorrat', grp:'sauce', sub:'tomato', pack:300, packLabel:'300-g-Glas', stock:true, spoon:15},
+  sweetchili:{n:'Sweet-Chili-Sauce', nom:'Sweet-Chili-Sauce', dat:'Sweet-Chili-Sauce', pre:'Sweet-Chili', kcal:220, p:0.5, c:52, f:0.5, fib:0.5, cat:'vorrat', grp:'sauce', sub:'asia', pack:300, packLabel:'300-ml-Flasche', stock:true, spoon:15},
+  hoisin:   {n:'Hoisin-Sauce', nom:'Hoisin-Sauce', dat:'Hoisin-Sauce', pre:'Hoisin', kcal:220, p:3.3, c:44, f:3.4, fib:2.8, cat:'vorrat', grp:'sauce', sub:'asia', pack:250, packLabel:'250-ml-Flasche', stock:true, spoon:15},
+  sweetsour:{n:'Süß-Sauer-Sauce', nom:'Süß-Sauer-Sauce', dat:'Süß-Sauer-Sauce', pre:'Süß-Sauer', kcal:150, p:0.4, c:36, f:0.3, fib:0.4, cat:'vorrat', grp:'sauce', sub:'asia', pack:400, packLabel:'400-ml-Glas', stock:true, spoon:15},
+  mustard:  {n:'Senf mittelscharf', nom:'Senf', dat:'Senf', pre:'Senf', kcal:90, p:6, c:4, f:5, fib:2, cat:'vorrat', grp:'sauce', sub:'dip', pack:200, packLabel:'200-g-Tube', stock:true, spoon:15},
+  mayolight:{n:'Mayonnaise light', nom:'Mayo light', dat:'Mayo light', pre:'Mayo', kcal:290, p:0.8, c:7, f:29, fib:0, cat:'vorrat', grp:'sauce', sub:'dip', pack:250, packLabel:'250-ml-Tube', stock:true, spoon:15},
+  garlicsauce:{n:'Knoblauchsauce', nom:'Knoblauchsauce', dat:'Knoblauchsauce', pre:'Knoblauch', kcal:330, p:1, c:9, f:32, fib:0.3, cat:'vorrat', grp:'sauce', sub:'dip', pack:250, packLabel:'250-ml-Flasche', stock:true, spoon:15},
+  burgersauce:{n:'Burger-Sauce', nom:'Burger-Sauce', dat:'Burger-Sauce', pre:'Burger', kcal:300, p:1, c:15, f:26.5, fib:0.3, cat:'vorrat', grp:'sauce', sub:'dip', pack:250, packLabel:'250-ml-Flasche', stock:true, spoon:15},
+  tzatziki: {n:'Tzatziki', nom:'Tzatziki', dat:'Tzatziki', pre:'Tzatziki', kcal:110, p:4, c:4, f:8.5, fib:0.3, cat:'milch', grp:'sauce', sub:'dip', pack:200, packLabel:'200-g-Becher', spoon:15},
   // Fertigprodukte
   tomsauce5:{n:'Tomatensauce 5 Kräuter (Glas)', nom:'Tomatensauce', dat:'Tomatensauce', pre:'Tomaten', kcal:66, p:1.4, c:6.4, f:3.5, fib:1.5, cat:'vorrat', grp:'ready', pack:400, packLabel:'400-g-Glas'},
   arrabbiata:{n:'Sugo Arrabbiata (Glas)', nom:'Arrabbiata-Sauce', dat:'Arrabbiata-Sauce', pre:'Arrabbiata', kcal:55, p:1.4, c:5.5, f:2.6, fib:1.5, cat:'vorrat', grp:'ready', pack:400, packLabel:'400-g-Glas'},
@@ -1431,7 +1459,7 @@ const GROUPS = {
   cheese: {n:'Käse', by:'f', order:['cheese','mozza','parmesan','creamch','raclette']},
   fruit:  {n:'Obst', by:'c', order:['banana','apple','orange','pear','kiwi','berries']},
   side:   {n:'Beilagen', by:'c', order:['rice','potato','pasta','couscous','gnocchi','spaetzle','fries','wedges','roesti','kroketten']},
-  bread:  {n:'Brot', by:'c', order:['bread','roll']},
+  bread:  {n:'Brot', by:'c', order:['bread','ryebread','spelt','mixbread','protbread','wholetoast','toast','roll','semmel','kornspitz','pretzel','bagel','pita','crispbread']},
   wrap:   {n:'Wraps', by:'c', order:['wrap']},
   oats:   {n:'Haferflocken', by:'c', order:['oats']},
   crisp:  {n:'Knabbern', by:'c', order:['ricecake','zwieback']},
@@ -1441,7 +1469,7 @@ const GROUPS = {
   fat:    {n:'Öl & Butter', by:'f', order:['oil','butter']},
   seeds:  {n:'Samen', by:'f', order:['chia','linseed']},
   sweet:  {n:'Süßes', by:'c', order:['honey']},
-  sauce:  {n:'Saucen', by:'g', order:['teriyaki','soy','sriracha','srirachamayo','ketchup','mayo']},
+  sauce:  {n:'Saucen', by:'g', order:['teriyaki','soy','sweetchili','hoisin','sweetsour','sriracha','srirachamayo','ketchup','curryketchup','bbq','salsa','mayo','mayolight','garlicsauce','burgersauce','tzatziki','mustard']},
   ready:  {n:'Fertigprodukte', by:'g', order:['tomsauce5','arrabbiata','passata','pesto','coconut','kidney','corn']},
 };
 const GROUP_ORDER = ['meat','cut','dairy','egg','milk','cheese','fruit','veg','side','bread','wrap','oats','crisp','powder','nuts','fat','seeds','sweet','sauce','ready'];
@@ -1603,6 +1631,14 @@ function pickMeal(pref, pool, taste, used) {
   const M = MEALS[pref];
   return { key: pref, icon: M.icon, cook: !!M.cook, n: fillText(M.n, M.items.map(([food, g], idx) => ({ idx, food, g }))), how: '', swaps: [], items: M.items.slice(), blocked: true };
 }
+
+/* Gewürze aus den Anleitungen. Sie zählen nicht zu den Nährwerten, kommen aber auf den Einkauf,
+   wenn sie zuhause fehlen (S.prefs.spiceMiss) und ein geplantes Gericht sie braucht. */
+const SPICES = {
+  salz: { n: 'Salz' }, pfeffer: { n: 'Pfeffer' }, knoblauch: { n: 'Knoblauchpulver', s: 'Knoblauch', note: 'oder frischer Knoblauch' },
+  kreuzkuemmel: { n: 'Kreuzkümmel gemahlen', s: 'Kreuzkümmel' }, dill: { n: 'Dill', note: 'getrocknet oder tiefgekühlt' }, zimt: { n: 'Zimt' },
+};
+const MEAL_SPICES = { cottagebread: ['salz', 'pfeffer'], turkeywrap: ['salz', 'knoblauch'], salmon: ['salz', 'dill'], wraps: ['salz', 'kreuzkuemmel', 'knoblauch'], bolognese: ['salz', 'pfeffer'], cottagelate: ['zimt'] };
 
 /* Gericht-Familien: zwei Hauptmahlzeiten am selben Tag sollen sich klar unterscheiden
    (nicht zweimal Reis mit Teriyaki, nicht zweimal Wraps). Reste vom Mittag isst man abends sowieso. */
@@ -2228,6 +2264,13 @@ function shoppingCycle(today, pr) {
     const F = FOODS[it.food]; if (!F.stock || F.portion) continue;
     stock[it.food] = (stock[it.food] || 0) + it.g;
   }
+  const spices = {};
+  for (const d of daysA.concat(daysB)) for (const sl of planOf(d).slots) if (!sl.buy && sl.meal) {
+    for (const id of MEAL_SPICES[sl.key || sl.meal.key] || []) {
+      const e = spices[id] || (spices[id] = { id, meals: [] });
+      if (!e.meals.includes(sl.meal.n)) e.meals.push(sl.meal.n);
+    }
+  }
   const stockList = Object.entries(stock).map(([food, g]) => {
     const F = FOODS[food];
     return { food, g, weeks: F.pack / g, packLabel: F.packLabel, cat: 'vorrat' };
@@ -2241,6 +2284,7 @@ function shoppingCycle(today, pr) {
     second: { date: second, days: daysB, items: itemsB, carried: itemsB.carried },
     bridge: daysBridge.length ? { date: t0, days: daysBridge, items: need(daysBridge, true) } : null,
     stock: stockList,
+    spices: Object.keys(SPICES).filter(id => spices[id]).map(id => spices[id]),
   };
 }
 
@@ -2274,7 +2318,7 @@ const S = {
   profile: { ...DEFAULT_PROFILE, week: DEFAULT_PROFILE.week.slice() },
   today: isoDate(new Date()), log: emptyLog(), weights: [], shop: {}, tab: 'heute',
   planDow: dow(new Date()), est: null, sample: null, sampleImages: false, photo: null,
-  prefs: { taste: { foods: {}, meals: {} }, challenge: null, challenges: [] }, userName: '', chEdit: null, chDel: null,
+  prefs: { taste: { foods: {}, meals: {} }, challenge: null, challenges: [], spiceMiss: [] }, userName: '', chEdit: null, chDel: null,
 };
 const planPr = () => ({ ...S.profile, taste: S.prefs.taste, swaps: S.prefs.swaps || {}, events: S.prefs.events || [], phaseList: typeof phaseListAll === 'function' ? phaseListAll() : [] });
 
@@ -2298,7 +2342,7 @@ const Store = {
     S.weights = this.ls('weights') || [];
     S.train = { ...emptyTrain(), ...(this.ls('train') || {}) };
     S.shop = this.ls('shop') || {};
-    const pf = this.ls('prefs'); if (pf) S.prefs = { taste: { foods: {}, meals: {}, ...(pf.taste || {}) }, challenge: pf.challenge || null, challenges: migrateCh(pf), swaps: pf.swaps || {}, creaDays: pf.creaDays || [], dishes: pf.dishes || [], recent: pf.recent || [], favs: pf.favs || [], events: pf.events || [], trackDays: pf.trackDays || [], phasePlan: pf.phasePlan || null };
+    const pf = this.ls('prefs'); if (pf) S.prefs = { taste: { foods: {}, meals: {}, ...(pf.taste || {}) }, challenge: pf.challenge || null, challenges: migrateCh(pf), swaps: pf.swaps || {}, creaDays: pf.creaDays || [], dishes: pf.dishes || [], recent: pf.recent || [], favs: pf.favs || [], events: pf.events || [], trackDays: pf.trackDays || [], phasePlan: pf.phasePlan || null, spiceMiss: pf.spiceMiss || [] };
     backfillTracked();
     renderAll(true); renderChallenge(true);
   },
@@ -2320,7 +2364,7 @@ const Store = {
     this.subShop();
     this.unsub.prefs = db.doc(this.base).collection('prefs').doc('main').onSnapshot(snap => {
       const d = snap.exists ? snap.data() : {};
-      S.prefs = { taste: { foods: {}, meals: {}, ...(d.taste || {}) }, challenge: d.challenge || null, challenges: migrateCh(d), swaps: d.swaps || {}, creaDays: d.creaDays || [], dishes: d.dishes || [], recent: d.recent || [], favs: d.favs || [], events: d.events || [], trackDays: d.trackDays || [], phasePlan: d.phasePlan || null };
+      S.prefs = { taste: { foods: {}, meals: {}, ...(d.taste || {}) }, challenge: d.challenge || null, challenges: migrateCh(d), swaps: d.swaps || {}, creaDays: d.creaDays || [], dishes: d.dishes || [], recent: d.recent || [], favs: d.favs || [], events: d.events || [], trackDays: d.trackDays || [], phasePlan: d.phasePlan || null, spiceMiss: d.spiceMiss || [] };
       renderAll(false); renderChallenge(true);
     }, () => {});
   },
@@ -2374,7 +2418,7 @@ const Store = {
     const swaps = Object.fromEntries(Object.entries(S.prefs.swaps || {}).filter(([k]) => k.slice(0, 10) >= old));
     const chs = S.prefs.challenges || [];
     const main = chs.slice().filter(c => c.date >= S.today).sort((a, b) => a.date.localeCompare(b.date))[0] || null;
-    const d = { taste: S.prefs.taste, challenges: chs, challenge: main ? { title: main.title, with: main.with, date: main.date, start: main.start } : null, swaps, creaDays: (S.prefs.creaDays || []).slice(-120), dishes: S.prefs.dishes || [], recent: S.prefs.recent || [], favs: S.prefs.favs || [], events: (S.prefs.events || []).filter(e => e.date >= isoDate(addDays(new Date(), -2))), trackDays: (S.prefs.trackDays || []).slice(-400), phasePlan: S.prefs.phasePlan || null, updatedAt: Date.now() };
+    const d = { taste: S.prefs.taste, challenges: chs, challenge: main ? { title: main.title, with: main.with, date: main.date, start: main.start } : null, swaps, creaDays: (S.prefs.creaDays || []).slice(-120), dishes: S.prefs.dishes || [], recent: S.prefs.recent || [], favs: S.prefs.favs || [], events: (S.prefs.events || []).filter(e => e.date >= isoDate(addDays(new Date(), -2))), trackDays: (S.prefs.trackDays || []).slice(-400), phasePlan: S.prefs.phasePlan || null, spiceMiss: S.prefs.spiceMiss || [], updatedAt: Date.now() };
     if (this.mode === 'db') this.write(this.base + '/prefs/main', d); else this.ls('prefs', d);
   },
   saveTrain() { if (this.mode === 'db') this.write(this.base + '/train/main', { ...S.train, updatedAt: Date.now() }); else this.ls('train', S.train); },
@@ -2507,7 +2551,7 @@ function renderToday() {
       <h3>${next.buy ? 'Unterwegs kaufen' : esc(next.meal.n)}</h3>
       ${next.meal.replaced ? `<div class="row" style="margin-top:6px"><span class="chip">${icon('swap')}statt ${esc(mealNameOf(next.meal.replaced))}</span></div>` : ''}
       ${next.buy ? buyBlock(next, adj.tot, true) : ingList(adj.items, adj.changed ? next.items : null, next.key) + macroLine(adj.tot)}
-      ${next.buy ? '' : `<div class="spread" style="flex-wrap:wrap">${next.meal.how ? `<details class="how"><summary>So geht's ${icon('caret-down')}</summary><p>${esc(next.meal.how)}</p></details>` : '<span></span>'}${tasteBtn(next.key)}</div>
+      ${next.buy ? '' : `<div class="spread" style="flex-wrap:wrap">${next.meal.how ? `<details class="how"><summary>So geht's ${icon('caret-down')}</summary><p>${esc(next.meal.how)}</p>${spiceLine(next.key)}</details>` : '<span></span>'}${tasteBtn(next.key)}</div>
       <div class="row" style="margin-top:4px">${lazyChip(next.meal)}${cookBtn(next.meal, todayPlan.date, next.id)}</div>`}
       ${next.buy ? `<div class="actions" style="grid-template-columns:1fr"><button class="btn ghost" data-act="skip" data-slot="${next.id}">Nichts gekauft, auslassen</button></div>` : next.key === 'kantine'
         ? `<div class="actions"><button class="btn" data-act="log-kantine" data-slot="${next.id}">${icon('storefront')}Eintragen, was es gab</button><button class="btn ghost" data-act="eat" data-slot="${next.id}">Wie geplant</button></div>`
@@ -2952,7 +2996,7 @@ function planDayList(p, R, isToday) {
       s.breakEnd ? `<span class="chip">${icon('clock')}Pause bis ${s.breakEnd}</span>` : '', s.meal.lazy && !s.buy ? `<span class="chip">${icon('clock')}Ohne Kochen</span>` : ''].join('');
     const body = state === 'skipped' ? '' : s.buy ? buyBlock(s, tot, isToday && state === 'open')
       : `${ingList(items, adj && adj.changed ? s.items : null, s.key)}${macroLine(tot)}
-        ${s.meal.how ? `<div class="howt"><span class="label">So geht's</span><p>${esc(s.meal.how)}</p></div>` : ''}
+        ${s.meal.how ? `<div class="howt"><span class="label">So geht's</span><p>${esc(s.meal.how)}</p>${spiceLine(s.key)}</div>` : ''}
         <div class="row">${cookBtn(s.meal, p.date, s.id)}${tasteBtn(s.key)}</div>`;
     const acts = !isToday ? '' : state !== 'open' ? `<button data-act="undo" data-slot="${s.id}">${icon('arrow-clockwise')}Rückgängig</button>`
       : s.buy ? `<button data-act="skip" data-slot="${s.id}">${icon('x')}Nichts gekauft</button>`
@@ -2991,9 +3035,39 @@ function shopList(items, key, extraStock) {
       <span class="qty">${esc(q)}</span></button></li>`;
   }).join('')}</ul>`).join('');
 }
-function tripCard(trip, key, title, open, extraStock, sub) {
+const spiceMissSet = () => new Set(S.prefs.spiceMiss || []);
+function spiceLine(key) {
+  const L = MEAL_SPICES[key]; if (!L) return '';
+  const miss = spiceMissSet();
+  return `<p class="spl">${icon('package')}<span>Gewürze: ${L.map(id => { const X = SPICES[id], n = esc(X.s || X.n); return miss.has(id) ? `${n} <em>fehlt</em>` : n; }).join(', ')}</span></p>`;
+}
+function spiceList(list, key) {
+  if (!list || !list.length) return '';
+  const checked = (S.shop[key] || {}).checked || {};
+  return `<div class="cat-h">${icon('package')}Gewürze</div><ul class="shop">${list.map(sp => {
+    const X = SPICES[sp.id], done = !!checked['sp:' + sp.id];
+    return `<li><button data-act="spice-buy" data-key="${key}" data-id="${sp.id}" class="${done ? 'done' : ''}" aria-pressed="${done}">
+      <span class="box">${icon('check')}</span>
+      <span class="nm">${esc(X.n)}<small>${esc(`Für ${listDe(sp.meals)}${X.note ? `, ${X.note}` : ''}`)}</small></span>
+      <span class="qty">1 Packung</span></button></li>`;
+  }).join('')}</ul>`;
+}
+function spiceCard(cyc) {
+  const miss = spiceMissSet(), need = new Map(cyc.spices.map(x => [x.id, x]));
+  const row = id => {
+    const on = miss.has(id), n = need.get(id);
+    const sub = n ? `Für ${listDe(n.meals)}${on ? '. Steht auf dem Großeinkauf' : ''}` : on ? 'Kommt auf die Liste, sobald ein Gericht es braucht' : 'Gerade in keinem Gericht';
+    return `<div class="stock-row"><div class="nm">${esc(SPICES[id].n)}<small>${esc(sub)}</small></div><button class="toggle" data-act="spice" data-id="${id}" aria-pressed="${on}" aria-label="${esc(SPICES[id].n)}: ${on ? 'fehlt' : 'hab ich'}">${on ? 'Fehlt' : 'Hab ich'}</button></div>`;
+  };
+  const other = Object.keys(SPICES).filter(id => !need.has(id));
+  return `<div class="card"><div class="spread"><h3>Gewürze</h3>${icon('package')}</div>
+    <p class="muted" style="margin:6px 0 4px;font-size:13.5px">Tipp an, was dir zuhause fehlt. Es kommt auf den Großeinkauf, sobald ein Gericht es braucht, und bleibt gemerkt, bis du es dort abhakst.</p>
+    ${need.size ? [...need.keys()].map(row).join('') : '<p class="muted" style="margin:6px 0 0;font-size:13px">Im Moment braucht kein geplantes Gericht Gewürze.</p>'}
+    ${other.length ? `<details class="how" style="margin-top:6px"><summary>Andere Gewürze aus den Rezepten (${other.length}) ${icon('caret-down')}</summary>${other.map(row).join('')}</details>` : ''}</div>`;
+}
+function tripCard(trip, key, title, open, extraStock, sub, spices) {
   const st = S.shop[key] || {}, checked = st.checked || {};
-  const all = trip.items.map(i => i.food).concat((extraStock || []).map(i => i.food));
+  const all = trip.items.map(i => i.food).concat((extraStock || []).map(i => i.food), (spices || []).map(sp => 'sp:' + sp.id));
   const done = all.filter(f => checked[f]).length, n = all.length;
   const C = 2 * Math.PI * 26;
   const days = trip.days.map(d => DAYSHORT[dow(d)]);
@@ -3001,7 +3075,7 @@ function tripCard(trip, key, title, open, extraStock, sub) {
       <p class="muted" style="margin:4px 0 0;font-size:13px">${sub || `Für ${days[0]} bis ${days[days.length - 1]}`}</p></div>
       <div class="pring" aria-label="${done} von ${n} im Wagen"><svg viewBox="0 0 62 62"><circle class="t" cx="31" cy="31" r="26"/><circle class="a" cx="31" cy="31" r="26" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - (n ? done / n : 0))).toFixed(1)}"/></svg><span>${done}/${n}</span></div></div>`;
   const carried = trip.carried && trip.carried.length ? `<div class="note" style="margin-top:12px">${icon('package')}<p>Vom letzten Einkauf reicht noch: ${trip.carried.map(c => esc(FOODS[c.food].n)).join(', ')}.</p></div>` : '';
-  const body = shopList(trip.items, key, extraStock) + carried;
+  const body = shopList(trip.items, key, extraStock) + spiceList(spices, key) + carried;
   if (open) return `<div class="card">${head}${body}</div>`;
   return `<details class="card trip"><summary><div class="trip-hero"><div><span class="label">${esc(title)}</span><h3 style="margin-top:4px">${dateLabel(trip.date)}</h3><p class="muted" style="margin:4px 0 0;font-size:13px">${sub || `Für ${days[0]} bis ${days[days.length - 1]}`}</p></div>${icon('caret-down', 'car')}</div></summary>${body}</details>`;
 }
@@ -3016,7 +3090,10 @@ function renderShop() {
   const kMain = isoDate(cyc.main.date), kSec = isoDate(cyc.second.date);
   const stFlags = (S.shop[kMain] || {}).stock || {};
   const extraStock = cyc.stock.filter(s => stFlags[s.food]).map(s => ({ food: s.food, cat: 'vorrat', stockRow: true, days: [] }));
-  $('#shopMain').innerHTML = tripCard(cyc.main, kMain, 'Großeinkauf', true, extraStock);
+  const miss = spiceMissSet(), chk = (S.shop[kMain] || {}).checked || {};
+  const spiceItems = cyc.spices.filter(sp => miss.has(sp.id) || chk['sp:' + sp.id]);
+  $('#shopMain').innerHTML = tripCard(cyc.main, kMain, 'Großeinkauf', true, extraStock, undefined, spiceItems);
+  $('#shopSpice').innerHTML = spiceCard(cyc);
   $('#shopSecond').innerHTML = tripCard(cyc.second, kSec, 'Frisch nachkaufen', false);
   $('#shopStock').innerHTML = `<div class="card"><div class="spread"><h3>Vorrat</h3>${icon('package')}</div>
     <p class="muted" style="margin:6px 0 4px;font-size:13.5px">Hält lange. Tipp an, was fehlt, dann landet es auf dem Großeinkauf.</p>
@@ -3077,7 +3154,7 @@ const gymHint = p => {
   return parts.length ? `Startet 15 Minuten nach Feierabend${loopOf(p) ? ', diese Woche' : ''}: ${parts.join(' · ')}. An freien Tagen wie an einem normalen Arbeitstag.` : 'Kein Gym-Tag eingeplant.';
 };
 function exportCode() {
-  const d = { v: 1, profile: { ...S.profile, example: false }, prefs: { taste: S.prefs.taste, challenges: S.prefs.challenges || [], creaDays: S.prefs.creaDays || [], dishes: S.prefs.dishes || [], recent: S.prefs.recent || [], favs: S.prefs.favs || [], events: S.prefs.events || [], trackDays: S.prefs.trackDays || [], phasePlan: S.prefs.phasePlan || null }, weights: S.weights || [], train: S.train || emptyTrain(), today: { date: S.today, log: S.log } };
+  const d = { v: 1, profile: { ...S.profile, example: false }, prefs: { taste: S.prefs.taste, challenges: S.prefs.challenges || [], creaDays: S.prefs.creaDays || [], dishes: S.prefs.dishes || [], recent: S.prefs.recent || [], favs: S.prefs.favs || [], events: S.prefs.events || [], trackDays: S.prefs.trackDays || [], phasePlan: S.prefs.phasePlan || null, spiceMiss: S.prefs.spiceMiss || [] }, weights: S.weights || [], train: S.train || emptyTrain(), today: { date: S.today, log: S.log } };
   return 'DELREY1:' + btoa(unescape(encodeURIComponent(JSON.stringify(d))));
 }
 function importCode(code) {
@@ -3087,7 +3164,7 @@ function importCode(code) {
   if (!d || !d.profile) throw new Error('leer');
   S.profile = { ...DEFAULT_PROFILE, ...d.profile, example: false };
   const pf = d.prefs || {};
-  S.prefs = { taste: { foods: {}, meals: {}, ...(pf.taste || {}) }, challenge: null, challenges: pf.challenges || [], swaps: {}, creaDays: pf.creaDays || [], dishes: pf.dishes || [], recent: pf.recent || [], favs: pf.favs || [], events: pf.events || [], trackDays: pf.trackDays || [], phasePlan: pf.phasePlan || null };
+  S.prefs = { taste: { foods: {}, meals: {}, ...(pf.taste || {}) }, challenge: null, challenges: pf.challenges || [], swaps: {}, creaDays: pf.creaDays || [], dishes: pf.dishes || [], recent: pf.recent || [], favs: pf.favs || [], events: pf.events || [], trackDays: pf.trackDays || [], phasePlan: pf.phasePlan || null, spiceMiss: pf.spiceMiss || [] };
   S.weights = (d.weights || []).filter(w => w && w.date && +w.kg > 0).sort((a, b) => a.date < b.date ? -1 : 1);
   if (d.today && d.today.date === S.today && d.today.log) S.log = { ...emptyLog(), ...d.today.log };
   if (d.train) { S.train = { ...emptyTrain(), ...d.train }; Store.saveTrain(); }
@@ -4347,6 +4424,21 @@ document.addEventListener('click', e => {
   }
   if (a === 'undo-del') { if (S.undo) { const u = S.undo; S.undo = null; mutateLog(l => { Object.assign(l, u); }, 'Wiederhergestellt'); } return; }
   if (a === 'plan-day') { S.planDow = +b.dataset.d; return renderPlan(); }
+  if (a === 'spice' || a === 'spice-buy') {
+    const id = b.dataset.id; if (!SPICES[id]) return;
+    const m = new Set(S.prefs.spiceMiss || []);
+    if (a === 'spice') { if (m.has(id)) m.delete(id); else m.add(id); }
+    else {
+      const key = b.dataset.key;
+      S.shop[key] = JSON.parse(JSON.stringify(S.shop[key] || {}));
+      const ch = S.shop[key].checked = S.shop[key].checked || {};
+      // Abgehakt heißt gekauft: dann ist es wieder zuhause
+      if (ch['sp:' + id]) { delete ch['sp:' + id]; m.add(id); } else { ch['sp:' + id] = true; m.delete(id); }
+      Store.saveShop(key);
+    }
+    S.prefs = { ...S.prefs, spiceMiss: [...m] }; Store.savePrefs();
+    renderShop(); renderTimeline(); return;
+  }
   if (a === 'shop' || a === 'stock') {
     const key = b.dataset.key, food = b.dataset.food;
     S.shop[key] = JSON.parse(JSON.stringify(S.shop[key] || {}));
@@ -5024,7 +5116,7 @@ function renderDishes() {
   if (S.dishOpen && !list.some(d => d.id === S.dishOpen)) S.dishOpen = null;
   $('#dishList').innerHTML = list.length ? list.map(d => {
     const open = S.dishOpen === d.id;
-    return `<li><div class="drow-w"><button class="drow" data-act="dish-pick" data-id="${esc(d.id)}" aria-expanded="${open}"><span class="dic">${icon(DISH_IC[d.cat] || 'bowl-food')}</span><span class="dnm"><b>${esc(d.n)}</b><small>${esc(d.por || '1 Portion')}</small></span><span class="dkc"><b>${fmt(d.kcal)}</b>kcal · ${fmt(d.p)} g Eiweiß</span></button><button class="dfav" data-act="dish-fav" data-id="${esc(d.id)}" aria-pressed="${favSet.has(d.id)}" aria-label="${esc(d.n)} ${favSet.has(d.id) ? 'aus Favoriten entfernen' : 'zu Favoriten'}">${icon(favSet.has(d.id) ? 'heart-fill' : 'heart')}</button></div><div class="dform" id="dform-${esc(d.id)}"></div></li>`;
+    return `<li><div class="drow-w"><button class="drow" data-act="dish-pick" data-id="${esc(d.id)}" aria-expanded="${open}"><span class="dic">${icon(DISH_IC[d.cat] || 'bowl-food')}</span><span class="dnm"><b>${esc(d.n)}</b><small>${esc(d.por || '1 Portion')}</small></span><span class="dkc"><b>${fmt(d.kcal)}<span class="u">kcal</span></b>${fmt(d.p)} g Eiweiß</span></button><button class="dfav" data-act="dish-fav" data-id="${esc(d.id)}" aria-pressed="${favSet.has(d.id)}" aria-label="${esc(d.n)} ${favSet.has(d.id) ? 'aus Favoriten entfernen' : 'zu Favoriten'}">${icon(favSet.has(d.id) ? 'heart-fill' : 'heart')}</button></div><div class="dform" id="dform-${esc(d.id)}"></div></li>`;
   }).join('') : `<li><p class="dempty">${q ? 'Nichts gefunden. Stell es dir aus Zutaten zusammen:' : 'Noch leer.'}</p>${q ? `<button class="btn sm" data-act="bld-new" style="margin-bottom:8px">${icon('cooking-pot')}Gericht zusammenstellen</button>` : ''}</li>`;
   if (S.dishOpen && S.est && S.est.result && S.est.result.dish === S.dishOpen) showEstimate(S.est.result, false, true);
 }
@@ -5044,7 +5136,7 @@ function dishResult(d, m) {
 
 /* ================= Zutaten für eigene Gerichte (pro 100 g bzw. 100 ml) =================
    Grundlage sind die Lebensmittel der App, ergänzt um typische Koch-Zutaten. lf = Leucin-Anteil am Eiweiß. */
-const ING_SYN = { fries: 'pommes frites fritten', wedges: 'kartoffelspalten pommes', roesti: 'roesti kartoffelpuffer', kroketten: 'kroketten', gnocchi: 'nocken', spaetzle: 'spatzle nockerl', raclette: 'kaese', ketchup: 'tomatenketchup', mayo: 'majo mayonnaise', sriracha: 'chili scharf chilisauce', srirachamayo: 'sriracha mayo majo scharf', tomsauce5: 'tomatensauce sugo sauce paradeiser kraeuter spaghetti glas', arrabbiata: 'tomatensauce sugo scharf', passata: 'passierte tomaten paradeiser sauce', pesto: 'pesto', coconut: 'kokosmilch curry', kidney: 'bohnen', corn: 'mais', chicken: 'huhn hendl haehnchen haenchen huehnchen haendl poulet huehnerbrust', turkey: 'truthahn puten', beef: 'hackfleisch hack rind', cheese: 'lightkaese kaese light gerieben', rice: 'reis roh basmati', pasta: 'nudeln spaghetti roh', potato: 'kartoffeln erdaepfel', eggs: 'ei eier', milk: 'milch', oil: 'oel', topfen: 'quark', mozza: 'mozzarella' };
+const ING_SYN = { ryebread: 'schwarzbrot roggen', spelt: 'dinkel', mixbread: 'mischbrot bauernbrot', protbread: 'proteinbrot low carb', wholetoast: 'toast', toast: 'toastbrot weissbrot', semmel: 'broetchen semmel kaisersemmel', kornspitz: 'weckerl gebaeck', pretzel: 'brezen laugengebaeck', crispbread: 'knaeckebrot', bbq: 'grillsauce barbecue', curryketchup: 'curry ketchup', salsa: 'dip tomatensalsa', sweetchili: 'chili', sweetsour: 'suess sauer', mustard: 'senf', mayolight: 'mayo leicht', garlicsauce: 'knoblauch kebab', burgersauce: 'burger', tzatziki: 'zaziki joghurt', fries: 'pommes frites fritten', wedges: 'kartoffelspalten pommes', roesti: 'roesti kartoffelpuffer', kroketten: 'kroketten', gnocchi: 'nocken', spaetzle: 'spatzle nockerl', raclette: 'kaese', ketchup: 'tomatenketchup', mayo: 'majo mayonnaise', sriracha: 'chili scharf chilisauce', srirachamayo: 'sriracha mayo majo scharf', tomsauce5: 'tomatensauce sugo sauce paradeiser kraeuter spaghetti glas', arrabbiata: 'tomatensauce sugo scharf', passata: 'passierte tomaten paradeiser sauce', pesto: 'pesto', coconut: 'kokosmilch curry', kidney: 'bohnen', corn: 'mais', chicken: 'huhn hendl haehnchen haenchen huehnchen haendl poulet huehnerbrust', turkey: 'truthahn puten', beef: 'hackfleisch hack rind', cheese: 'lightkaese kaese light gerieben', rice: 'reis roh basmati', pasta: 'nudeln spaghetti roh', potato: 'kartoffeln erdaepfel', eggs: 'ei eier', milk: 'milch', oil: 'oel', topfen: 'quark', mozza: 'mozzarella' };
 const ING_EXTRA = [
   ['x-chicken-cooked', 'Hühnerbrust gegart', 145, 31, 0, 1.8, 0, .08, 'huhn haehnchen haenchen gebraten gekocht'],
   ['x-chickthigh', 'Hühnerkeule ohne Haut', 125, 19.5, 0, 5, 0, .08, 'huhn haehnchen haenchen schenkel', { raw: 1 }],
@@ -5056,8 +5148,6 @@ const ING_EXTRA = [
   ['x-rice-cooked', 'Reis gekocht', 130, 2.7, 28, 0.3, 0.4, .07, 'reis gekocht'],
   ['x-pasta', 'Nudeln (Hartweizen)', 355, 12.5, 71, 1.5, 3, .07, 'nudeln spaghetti penne roh', { raw: 1 }],
   ['x-pasta-cooked', 'Nudeln gekocht', 150, 5.5, 30, 0.8, 1.5, .07, 'nudeln spaghetti penne gekocht'],
-  ['x-toast', 'Toastbrot', 260, 8, 48, 3.5, 3, .07, 'toast', { piece: 25, pn: ['Scheibe', 'Scheiben'] }],
-  ['x-semmel', 'Semmel', 275, 9, 55, 1.5, 3, .07, 'broetchen semmel', { piece: 55, pn: ['Semmel', 'Semmeln'] }],
   ['x-tortilla', 'Tortilla-Wrap', 310, 8.5, 52, 7, 3, .07, 'wrap tortilla', { piece: 62, pn: ['Wrap', 'Wraps'] }],
   ['x-gouda', 'Gouda', 360, 25, 0, 28.5, 0, .09, 'kaese'],
   ['x-emmentaler', 'Emmentaler', 380, 28.5, 0, 29.5, 0, .09, 'kaese'],
@@ -5069,9 +5159,6 @@ const ING_EXTRA = [
   ['x-cream', 'Schlagobers 36 %', 340, 2.2, 3, 36, 0, .1, 'sahne obers schlagsahne', { unit: 'ml' }],
   ['x-cookcream', 'Kochcreme light 15 %', 160, 3, 4, 15, 0, .1, 'sahne cremefine kochsahne light obers', { unit: 'ml' }],
   ['x-sourcream', 'Sauerrahm', 160, 3, 4, 15, 0, .1, 'saure sahne rahm'],
-  ['x-mayolight', 'Mayonnaise light', 290, 0.8, 7, 29, 0, .06, 'mayo', { spoon: 15 }],
-  ['x-bbq', 'BBQ-Sauce', 160, 1, 38, 0.3, 0.5, .03, 'grillsauce', { spoon: 15 }],
-  ['x-sweetchili', 'Sweet-Chili-Sauce', 220, 0.5, 52, 0.5, 0.5, .03, 'chili', { spoon: 15 }],
   ['x-rapsoil', 'Raps- / Sonnenblumenöl', 884, 0, 0, 100, 0, 0, 'oel', { spoon: 10 }],
   ['x-onion', 'Zwiebel', 40, 1.2, 8, 0.2, 1.8, .05, '', { piece: 100, pn: ['Zwiebel', 'Zwiebeln'] }],
   ['x-avocado', 'Avocado', 160, 2, 2, 15, 6.5, .05, '', { piece: 150, pn: ['Avocado', 'Avocados'] }],
@@ -5082,7 +5169,7 @@ const ING_EXTRA = [
 const INGS = {};
 for (const [k, F] of Object.entries(FOODS)) if (!F.portion) INGS[k] = { id: k, n: F.n, syn: (F.nom || '') + ' ' + (ING_SYN[k] || ''), kcal: F.kcal, p: F.p, c: F.c, f: F.f, fib: F.fib, leu: F.leu, unit: F.unit || 'g', piece: F.piece, pn: F.pn, spoon: F.spoon, raw: !!F.raw };
 for (const [id, n, kcal, p, c, f, fib, lf, syn, o] of ING_EXTRA) INGS[id] = { id, n, syn, kcal, p, c, f, fib, leu: p * lf, unit: 'g', raw: false, ...(o || {}) };
-const ING_ALIAS = { 'x-gnocchi': 'gnocchi', 'x-fries': 'fries', 'x-passata': 'passata', 'x-tomsauce': 'tomsauce5', 'x-pesto': 'pesto', 'x-ketchup': 'ketchup', 'x-mayo': 'mayo', 'x-corn': 'corn', 'x-kidney': 'kidney' };
+const ING_ALIAS = { 'x-toast': 'toast', 'x-semmel': 'semmel', 'x-mayolight': 'mayolight', 'x-bbq': 'bbq', 'x-sweetchili': 'sweetchili', 'x-gnocchi': 'gnocchi', 'x-fries': 'fries', 'x-passata': 'passata', 'x-tomsauce': 'tomsauce5', 'x-pesto': 'pesto', 'x-ketchup': 'ketchup', 'x-mayo': 'mayo', 'x-corn': 'corn', 'x-kidney': 'kidney' };
 for (const [o, n] of Object.entries(ING_ALIAS)) if (INGS[n]) INGS[o] = { ...INGS[n], alias: true };
 const ING_QUICK = ['chicken', 'rice', 'pasta', 'potato', 'cheese', 'eggs', 'beef', 'x-cookcream', 'oil', 'tomsauce5'];
 const ingDefault = I => I.piece || I.spoon || (I.unit === 'ml' ? 200 : 100);
