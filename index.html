@@ -678,6 +678,90 @@ details.trip[open] > summary .ico.car{transform:rotate(180deg)}
 .spl{display:flex;gap:6px;align-items:flex-start;margin:8px 0 0;font-size:13px;color:var(--muted);line-height:1.4}
 .spl .ico{width:15px;height:15px;flex:none;margin-top:2px}
 .spl em{font-style:normal;font-weight:650;color:var(--warn)}
+/* ---------- Rang ---------- */
+.rk{position:relative;overflow:hidden;isolation:isolate;color:#f4f6fb;text-align:center;padding:18px 18px 16px;border:1px solid color-mix(in srgb,var(--rk2) 45%,transparent);background:radial-gradient(130% 78% at 50% 0%,color-mix(in srgb,var(--rk2) 40%,#0c1018) 0%,#0b0e15 62%,#090b10 100%);box-shadow:0 18px 40px -18px color-mix(in srgb,var(--rk1) 70%,transparent)}
+.rk::after{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(58% 36% at 50% 30%,color-mix(in srgb,var(--rkg) 26%,transparent),transparent 72%);pointer-events:none}
+.rk-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.rk-eb{font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:color-mix(in srgb,var(--rk3) 75%,#fff)}
+.rk-wk{font-size:12px;font-weight:700;padding:4px 9px;border-radius:999px;background:rgb(255 255 255 / .08);font-variant-numeric:tabular-nums}
+.rk .up{color:#7cefae}
+.rk .down{color:#ff9d9d}
+.rk-stage{all:unset;box-sizing:border-box;position:relative;display:grid;place-items:center;width:196px;height:196px;margin:4px auto 0;cursor:pointer;-webkit-tap-highlight-color:transparent;border-radius:50%}
+.rk-stage:focus-visible{outline:2px solid var(--rk3);outline-offset:4px}
+.rk-stage:active .rk-float{transform:scale(.97)}
+.rk-rays{position:absolute;inset:-14%;border-radius:50%;background:repeating-conic-gradient(from 0deg,color-mix(in srgb,var(--rkg) 70%,transparent) 0deg 5deg,transparent 5deg 22deg);-webkit-mask:radial-gradient(circle,#000 16%,transparent 66%);mask:radial-gradient(circle,#000 16%,transparent 66%);opacity:var(--rkr);pointer-events:none}
+.rk-glow{position:absolute;inset:18%;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--rkg) 78%,transparent),transparent 70%);filter:blur(10px);opacity:.7;pointer-events:none}
+.rk-float{position:relative;width:152px;height:152px;display:block;filter:drop-shadow(0 10px 16px rgb(0 0 0 / .5)) drop-shadow(0 0 12px color-mix(in srgb,var(--rkg) 50%,transparent));transition:transform .2s}
+.rk-svg{width:100%;height:100%;display:block;overflow:visible}
+.rk-name{margin:0;font-family:var(--font-display);font-size:27px;font-weight:750;letter-spacing:-.01em;color:#fff;text-shadow:0 0 18px color-mix(in srgb,var(--rkg) 55%,transparent)}
+.rk-lp{margin:2px 0 10px;font-size:13.5px;font-weight:650;color:rgb(255 255 255 / .72)}
+.rk-bar{position:relative;height:10px;border-radius:999px;background:rgb(255 255 255 / .1);overflow:hidden;max-width:280px;margin:0 auto}
+.rk-bar i{position:absolute;inset:0 auto 0 0;overflow:hidden;border-radius:inherit;background:linear-gradient(90deg,var(--rk2),var(--rk3));box-shadow:0 0 12px color-mix(in srgb,var(--rkg) 70%,transparent)}
+.rk-bar i::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgb(255 255 255 / .7),transparent);transform:translateX(-100%)}
+.rk-next{margin:7px 0 0;font-size:12.5px;color:rgb(255 255 255 / .64)}
+.rk-stats{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:6px;margin-top:14px}
+.rk-stats div{padding:9px 4px;border-radius:12px;background:rgb(255 255 255 / .06);border:1px solid rgb(255 255 255 / .07)}
+.rk-stats b{display:block;font-size:16px;font-weight:750;color:#fff}
+.rk-stats span{display:block;font-size:11px;color:rgb(255 255 255 / .62);margin-top:1px;font-weight:600}
+.rk-hint{margin:10px 0 0;font-size:12.5px;color:#ffd59e;line-height:1.4}
+.rk-tog{all:unset;display:inline-flex;align-items:center;gap:6px;margin-top:12px;padding:4px 2px;font-size:13px;font-weight:650;color:color-mix(in srgb,var(--rk3) 80%,#fff);cursor:pointer}
+.rk-tog:focus-visible{outline:2px solid var(--rk3);outline-offset:2px;border-radius:6px}
+.rk-tog .ico{width:15px;height:15px;transition:transform .25s}
+.rk-tog[aria-expanded="true"] .ico{transform:rotate(180deg)}
+.rk-more{text-align:left;margin-top:12px;padding-top:14px;border-top:1px solid rgb(255 255 255 / .1)}
+.rk-ladder{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.rk-step{display:grid;justify-items:center;gap:2px;padding:8px 4px 9px;border-radius:14px;background:rgb(255 255 255 / .04);text-align:center}
+.rk-step.now{background:rgb(255 255 255 / .1);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--rkg) 85%,transparent)}
+.rk-mini{width:56px;height:56px;display:block}
+.rk-step.lock .rk-mini{filter:grayscale(1) brightness(.55);opacity:.6}
+.rk-step b{font-size:12.5px;color:#fff}
+.rk-step.lock b{color:rgb(255 255 255 / .55)}
+.rk-step small{font-size:10.5px;color:rgb(255 255 255 / .52)}
+.rk-sub{margin:16px 0 6px;font-size:12px;font-weight:700;color:rgb(255 255 255 / .75)}
+.rk-spark{width:100%;height:56px;display:block}
+.rk-rules,.rk-hist{list-style:none;margin:0;padding:0}
+.rk-rules li,.rk-hist li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;font-size:13px;color:rgb(255 255 255 / .84)}
+.rk-rules li + li,.rk-hist li + li{border-top:1px solid rgb(255 255 255 / .07)}
+.rk-rules b,.rk-hist li > span{font-weight:750;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rk-hist b{display:block;font-size:13px;color:#fff}
+.rk-hist small{display:block;font-size:11.5px;color:rgb(255 255 255 / .56);margin-top:1px;line-height:1.35}
+.rk-empty,.rk-note{font-size:12.5px;color:rgb(255 255 255 / .62);margin:6px 0 0;line-height:1.45}
+.rk-note{margin-top:12px}
+/* Aufstieg */
+.rkc{position:fixed;inset:0;z-index:95;display:grid;place-items:center;padding:24px;background:radial-gradient(80% 60% at 50% 40%,color-mix(in srgb,var(--rk2) 42%,#06080c) 0%,rgb(6 8 12 / .95) 72%);opacity:0;transition:opacity .35s;color:#fff;text-align:center}
+.rkc.on{opacity:1}
+.rkc-in{position:relative;display:grid;justify-items:center;gap:4px;max-width:330px}
+.rkc-stage{position:relative;width:250px;height:250px;display:grid;place-items:center}
+.rkc-stage .rk-rays{inset:-8%}
+.rkc-pop{position:relative;width:196px;height:196px;display:block;filter:drop-shadow(0 0 26px color-mix(in srgb,var(--rkg) 70%,transparent))}
+.rkc-eb{margin:6px 0 0;font-size:12px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;color:var(--rk3)}
+.rkc h2{margin:0;font-family:var(--font-display);font-size:36px;font-weight:800;color:#fff;text-shadow:0 0 22px color-mix(in srgb,var(--rkg) 60%,transparent)}
+.rkc-p{margin:4px 0 16px;font-size:14px;color:rgb(255 255 255 / .78);line-height:1.45}
+.rkc-btn{min-width:170px}
+.rkc-conf{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.rkc-conf i{position:absolute;top:-14px;width:7px;height:12px;border-radius:2px;opacity:0}
+@media (prefers-reduced-motion: no-preference){
+  .rk-rays{animation:rkSpin 46s linear infinite}
+  .rk-glow{animation:rkGlow 3.4s ease-in-out infinite}
+  .rk-float{animation:rkFloat 4.6s ease-in-out infinite}
+  .rk-shine{animation:rkShine 4.4s cubic-bezier(.4,0,.2,1) infinite}
+  .rk-sp{transform-box:fill-box;transform-origin:center;opacity:0;animation:rkTw 3.6s ease-in-out infinite}
+  .rk-wing{transform-box:view-box;transform-origin:34px 46px;animation:rkFlap 4.6s ease-in-out infinite}
+  .rk-bar i::after{animation:rkBar 3s ease-in-out infinite}
+  .rkc.on .rkc-pop{animation:rkPop .95s cubic-bezier(.2,1.4,.4,1) both}
+  .rkc.on .rkc-conf i{animation:rkConf 2.8s cubic-bezier(.2,.7,.4,1) forwards}
+  .rkc .rk-rays{animation:rkSpin 16s linear infinite}
+}
+@media (prefers-reduced-motion: reduce){ .rk-sp{opacity:.8} }
+@keyframes rkSpin{to{transform:rotate(360deg)}}
+@keyframes rkGlow{0%,100%{opacity:.5;transform:scale(.92)}50%{opacity:.95;transform:scale(1.07)}}
+@keyframes rkFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes rkShine{0%,56%{transform:skewX(-18deg) translateX(0)}86%,100%{transform:skewX(-18deg) translateX(196px)}}
+@keyframes rkTw{0%,100%{opacity:0;transform:scale(.2) rotate(0deg)}45%,55%{opacity:1;transform:scale(1) rotate(45deg)}}
+@keyframes rkFlap{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-5deg)}}
+@keyframes rkBar{0%{transform:translateX(-100%)}60%,100%{transform:translateX(100%)}}
+@keyframes rkPop{0%{transform:scale(.2) rotate(-14deg);opacity:0}60%{transform:scale(1.12) rotate(3deg);opacity:1}100%{transform:scale(1) rotate(0)}}
+@keyframes rkConf{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(var(--dx),105vh) rotate(var(--rx))}}
 .stock-row .nm{font-weight:600;font-size:14px}
 .stock-row small{display:block;color:var(--muted);font-size:12px;font-weight:500}
 .toggle{border:1px solid var(--line);background:transparent;border-radius:999px;padding:6px 11px;font-size:12.5px;font-weight:600;white-space:nowrap}
@@ -870,6 +954,16 @@ details.trip[open] > summary .ico.car{transform:rotate(180deg)}
 .dnm small{display:block;font-size:12px;color:var(--muted);margin-top:1px}
 .dkc{text-align:right;white-space:nowrap;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 .dkc b{display:block;font-size:14.5px;color:var(--ink);font-weight:650}
+.pcs{display:grid;grid-template-columns:48px minmax(0,1fr) 48px;gap:8px;align-items:center}
+.pcs-b{height:48px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);display:grid;place-items:center;cursor:pointer;transition:transform .15s var(--ease)}
+.pcs-b:active{transform:scale(.95)}
+.pcs-b .ico{width:20px;height:20px}
+.pcs-in{display:flex;align-items:baseline;justify-content:center;gap:6px;height:48px;border-radius:14px;background:var(--tint);padding:0 12px;cursor:text}
+.pcs-in input{width:3.2ch;border:0;background:transparent;font:inherit;font-size:22px;font-weight:700;text-align:right;color:var(--ink);font-variant-numeric:tabular-nums;padding:0;line-height:48px}
+.pcs-in input:focus{outline:none}
+.pcs-in:focus-within{box-shadow:0 0 0 2px var(--accent)}
+.pcs-in span{font-size:14px;color:var(--muted);font-weight:600}
+.pcs-q{margin-top:-4px}
 .dkc b .u{margin-left:3px;font-size:12px;font-weight:550;color:var(--muted)}
 .ddel{flex:none;width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:transparent;display:grid;place-items:center;color:var(--muted);padding:0}
 .ddel .ico{width:14px;height:14px}
@@ -2318,13 +2412,13 @@ const S = {
   profile: { ...DEFAULT_PROFILE, week: DEFAULT_PROFILE.week.slice() },
   today: isoDate(new Date()), log: emptyLog(), weights: [], shop: {}, tab: 'heute',
   planDow: dow(new Date()), est: null, sample: null, sampleImages: false, photo: null,
-  prefs: { taste: { foods: {}, meals: {} }, challenge: null, challenges: [], spiceMiss: [] }, userName: '', chEdit: null, chDel: null,
+  prefs: { taste: { foods: {}, meals: {} }, challenge: null, challenges: [], spiceMiss: [], nut: {} }, userName: '', chEdit: null, chDel: null,
 };
 const planPr = () => ({ ...S.profile, taste: S.prefs.taste, swaps: S.prefs.swaps || {}, events: S.prefs.events || [], phaseList: typeof phaseListAll === 'function' ? phaseListAll() : [] });
 
 /* ================= Speicher: claude db (privat pro Person), sonst Browser ================= */
 const Store = {
-  mode: 'local', db: null, base: null, unsub: {}, q: {},
+  mode: 'local', db: null, base: null, unsub: {}, q: {}, got: new Set(),
   async init() {
     try {
       if (window.claude && claude.use) {
@@ -2342,7 +2436,8 @@ const Store = {
     S.weights = this.ls('weights') || [];
     S.train = { ...emptyTrain(), ...(this.ls('train') || {}) };
     S.shop = this.ls('shop') || {};
-    const pf = this.ls('prefs'); if (pf) S.prefs = { taste: { foods: {}, meals: {}, ...(pf.taste || {}) }, challenge: pf.challenge || null, challenges: migrateCh(pf), swaps: pf.swaps || {}, creaDays: pf.creaDays || [], dishes: pf.dishes || [], recent: pf.recent || [], favs: pf.favs || [], events: pf.events || [], trackDays: pf.trackDays || [], phasePlan: pf.phasePlan || null, spiceMiss: pf.spiceMiss || [] };
+    this.got = new Set(['prefs', 'train']);
+    const pf = this.ls('prefs'); if (pf) S.prefs = { taste: { foods: {}, meals: {}, ...(pf.taste || {}) }, challenge: pf.challenge || null, challenges: migrateCh(pf), swaps: pf.swaps || {}, creaDays: pf.creaDays || [], dishes: pf.dishes || [], recent: pf.recent || [], favs: pf.favs || [], events: pf.events || [], trackDays: pf.trackDays || [], phasePlan: pf.phasePlan || null, spiceMiss: pf.spiceMiss || [], nut: pf.nut || {} };
     backfillTracked();
     renderAll(true); renderChallenge(true);
   },
@@ -2358,13 +2453,13 @@ const Store = {
       if (S.tab === 'info') renderInfo(); if (S.tab === 'fort') renderFort(); renderToday();
     }, () => {});
     this.unsub.train = db.doc(this.base).collection('train').doc('main').onSnapshot(snap => {
-      S.train = { ...emptyTrain(), ...(snap.exists ? snap.data() : {}) };
+      S.train = { ...emptyTrain(), ...(snap.exists ? snap.data() : {}) }; this.got.add('train');
       if (S.tab === 'fort') renderFort();
     }, () => {});
     this.subShop();
     this.unsub.prefs = db.doc(this.base).collection('prefs').doc('main').onSnapshot(snap => {
-      const d = snap.exists ? snap.data() : {};
-      S.prefs = { taste: { foods: {}, meals: {}, ...(d.taste || {}) }, challenge: d.challenge || null, challenges: migrateCh(d), swaps: d.swaps || {}, creaDays: d.creaDays || [], dishes: d.dishes || [], recent: d.recent || [], favs: d.favs || [], events: d.events || [], trackDays: d.trackDays || [], phasePlan: d.phasePlan || null, spiceMiss: d.spiceMiss || [] };
+      const d = snap.exists ? snap.data() : {}; this.got.add('prefs');
+      S.prefs = { taste: { foods: {}, meals: {}, ...(d.taste || {}) }, challenge: d.challenge || null, challenges: migrateCh(d), swaps: d.swaps || {}, creaDays: d.creaDays || [], dishes: d.dishes || [], recent: d.recent || [], favs: d.favs || [], events: d.events || [], trackDays: d.trackDays || [], phasePlan: d.phasePlan || null, spiceMiss: d.spiceMiss || [], nut: d.nut || {} };
       renderAll(false); renderChallenge(true);
     }, () => {});
   },
@@ -2418,7 +2513,7 @@ const Store = {
     const swaps = Object.fromEntries(Object.entries(S.prefs.swaps || {}).filter(([k]) => k.slice(0, 10) >= old));
     const chs = S.prefs.challenges || [];
     const main = chs.slice().filter(c => c.date >= S.today).sort((a, b) => a.date.localeCompare(b.date))[0] || null;
-    const d = { taste: S.prefs.taste, challenges: chs, challenge: main ? { title: main.title, with: main.with, date: main.date, start: main.start } : null, swaps, creaDays: (S.prefs.creaDays || []).slice(-120), dishes: S.prefs.dishes || [], recent: S.prefs.recent || [], favs: S.prefs.favs || [], events: (S.prefs.events || []).filter(e => e.date >= isoDate(addDays(new Date(), -2))), trackDays: (S.prefs.trackDays || []).slice(-400), phasePlan: S.prefs.phasePlan || null, spiceMiss: S.prefs.spiceMiss || [], updatedAt: Date.now() };
+    const d = { taste: S.prefs.taste, challenges: chs, challenge: main ? { title: main.title, with: main.with, date: main.date, start: main.start } : null, swaps, creaDays: (S.prefs.creaDays || []).slice(-120), dishes: S.prefs.dishes || [], recent: S.prefs.recent || [], favs: S.prefs.favs || [], events: (S.prefs.events || []).filter(e => e.date >= isoDate(addDays(new Date(), -2))), trackDays: (S.prefs.trackDays || []).slice(-400), phasePlan: S.prefs.phasePlan || null, spiceMiss: S.prefs.spiceMiss || [], nut: S.prefs.nut || {}, updatedAt: Date.now() };
     if (this.mode === 'db') this.write(this.base + '/prefs/main', d); else this.ls('prefs', d);
   },
   saveTrain() { if (this.mode === 'db') this.write(this.base + '/train/main', { ...S.train, updatedAt: Date.now() }); else this.ls('train', S.train); },
@@ -2511,9 +2606,19 @@ function renderHeader() {
   $('#hdrTrack').hidden = S.tab !== 'plan';
 }
 
+function recordNut(T, E) {
+  const on = logActive(S.log), cur = (S.prefs.nut || {})[S.today] || null;
+  const v = on && T.kcal > 0 && T.p > 0 ? [Math.round(E.kcal / T.kcal * 100), Math.round(E.p / T.p * 100)] : null;
+  if (JSON.stringify(v) === JSON.stringify(cur)) return;
+  const nut = { ...(S.prefs.nut || {}) };
+  if (v) nut[S.today] = v; else delete nut[S.today];
+  const keys = Object.keys(nut).sort(); for (const k of keys.slice(0, Math.max(0, keys.length - 200))) delete nut[k];
+  S.prefs = { ...S.prefs, nut }; Store.savePrefs();
+}
 function renderToday() {
   computeToday();
   const P = todayPlan, R = todayRem, T = P.target, E = R.eaten;
+  recordNut(T, E);
   const left = T.kcal - E.kcal;
   countTo($('#kcalLeft'), Math.abs(left));
   $('#kcalLeftLbl').textContent = left >= 0 ? 'kcal übrig' : 'kcal drüber';
@@ -3154,7 +3259,7 @@ const gymHint = p => {
   return parts.length ? `Startet 15 Minuten nach Feierabend${loopOf(p) ? ', diese Woche' : ''}: ${parts.join(' · ')}. An freien Tagen wie an einem normalen Arbeitstag.` : 'Kein Gym-Tag eingeplant.';
 };
 function exportCode() {
-  const d = { v: 1, profile: { ...S.profile, example: false }, prefs: { taste: S.prefs.taste, challenges: S.prefs.challenges || [], creaDays: S.prefs.creaDays || [], dishes: S.prefs.dishes || [], recent: S.prefs.recent || [], favs: S.prefs.favs || [], events: S.prefs.events || [], trackDays: S.prefs.trackDays || [], phasePlan: S.prefs.phasePlan || null, spiceMiss: S.prefs.spiceMiss || [] }, weights: S.weights || [], train: S.train || emptyTrain(), today: { date: S.today, log: S.log } };
+  const d = { v: 1, profile: { ...S.profile, example: false }, prefs: { taste: S.prefs.taste, challenges: S.prefs.challenges || [], creaDays: S.prefs.creaDays || [], dishes: S.prefs.dishes || [], recent: S.prefs.recent || [], favs: S.prefs.favs || [], events: S.prefs.events || [], trackDays: S.prefs.trackDays || [], phasePlan: S.prefs.phasePlan || null, spiceMiss: S.prefs.spiceMiss || [], nut: S.prefs.nut || {} }, weights: S.weights || [], train: S.train || emptyTrain(), today: { date: S.today, log: S.log } };
   return 'DELREY1:' + btoa(unescape(encodeURIComponent(JSON.stringify(d))));
 }
 function importCode(code) {
@@ -3164,7 +3269,7 @@ function importCode(code) {
   if (!d || !d.profile) throw new Error('leer');
   S.profile = { ...DEFAULT_PROFILE, ...d.profile, example: false };
   const pf = d.prefs || {};
-  S.prefs = { taste: { foods: {}, meals: {}, ...(pf.taste || {}) }, challenge: null, challenges: pf.challenges || [], swaps: {}, creaDays: pf.creaDays || [], dishes: pf.dishes || [], recent: pf.recent || [], favs: pf.favs || [], events: pf.events || [], trackDays: pf.trackDays || [], phasePlan: pf.phasePlan || null, spiceMiss: pf.spiceMiss || [] };
+  S.prefs = { taste: { foods: {}, meals: {}, ...(pf.taste || {}) }, challenge: null, challenges: pf.challenges || [], swaps: {}, creaDays: pf.creaDays || [], dishes: pf.dishes || [], recent: pf.recent || [], favs: pf.favs || [], events: pf.events || [], trackDays: pf.trackDays || [], phasePlan: pf.phasePlan || null, spiceMiss: pf.spiceMiss || [], nut: pf.nut || {} };
   S.weights = (d.weights || []).filter(w => w && w.date && +w.kg > 0).sort((a, b) => a.date < b.date ? -1 : 1);
   if (d.today && d.today.date === S.today && d.today.log) S.log = { ...emptyLog(), ...d.today.log };
   if (d.train) { S.train = { ...emptyTrain(), ...d.train }; Store.saveTrain(); }
@@ -4877,6 +4982,10 @@ document.addEventListener('click', e => {
     setTimeout(() => { const el = document.getElementById('dform-' + id); if (el) { const r = el.getBoundingClientRect(); if (r.bottom > innerHeight - 100) el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' }); } }, 60);
     return;
   }
+  if (a === 'rank-more') { S.rankMore = !S.rankMore; renderFort(); if (S.rankMore) setTimeout(() => { const m = document.querySelector('.rk-more'); if (m && m.getBoundingClientRect().top > innerHeight - 120) m.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' }); }, 60); return; }
+  if (a === 'rank-celeb-close') { const el = document.getElementById('rkCeleb'); if (el) el.remove(); return; }
+  if (a === 'dish-pcs') { const cur = parseInt(($('#dish-n') || {}).value, 10) || 1; setDishCount(cur + +b.dataset.d); return; }
+  if (a === 'dish-cnt') { setDishCount(+b.dataset.n); return; }
   if (a === 'dish-mult') {
     const d = S.est && S.est.result && dishById(S.est.result.dish); if (!d) return;
     const r = dishResult(d, +b.dataset.m);
@@ -4976,6 +5085,7 @@ document.addEventListener('input', e => {
   }
   if (e.target.closest && e.target.closest('.dform') && /^e-(kcal|p|c|f|fib)$/.test(e.target.id)) { updateDishSum(); return; }
   if (e.target.id === 'gSearch') return renderTasteList();
+  if (e.target.id === 'dish-n') { const v = parseInt(e.target.value, 10); if (v > 0) setDishCount(v, true); return; }
   const wdEl = e.target.closest('[data-wd]');
   if (wdEl) {
     const W = workWeek(S.profile).map(w => ({ ...w })), i = +wdEl.dataset.wd, k = wdEl.dataset.wk;
@@ -5003,7 +5113,7 @@ document.addEventListener('input', e => {
    kcal, p = Eiweiß, c = Kohlenhydrate, f = Fett, fib = Ballaststoffe (g). lf = Leucin-Anteil am Eiweiß. */
 const DISH_CATS = [
   ['fav', 'heart-fill', 'Favoriten'], ['recent', 'clock', 'Zuletzt'], ['mine', 'cooking-pot', 'Meine'], ['kantine', 'fork-knife', 'Kantine'], ['imbiss', 'storefront', 'Imbiss'],
-  ['frueh', 'bread', 'Frühstück & Bäckerei'], ['snack', 'orange-slice', 'Snacks & Süßes'], ['drink', 'coffee', 'Getränke'],
+  ['mcd', 'storefront', "McDonald's"], ['tk', 'snowflake', 'Tiefkühl & Ofen'], ['frueh', 'bread', 'Frühstück & Bäckerei'], ['snack', 'orange-slice', 'Snacks & Süßes'], ['drink', 'coffee', 'Getränke'],
 ];
 const DISHES = [
   // Kantine & Hausmannskost
@@ -5039,6 +5149,20 @@ const DISHES = [
   ['i-dueruem', 'imbiss', 'Dürüm', '1 Stück', 800, 42, 75, 35, 5],
   ['i-pizza-marg', 'imbiss', 'Pizza Margherita', '1 ganze Pizza', 850, 34, 110, 28, 6, .085],
   ['i-pizza-salami', 'imbiss', 'Pizza Salami', '1 ganze Pizza', 1000, 42, 110, 42, 6, .085],
+  ['i-pizza-prosciutto', 'imbiss', 'Pizza Prosciutto (Schinken)', '1 ganze Pizza', 950, 48, 110, 34, 6, .085],
+  ['i-pizza-funghi', 'imbiss', 'Pizza Funghi', '1 ganze Pizza', 880, 36, 112, 30, 7, .085],
+  ['i-pizza-profu', 'imbiss', 'Pizza Schinken & Champignons', '1 ganze Pizza', 980, 50, 112, 35, 7, .085],
+  ['i-pizza-hawaii', 'imbiss', 'Pizza Hawaii', '1 ganze Pizza', 960, 45, 122, 31, 6, .085],
+  ['i-pizza-diavolo', 'imbiss', 'Pizza Diavolo (scharfe Salami)', '1 ganze Pizza', 1050, 44, 110, 47, 6, .085],
+  ['i-pizza-4f', 'imbiss', 'Pizza Quattro Formaggi', '1 ganze Pizza', 1150, 52, 108, 56, 5, .09],
+  ['i-pizza-capri', 'imbiss', 'Pizza Capricciosa', '1 ganze Pizza', 1020, 48, 112, 40, 7, .085],
+  ['i-pizza-tonno', 'imbiss', 'Pizza Tonno', '1 ganze Pizza', 950, 52, 110, 32, 6, .085],
+  ['i-pizza-veg', 'imbiss', 'Pizza Vegetaria', '1 ganze Pizza', 850, 32, 115, 28, 9, .085],
+  ['i-pizza-bbq', 'imbiss', 'Pizza BBQ Chicken', '1 ganze Pizza', 1000, 55, 125, 30, 6, .08],
+  ['i-calzone', 'imbiss', 'Calzone', '1 Stück', 1100, 52, 115, 46, 6, .085],
+  ['i-pizzaschnitte', 'imbiss', 'Pizzaschnitte (Bäckerei)', '1 Stück', 375, 15, 45, 15, 2.5, .085],
+  ['i-brie', 'imbiss', 'Brie-Spitzen (gebackene Käseecken)', '4 Stück', 400, 17, 18, 29, 1, .09],
+  ['i-preiselbeer', 'imbiss', 'Preiselbeeren dazu', '2 EL, 30 g', 55, 0, 13, 0, 0.5, .03],
   ['i-burger', 'imbiss', 'Burger mit Pommes', '1 Menü, ohne Getränk', 1050, 40, 100, 52, 6],
   ['i-burger-solo', 'imbiss', 'Burger', '1 Stück', 550, 28, 42, 28, 3],
   ['i-pommes', 'imbiss', 'Pommes', '1 mittlere Portion', 380, 5, 48, 18, 4, .06],
@@ -5050,6 +5174,42 @@ const DISHES = [
   ['i-wurstsemmel', 'imbiss', 'Wurstsemmel', '1 Stück', 380, 14, 40, 18, 2],
   ['i-toast', 'imbiss', 'Schinken-Käse-Toast', '1 Stück', 400, 22, 35, 19, 2, .09],
   ['i-sushi', 'imbiss', 'Sushi', '12 Stück', 550, 22, 95, 8, 3],
+  // McDonald's (Werte von McDonald's Deutschland, in Österreich sehr ähnlich)
+  ['m-hamburger', 'mcd', 'Hamburger', '1 Stück', 259, 13, 29, 9.5, 1.5],
+  ['m-cheese', 'mcd', 'Cheeseburger', '1 Stück', 307, 16, 30, 13, 1.5],
+  ['m-doublecheese', 'mcd', 'Double Cheeseburger', '1 Stück', 460, 27, 31, 25, 1.6],
+  ['m-bigmac', 'mcd', 'Big Mac', '1 Stück', 545, 27, 42, 29, 3],
+  ['m-mcchicken', 'mcd', 'McChicken', '1 Stück', 451, 18, 49, 20, 3],
+  ['m-chickenburger', 'mcd', 'Chickenburger', '1 Stück', 293, 11, 34, 8.7, 2],
+  ['m-royalts', 'mcd', 'Hamburger Royal TS', '1 Stück', 536, 30, 36, 29, 3],
+  ['m-royalcheese', 'mcd', 'Hamburger Royal Käse', '1 Stück', 549, 33, 38, 29, 2.5],
+  ['m-fish', 'mcd', 'Fish Filet (Fishmac)', '1 Stück', 393, 17, 40, 18, 2],
+  ['m-nuggets', 'mcd', 'Chicken McNuggets', '9 Stück', 401, 24, 27, 21, 1.5],
+  ['m-fries-s', 'mcd', 'Pommes Frites klein', '80 g', 231, 2.8, 29, 11, 2.7, .06],
+  ['m-fries-m', 'mcd', 'Pommes Frites mittel', '114 g', 329, 3.9, 41, 16, 3.8, .06],
+  ['m-fries-l', 'mcd', 'Pommes Frites groß', '160 g', 463, 5.5, 58, 22, 5.4, .06],
+  ['m-apfeltasche', 'mcd', 'Heiße Apfeltasche', '1 Stück', 228, 2.3, 28, 12, 1.5, .07],
+  ['m-mcflurry', 'mcd', 'McFlurry Original', '1 Becher', 197, 4.8, 33, 5.2, 0.5, .09],
+  ['m-sundae', 'mcd', 'McSundae mit Schoko-Sauce', '1 Becher', 285, 5.5, 46, 8.4, 0.5, .09],
+  ['m-ketchup', 'mcd', 'Ketchup', '1 Portion, 20 ml', 28, 0.4, 6.4, 0.1, 0],
+  ['m-mayo', 'mcd', 'Mayonnaise', '1 Portion, 20 ml', 141, 0.2, 0.4, 15, 0],
+  ['m-bbq', 'mcd', 'Barbecue Sauce', '1 Portion, 25 ml', 48, 0.2, 11, 0.3, 0],
+  ['m-suesssauer', 'mcd', 'Süßsauer Sauce', '1 Portion, 25 ml', 49, 0.1, 11, 0.3, 0],
+  ['m-curry', 'mcd', 'Curry Sauce', '1 Portion, 25 ml', 47, 0.3, 10, 0.4, 0],
+  ['m-senf', 'mcd', 'Senf Sauce', '1 Portion, 25 ml', 59, 0.6, 6.4, 3.3, 0],
+  // Tiefkühl & Ofen
+  ['t-mozzasticks', 'tk', 'Mozzarella-Sticks (TK, 250-g-Packung)', '10 Stück', 723, 27, 72.5, 36, 1.8, .09],
+  ['t-ofenkaese', 'tk', 'Ofenkäse (klein)', '1 Käse, 180 g', 637, 29, 1, 58, 0, .09],
+  ['t-ofenkaese-baguette', 'tk', 'Ofenkäse mit Baguette', '180 g Käse, 100 g Baguette', 900, 38, 53, 59, 3, .085],
+  ['t-topfenknoedel', 'tk', 'Süße Topfenknödel (TK)', '4 Stück', 368, 14, 48, 13, 1.3, .09],
+  ['t-fischstaebchen', 'tk', 'Fischstäbchen (TK)', '10 Stück', 590, 37.5, 51, 25.5, 2, .085],
+  ['t-nuggets', 'tk', 'Chicken Nuggets (TK, Backofen)', '10 Stück', 480, 30, 34, 24, 1.5],
+  ['t-fruehlingsrollen', 'tk', 'Mini-Frühlingsrollen (TK)', '6 Stück', 290, 6, 36, 13, 2.5, .06],
+  ['t-backofenpommes', 'tk', 'Backofen-Pommes (TK)', '200 g', 300, 4.5, 46, 10, 5, .06],
+  ['t-pizza-salami', 'tk', 'TK-Pizza Salami (Ristorante-Art)', '1 Pizza, 320 g', 860, 34, 80, 43, 6.4, .085],
+  ['t-pizza-marg', 'tk', 'TK-Pizza Margherita (Steinofen)', '1 Pizza, 340 g', 800, 34, 102, 27, 7, .085],
+  ['t-pizza-schinken', 'tk', 'TK-Pizza Schinken (Steinofen)', '1 Pizza, 340 g', 780, 34, 88, 30, 6, .085],
+  ['t-germknoedel', 'tk', 'Germknödel (TK)', '1 Stück, mit Mohnbutter', 600, 14, 90, 20, 4, .075],
   // Frühstück & Bäckerei
   ['f-semmel-marm', 'frueh', 'Semmel mit Butter und Marmelade', '1 Stück', 300, 7, 45, 10, 2, .07],
   ['f-brot-kaese', 'frueh', 'Vollkornbrot mit Käse', '2 Scheiben', 350, 16, 30, 18, 5, .09],
@@ -5096,7 +5256,7 @@ const DISHES = [
   ['d-milch', 'drink', 'Milch 3,5 %', '0,5 l', 320, 17, 24, 18, 0, .1],
   ['d-whey', 'drink', 'Proteinshake mit Wasser', '30 g Whey', 120, 24, 3, 1.5, 0, .105],
 ].map(([id, cat, n, por, kcal, p, c, f, fib, lf]) => ({ id, cat, n, por, kcal, p, c, f, fib, leu: Math.round(p * (lf || LEU_PER_P) * 10) / 10 }));
-const DISH_IC = { kantine: 'fork-knife', imbiss: 'storefront', frueh: 'bread', snack: 'orange-slice', drink: 'coffee', mine: 'cooking-pot' };
+const DISH_IC = { kantine: 'fork-knife', imbiss: 'storefront', mcd: 'storefront', tk: 'snowflake', frueh: 'bread', snack: 'orange-slice', drink: 'coffee', mine: 'cooking-pot' };
 const normQ = t => String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ß/g, 'ss').replace(/ae/g, 'a').replace(/oe/g, 'o').replace(/ue/g, 'u');
 const myDishes = () => (S.prefs.dishes || []).map(d => ({ ...d, cat: 'mine' }));
 const allDishes = () => myDishes().concat(DISHES);
@@ -5128,9 +5288,19 @@ function keepExtra(e) {
   return d;
 }
 const keepBtn = (e, cls) => extraSaved(e) ? `<span class="chip">${icon('check')}gespeichert</span>` : `<button class="${cls}" data-act="extra-keep" data-id="${esc(e.id)}">${icon('heart')}Speichern</button>`;
+/* Einzeln verpackte Sachen: Anzahl statt Portionen. Erkannt an der Portionsangabe ("9 Stück", "2 Eier") */
+const PCS_UNIT = { 'Stück': ['Stück', 'Stück'], 'Eier': ['Ei', 'Eier'], 'Kugeln': ['Kugel', 'Kugeln'], 'Scheiben': ['Scheibe', 'Scheiben'], 'Paar': ['Paar', 'Paar'] };
+const DISH_PCS = { 'm-nuggets': [4, 6, 9, 20], 'i-nuggets': [6, 9, 12, 20], 't-mozzasticks': [3, 5, 8, 10], 't-topfenknoedel': [2, 4, 6, 8], 't-fischstaebchen': [5, 8, 10, 15], 't-nuggets': [5, 8, 10, 15], 'i-brie': [2, 4, 6, 8], 't-fruehlingsrollen': [4, 6, 10, 12], 'i-sushi': [6, 8, 12, 16] };
+function dishPcs(d) {
+  if (!d || d.cat === 'mine') return null;
+  const m = /^(\d+)\s+(Stück|Eier|Kugeln|Scheiben|Paar)\b/.exec(d.por || ''); if (!m) return null;
+  const n = +m[1], opts = DISH_PCS[d.id] || (n <= 3 ? [1, 2, 3, 4] : [Math.max(1, Math.round(n / 2)), n, Math.round(n * 1.5), n * 2]);
+  return { n, u: PCS_UNIT[m[2]], opts: [...new Set(opts)].sort((a, b) => a - b) };
+}
 function dishResult(d, m) {
   const r1 = x => Math.round(x * m), r10 = x => Math.round(x * m * 10) / 10;
-  return { name: d.n + (m !== 1 ? ` (${String(m).replace('.', ',')}×)` : ''), kcal: r1(d.kcal), p: r1(d.p), c: r1(d.c), f: r1(d.f), fib: r1(d.fib), leu: r10(d.leu), dish: d.id, mult: m, src: 'dish' };
+  const pc = dishPcs(d), cnt = pc ? Math.max(1, Math.round(m * pc.n)) : 0;
+  return { name: pc ? (cnt === 1 && pc.n === 1 ? d.n : `${d.n}, ${cnt} ${cnt === 1 ? pc.u[0] : pc.u[1]}`) : d.n + (m !== 1 ? ` (${String(m).replace('.', ',')}×)` : ''), count: pc ? cnt : null, kcal: r1(d.kcal), p: r1(d.p), c: r1(d.c), f: r1(d.f), fib: r1(d.fib), leu: r10(d.leu), dish: d.id, mult: m, src: 'dish' };
 }
 
 
@@ -5707,10 +5877,256 @@ function stockSub(key, name, pts, o) {
   return `<div class="stk-sub"><div class="stk-h"><span class="stk-n">${name}</span><span class="stk-v"><b>${esc(o.fmt(T.z))}</b>${T.pill}</span></div>
     ${chartSlot(key, { points: p, fmt: o.fmt, tick: o.tick, invert: o.invert, minRange: o.minRange, stock: true, color: T.color, h: o.h || 150, aria: `${name}: ${o.fmt(T.a)} bis ${o.fmt(T.z)}` })}</div>`;
 }
+/* ================= Rang-System =================
+   LP (Liga-Punkte) sammeln sich Tag für Tag an: Training wie geplant, Steigerungen im Gym und beim Laufen,
+   Nährwerte getroffen, Creatin genommen. Verpasstes kostet LP, so kann man auch wieder absteigen. */
+const RANKS = [
+  { id: 'wood', n: 'Holz', d: 50, c: ['#5a3518', '#a8703d', '#e7b880'], glow: '#d0965a', ray: .18 },
+  { id: 'bronze', n: 'Bronze', d: 75, c: ['#6e3414', '#c46f35', '#ffc795'], glow: '#ec9351', ray: .22 },
+  { id: 'silver', n: 'Silber', d: 100, c: ['#4f5a6b', '#a9b4c4', '#f7f9fc'], glow: '#cdd8e8', ray: .26 },
+  { id: 'gold', n: 'Gold', d: 100, c: ['#7d4f05', '#e2a62a', '#fff2b0'], glow: '#ffd04d', ray: .34 },
+  { id: 'platinum', n: 'Platin', d: 125, c: ['#0d5b55', '#37bfae', '#d8fff7'], glow: '#5ff0da', ray: .38 },
+  { id: 'diamond', n: 'Diamant', d: 125, c: ['#26339a', '#6c84ff', '#e2e7ff'], glow: '#90a3ff', ray: .42 },
+  { id: 'champion', n: 'Champion', d: 150, c: ['#4f1486', '#b05cff', '#f5e0ff'], glow: '#cc84ff', ray: .48 },
+  { id: 'titan', n: 'Titan', d: 150, c: ['#4d0812', '#d0243a', '#ffc0c0'], glow: '#ff4f62', ray: .54 },
+  { id: 'olymp', n: 'Olymp', d: 0, c: ['#0b5682', '#56cfff', '#ffffff'], glow: '#9eeaff', ray: .62 },
+];
+const ROMAN = ['III', 'II', 'I'];
+const LP_RULE = { done: 14, miss: -10, extra: 5, nutHit: 6, nutHalf: 3, nutLog: 1, nutOld: 3, nutMiss: -4, crea: 3, creaMiss: -3, pr: 10 };
+function rankOf(lp) {
+  let base = 0;
+  for (let t = 0; t < RANKS.length - 1; t++) {
+    const R = RANKS[t];
+    if (lp < base + R.d * 3) { const div = Math.floor((lp - base) / R.d); return { t, div, inDiv: lp - base - div * R.d, size: R.d, from: base + div * R.d }; }
+    base += R.d * 3;
+  }
+  return { t: RANKS.length - 1, div: 0, inDiv: lp - base, size: 0, from: base, top: true };
+}
+const rankIdx = k => k.top ? 99 : k.t * 3 + k.div;
+const rankName = k => RANKS[k.t].n + (k.top ? '' : ' ' + ROMAN[k.div]);
+const nextName = k => k.top ? '' : k.div < 2 ? `${RANKS[k.t].n} ${ROMAN[k.div + 1]}` : RANKS[k.t + 1].n + (k.t + 1 === RANKS.length - 1 ? '' : ' III');
+const signLp = n => (n > 0 ? '+' : n < 0 ? '−' : '±') + Math.abs(Math.round(n));
+
+function rankCompute() {
+  const pr = planPr(), today = S.today, D = x => new Date(x + 'T12:00');
+  const gym = (S.train.gym || []).slice().sort((a, b) => a.date.localeCompare(b.date));
+  const runs = (S.train.runs || []).filter(r => r && r.date && r.km > 0).slice().sort((a, b) => a.date.localeCompare(b.date));
+  const td = new Set(S.prefs.trackDays || []); if (logActive(S.log)) td.add(today);
+  const nut = S.prefs.nut || {};
+  const cOn = !!S.profile.creatine && S.profile.creatine !== 'off';
+  const crea = creaStreak(), cDays = (S.prefs.creaDays || []).slice().sort();
+  const creaFrom = S.profile.creaSince || cDays[0] || null;
+  const firsts = [[...td].sort()[0], cDays[0], gym[0] && gym[0].date, runs[0] && runs[0].date, (S.weights || []).map(w => w.date).filter(Boolean).sort()[0]].filter(Boolean).sort();
+  let start = firsts[0] && firsts[0] < today ? firsts[0] : today;
+  const lim = isoDate(addDays(D(today), -180)); if (start < lim) start = lim;
+  const trained = new Set(gym.map(x => x.date).concat(runs.map(r => r.date)));
+  // Steigerungen: neuer Bestwert pro Übung (max. 3 pro Training), schnellster Lauf oder weitester Lauf
+  const prs = {}, best = {};
+  for (const x of gym) {
+    let n = 0;
+    for (const [id, sets] of Object.entries(x.sets || {})) {
+      const ex = exById(id), v = Math.max(0, ...sets.map(st => setScore(ex, st)));
+      if (!(v > 0)) continue;
+      if (best[id] != null && v > best[id] * 1.005 && n < 3 && x.date >= start) { (prs[x.date] = prs[x.date] || []).push(ex.n); n++; }
+      best[id] = Math.max(best[id] || 0, v);
+    }
+  }
+  let bestPace = null, bestKm = 0;
+  for (const r of runs) {
+    const pace = r.km >= 2 && r.sec > 0 ? r.sec / r.km : null;
+    if (r.date >= start) {
+      if (pace && bestPace && pace < bestPace * 0.995) (prs[r.date] = prs[r.date] || []).push('Lauftempo');
+      else if (bestKm && r.km > bestKm * 1.02) (prs[r.date] = prs[r.date] || []).push('Laufdistanz');
+    }
+    if (pace) bestPace = bestPace ? Math.min(bestPace, pace) : pace;
+    bestKm = Math.max(bestKm, r.km);
+  }
+  const planned = d => !evNoTrain(pr, d) && typeOn(S.profile, d) !== 'rest';
+  let lp = 0;
+  const log = [], series = [];
+  const add = (d, label, v, kind) => { if (!v) return; let e = log.find(x => x.d === d && x.kind === kind); if (!e) { e = { d, kind, lp: 0, parts: [] }; log.push(e); } e.lp += v; e.parts.push([label, v]); lp = Math.max(0, lp + v); };
+  let wk = null;
+  const flush = (w, final) => {
+    const m = Math.min(w.done, w.plan), extra = Math.min(2, Math.max(0, w.done - w.plan));
+    const v = LP_RULE.done * m + LP_RULE.extra * extra + (final ? LP_RULE.miss * (w.plan - m) : 0);
+    const txt = final ? `Training ${w.done} von ${w.plan}` : `Training bisher ${w.done} von ${w.planAll}`;
+    add(final ? w.to : today, txt, v, final ? 'week' : 'weeknow');
+  };
+  const monday = isoDate(addDays(D(today), -dow(D(today))));
+  const week = { plan: 0, planAll: 0, done: 0, nutHit: 0, days: 0, crea: 0, prs: 0 };
+  for (let d = D(start); isoDate(d) <= today; d = addDays(d, 1)) {
+    const k = isoDate(d), isT = k === today;
+    if (!wk || dow(d) === 0) { if (wk) flush(wk, true); wk = { plan: 0, planAll: 0, done: 0, to: isoDate(addDays(d, 6 - dow(d))) }; }
+    if (planned(d)) { wk.plan++; wk.planAll++; }
+    if (trained.has(k)) wk.done++;
+    // Nährwerte
+    const s = nut[k];
+    let nv;
+    if (s) { const kOk = s[0] >= 90 && s[0] <= 110, pOk = s[1] >= 90; nv = kOk && pOk ? LP_RULE.nutHit : kOk || pOk ? LP_RULE.nutHalf : LP_RULE.nutLog; }
+    else nv = td.has(k) ? LP_RULE.nutOld : isT ? 0 : LP_RULE.nutMiss;
+    add(k, nv === LP_RULE.nutHit ? 'Nährwerte getroffen' : nv > 0 ? 'Nährwerte eingetragen' : 'Nichts eingetragen', nv, 'day');
+    // Creatin
+    let cv = 0;
+    if (cOn && creaFrom && k >= creaFrom) { cv = crea.has(k) ? LP_RULE.crea : isT ? 0 : LP_RULE.creaMiss; add(k, cv > 0 ? 'Creatin genommen' : 'Creatin vergessen', cv, 'day'); }
+    // Rekorde
+    for (const n of prs[k] || []) add(k, `Rekord: ${n}`, LP_RULE.pr, 'day');
+    if (k >= monday) {
+      week.days++;
+      if (nv === LP_RULE.nutHit) week.nutHit++;
+      if (cv > 0) week.crea++;
+      week.prs += (prs[k] || []).length;
+    }
+    series.push({ d: k, y: lp });
+  }
+  // laufende Woche: Training zählt sofort, verpasste Tage erst am Sonntag
+  if (wk) {
+    for (let d = addDays(D(today), 1); dow(d) !== 0; d = addDays(d, 1)) if (planned(d)) wk.planAll++;
+    flush(wk, false);
+    week.plan = wk.planAll; week.done = wk.done; week.open = Math.max(0, wk.planAll - wk.done);
+    series[series.length - 1].y = lp;
+  }
+  week.gain = log.filter(e => e.d >= monday).reduce((a, e) => a + e.lp, 0);
+  log.sort((a, b) => b.d.localeCompare(a.d) || (a.kind === 'day' ? 1 : -1));
+  return { lp, k: rankOf(lp), log, series, week, start, cOn };
+}
+
+/* ---------- Abzeichen ---------- */
+function rankBadge(t, div, uid, live) {
+  const R = RANKS[t], [c1, c2, c3] = R.c, u = 'rk' + uid;
+  const hex = 'M60 16 L96.4 37 V79 L60 100 L23.6 79 V37 Z';
+  const shield = 'M60 14 C73 21 85 23 97 23 V58 C97 81 81 97 60 106 C39 97 23 81 23 58 V23 C35 23 47 21 60 14 Z';
+  const plate = t < 2 ? hex : shield;
+  const feather = (bx, by, ang, len, w) => {
+    const a = ang * Math.PI / 180, tx = bx + Math.cos(a) * len, ty = by + Math.sin(a) * len, mx = (bx + tx) / 2, my = (by + ty) / 2, px = -Math.sin(a) * w, py = Math.cos(a) * w;
+    return `M${bx} ${by} Q${(mx + px).toFixed(1)} ${(my + py).toFixed(1)} ${tx.toFixed(1)} ${ty.toFixed(1)} Q${(mx - px).toFixed(1)} ${(my - py).toFixed(1)} ${bx} ${by}Z`;
+  };
+  const wingSpec = { platinum: [3, 22, 5], diamond: [4, 26, 5.5], champion: [5, 31, 6], titan: [5, 30, 3.2], olymp: [6, 36, 6.5] }[R.id];
+  let wings = '';
+  if (wingSpec) {
+    const [n, len, w] = wingSpec;
+    const ps = Array.from({ length: n }, (_, i) => feather(28, 34 + i * 7, 208 - i * (52 / Math.max(1, n - 1)), len - i * 2.2, w)).join('');
+    const wp = `<path d="${ps}" fill="url(#m-${u})" stroke="${c1}" stroke-width="1.2" stroke-linejoin="round"/>`;
+    wings = `<g class="${live ? 'rk-wing' : ''}">${wp}</g><g transform="translate(120 0) scale(-1 1)"><g class="${live ? 'rk-wing' : ''}">${wp}</g></g>`;
+  }
+  const horns = R.id === 'titan' ? `<path d="M33 27 C24 20 21 9 25 1 C30 11 37 17 45 21 Z M87 27 C96 20 99 9 95 1 C90 11 83 17 75 21 Z" fill="url(#m-${u})" stroke="${c1}" stroke-width="1.2"/>` : '';
+  const crown = R.id === 'champion' || R.id === 'olymp' ? `<path d="M44 17 L47 4 L54 11 L60 1 L66 11 L73 4 L76 17 Z" fill="url(#k-${u})" stroke="#8a5a05" stroke-width="1" stroke-linejoin="round"/><circle cx="60" cy="9" r="1.8" fill="#fff"/>` : '';
+  const star = (cx, cy, r1, r2) => Array.from({ length: 10 }, (_, i) => { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? r2 : r1; return `${(cx + Math.cos(a) * r).toFixed(1)},${(cy + Math.sin(a) * r).toFixed(1)}`; }).join(' ');
+  const brilliant = `<path d="M44 49 L51 39 H69 L76 49 L60 78 Z" fill="url(#g-${u})" stroke="${c1}" stroke-width="1.3" stroke-linejoin="round"/><path d="M44 49 H76 M51 39 L55.5 49 L60 78 L64.5 49 L69 39 M55.5 49 L60 39 L64.5 49" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width=".9"/>`;
+  const emblem = {
+    wood: `<path d="M60 80 V57" stroke="${c1}" stroke-width="3" stroke-linecap="round"/><path d="M60 63 C49 63 43 55 43 46 C54 46 60 52 60 63 Z M60 58 C71 58 77 50 77 41 C66 41 60 47 60 58 Z" fill="url(#g-${u})" stroke="${c1}" stroke-width="1.3"/>`,
+    bronze: `<path d="M60 40 L74 48 V66 L60 74 L46 66 V48 Z" fill="url(#g-${u})" stroke="${c1}" stroke-width="1.3"/><path d="M60 40 V57 L74 48 M60 57 L46 48 M60 57 V74" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width=".9"/>`,
+    silver: `<path d="M60 36 L77 58 L60 80 L43 58 Z" fill="url(#g-${u})" stroke="${c1}" stroke-width="1.3"/><path d="M43 58 H77 M60 36 L54 58 L60 80 L66 58 Z" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width=".9"/>`,
+    gold: `<polygon points="${star(60, 58, 21, 9)}" fill="url(#g-${u})" stroke="${c1}" stroke-width="1.3" stroke-linejoin="round"/><circle cx="60" cy="58" r="4" fill="#fff" fill-opacity=".85"/>`,
+    platinum: `<path d="M60 36 L78 46 V68 L60 80 L42 68 V46 Z" fill="url(#g-${u})" stroke="${c1}" stroke-width="1.3"/><path d="M60 36 L60 80 M42 46 L78 68 M78 46 L42 68" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width=".9"/><circle cx="60" cy="58" r="6" fill="#fff" fill-opacity=".8"/>`,
+    diamond: brilliant, champion: brilliant,
+    titan: `<path d="M60 36 C69 46 76 52 76 61 C76 71 68 78 60 78 C52 78 44 71 44 61 C44 52 51 46 60 36 Z" fill="url(#g-${u})" stroke="${c1}" stroke-width="1.3"/><path d="M60 47 C64 53 68 56 68 62 C68 68 64 71 60 71 C56 71 52 68 52 62 C52 56 56 53 60 47 Z" fill="#fff" fill-opacity=".35"/>`,
+    olymp: `<circle cx="60" cy="58" r="21" fill="url(#g-${u})" stroke="${c1}" stroke-width="1.3"/><path d="M64 39 L49 61 H59 L55 78 L71 54 H61 Z" fill="#fff8d6" stroke="#b07a10" stroke-width="1.2" stroke-linejoin="round"/>`,
+  }[R.id];
+  const ribbon = t < RANKS.length - 1 ? `<path d="M41 95 H79 L84 102.5 L79 110 H41 L36 102.5 Z" fill="${c1}" stroke="url(#m-${u})" stroke-width="1.6"/><text x="60" y="106.3" text-anchor="middle" font-size="10" font-weight="800" letter-spacing="1" fill="#fff">${ROMAN[div]}</text>` : `<path d="M38 96 Q60 104 82 96" fill="none" stroke="url(#k-${u})" stroke-width="3.2" stroke-linecap="round"/>`;
+  const spots = [[16, 22, 0], [104, 28, 0.7], [98, 94, 1.4], [20, 90, 2.1], [60, 4, 2.8], [8, 58, 3.3], [112, 62, 1.0]].slice(0, live ? 3 + Math.ceil(t / 2) : 0);
+  const sparks = spots.map(([x, y, dl]) => `<g transform="translate(${x} ${y})"><path class="rk-sp" style="animation-delay:${dl}s" d="M0 -6 C.8 -1.2 1.2 -.8 6 0 C1.2 .8 .8 1.2 0 6 C-.8 1.2 -1.2 .8 -6 0 C-1.2 -.8 -.8 -1.2 0 -6 Z" fill="#fff"/></g>`).join('');
+  return `<svg class="rk-svg" viewBox="0 0 120 120" aria-hidden="true">
+    <defs>
+      <linearGradient id="m-${u}" x1="0" y1="0" x2=".3" y2="1"><stop offset="0" stop-color="${c3}"/><stop offset=".5" stop-color="${c2}"/><stop offset="1" stop-color="${c1}"/></linearGradient>
+      <linearGradient id="r-${u}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c3}"/><stop offset=".45" stop-color="${c1}"/><stop offset=".75" stop-color="${c2}"/><stop offset="1" stop-color="${c3}"/></linearGradient>
+      <radialGradient id="g-${u}" cx=".35" cy=".28" r=".85"><stop offset="0" stop-color="#fff"/><stop offset=".3" stop-color="${c3}"/><stop offset=".75" stop-color="${c2}"/><stop offset="1" stop-color="${c1}"/></radialGradient>
+      <linearGradient id="k-${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6c2"/><stop offset=".5" stop-color="#f2c14b"/><stop offset="1" stop-color="#a86d08"/></linearGradient>
+      <linearGradient id="s-${u}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".75"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <clipPath id="c-${u}"><path d="${plate}"/></clipPath>
+    </defs>
+    ${wings}${horns}
+    <path d="${plate}" fill="url(#m-${u})" stroke="url(#r-${u})" stroke-width="3.2" stroke-linejoin="round"/>
+    <path d="${plate}" transform="translate(60 59) scale(.8) translate(-60 -59)" fill="${c1}" fill-opacity=".32" stroke="#fff" stroke-opacity=".35" stroke-width="1.4"/>
+    ${emblem}${crown}
+    <g clip-path="url(#c-${u})"><rect class="${live ? 'rk-shine' : ''}" x="-46" y="0" width="30" height="120" fill="url(#s-${u})" transform="skewX(-18)" opacity="${live ? 1 : 0}"/></g>
+    ${ribbon}${sparks}
+  </svg>`;
+}
+
+/* ---------- Karte im Fortschritt ---------- */
+S.rankMore = false;
+function rankSpark(series, color) {
+  const pts = series.slice(-56); if (pts.length < 2) return '';
+  const max = Math.max(10, ...pts.map(p => p.y)), min = Math.min(...pts.map(p => p.y)), W = 300, H = 56;
+  const X = i => (i / (pts.length - 1)) * W, Y = v => H - 4 - ((v - min) / Math.max(1, max - min)) * (H - 10);
+  const line = pts.map((p, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)} ${Y(p.y).toFixed(1)}`).join(' ');
+  return `<svg class="rk-spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="LP der letzten ${pts.length} Tage, von ${fmt(pts[0].y)} auf ${fmt(pts[pts.length - 1].y)}">
+    <defs><linearGradient id="rkspf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${color}" stop-opacity=".45"/><stop offset="1" stop-color="${color}" stop-opacity="0"/></linearGradient></defs>
+    <path d="${line} L${W} ${H} L0 ${H} Z" fill="url(#rkspf)"/><path d="${line}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>`;
+}
+function rankCard() {
+  const R = rankCompute(), k = R.k, T = RANKS[k.t], w = R.week;
+  S.rankNow = R;
+  const pctv = k.top ? 100 : Math.round(k.inDiv / k.size * 100);
+  const name = rankName(k);
+  const stats = [[`${w.done}/${w.plan}`, 'Trainings'], [`${w.nutHit}/${w.days}`, 'Nährwerte'], R.cOn ? [`${w.crea}/${w.days}`, 'Creatin'] : null, [String(w.prs), w.prs === 1 ? 'Rekord' : 'Rekorde']].filter(Boolean);
+  return `<section class="card rk rk-${T.id}" style="--rk1:${T.c[0]};--rk2:${T.c[1]};--rk3:${T.c[2]};--rkg:${T.glow};--rkr:${T.ray}" aria-label="Dein Rang">
+    <div class="rk-head"><span class="rk-eb">Dein Rang</span><span class="rk-wk ${w.gain >= 0 ? 'up' : 'down'}">${signLp(w.gain)} LP diese Woche</span></div>
+    <button class="rk-stage" data-act="rank-more" aria-expanded="${S.rankMore}" aria-label="${esc(name)}, Rangleiter ${S.rankMore ? 'schließen' : 'öffnen'}"><span class="rk-rays" aria-hidden="true"></span><span class="rk-glow" aria-hidden="true"></span><span class="rk-float">${rankBadge(k.t, k.div, 'main', true)}</span></button>
+    <h3 class="rk-name">${esc(name)}</h3>
+    <p class="rk-lp num">${k.top ? `${fmt(k.inDiv)} LP im Olymp` : `${k.inDiv} / ${k.size} LP`}</p>
+    ${k.top ? '' : `<div class="rk-bar" role="progressbar" aria-valuemin="0" aria-valuemax="${k.size}" aria-valuenow="${k.inDiv}" aria-label="Fortschritt bis ${esc(nextName(k))}"><i style="width:${Math.max(3, pctv)}%"></i></div>
+    <p class="rk-next">Noch ${k.size - k.inDiv} LP bis ${esc(nextName(k))}</p>`}
+    <div class="rk-stats" style="--n:${stats.length}">${stats.map(([v, l]) => `<div><b class="num">${v}</b><span>${l}</span></div>`).join('')}</div>
+    ${w.open > 0 ? `<p class="rk-hint">Diese Woche ${w.open === 1 ? 'fehlt noch 1 Training' : `fehlen noch ${w.open} Trainings`}. Was bis Sonntag nicht gemacht ist, kostet je ${Math.abs(LP_RULE.miss)} LP.</p>` : ''}
+    <button class="rk-tog" data-act="rank-more" aria-expanded="${S.rankMore}">${S.rankMore ? 'Weniger anzeigen' : 'Rangleiter und Verlauf'}${icon('caret-down')}</button>
+    ${S.rankMore ? rankMore(R) : ''}
+  </section>`;
+}
+function rankMore(R) {
+  const k = R.k, cur = rankIdx(k);
+  let base = 0;
+  const ladder = RANKS.map((T, t) => {
+    const from = base; base += T.d * 3;
+    const reached = k.top || t < k.t ? 'done' : t === k.t ? 'now' : 'lock';
+    return `<div class="rk-step ${reached}"><span class="rk-mini">${rankBadge(t, t === k.t && !k.top ? k.div : reached === 'done' ? 2 : 0, 'l' + t, false)}</span><b>${T.n}</b><small>${t === 0 ? 'Start' : `ab ${fmt(from)} LP`}</small></div>`;
+  }).join('');
+  const rules = [['Training wie geplant', LP_RULE.done], ['Training verpasst (zählt am Sonntag)', LP_RULE.miss], ['Extra-Training, bis 2 pro Woche', LP_RULE.extra], ['Neuer Rekord im Gym oder beim Laufen', LP_RULE.pr], ['Kalorien und Eiweiß getroffen', LP_RULE.nutHit], ['Nur Kalorien oder nur Eiweiß getroffen', LP_RULE.nutHalf], ['Tag nicht eingetragen', LP_RULE.nutMiss]].concat(R.cOn ? [['Creatin genommen', LP_RULE.crea], ['Creatin vergessen', LP_RULE.creaMiss]] : []);
+  const dl = d => { const x = new Date(d + 'T12:00'); return d === S.today ? 'Heute' : `${DAYSHORT[dow(x)]}, ${x.getDate()}. ${MONTHS[x.getMonth()].slice(0, 3)}.`; };
+  const hist = R.log.filter(e => e.lp !== 0).slice(0, 10);
+  return `<div class="rk-more">
+    <div class="rk-ladder">${ladder}</div>
+    ${R.series.length > 2 ? `<div class="rk-sub">Deine LP</div>${rankSpark(R.series, RANKS[k.t].glow)}` : ''}
+    <div class="rk-sub">So bekommst du LP</div>
+    <ul class="rk-rules">${rules.map(([l, v]) => `<li><span>${l}</span><b class="${v > 0 ? 'up' : 'down'}">${signLp(v)}</b></li>`).join('')}</ul>
+    <div class="rk-sub">Zuletzt</div>
+    ${hist.length ? `<ul class="rk-hist">${hist.map(e => `<li><div><b>${e.kind === 'week' ? 'Woche bis ' + dl(e.d) : dl(e.d)}</b><small>${e.parts.map(([l, v]) => `${esc(l)} ${signLp(v)}`).join(' · ')}</small></div><span class="${e.lp >= 0 ? 'up' : 'down'}">${signLp(e.lp)}</span></li>`).join('')}</ul>` : '<p class="rk-empty">Trag dein Essen ein, nimm Creatin und speicher deine Trainings, dann sammelst du hier LP.</p>'}
+    <p class="rk-note">Die App wertet die letzten 6 Monate aus, ab dem ersten Tag mit Einträgen. Wer weniger trainiert oder nichts einträgt, verliert LP und kann absteigen.</p>
+  </div>`;
+}
+
+/* ---------- Aufstieg feiern ---------- */
+function rankAfterRender() {
+  const R = S.rankNow; if (!R || !Store.got.has('prefs') || !Store.got.has('train')) return;
+  const idx = rankIdx(R.k);
+  let seen = null; try { seen = JSON.parse(localStorage.getItem('np:rank') || 'null'); } catch (e) {}
+  const save = () => { try { localStorage.setItem('np:rank', JSON.stringify(idx)); } catch (e) {} };
+  if (seen == null) { save(); return; }
+  if (idx > seen) { save(); rankCelebrate(R.k); }
+  else if (idx < seen) { save(); toast(`Abgestiegen auf ${rankName(R.k)}. Mit Training holst du dir den Rang zurück.`); }
+}
+function rankCelebrate(k) {
+  const T = RANKS[k.t], old = document.getElementById('rkCeleb'); if (old) old.remove();
+  const cols = [T.c[1], T.c[2], T.glow, '#ffffff', '#ffe08a'];
+  const conf = Array.from({ length: 28 }, (_, i) => `<i style="left:${(i * 37) % 100}%;background:${cols[i % cols.length]};animation-delay:${(i % 7) * 0.11}s;--rx:${(i * 53) % 360}deg;--dx:${((i * 29) % 60) - 30}px"></i>`).join('');
+  const el = document.createElement('div');
+  el.id = 'rkCeleb'; el.className = 'rkc'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-labelledby', 'rkc-t');
+  el.style.cssText = `--rk1:${T.c[0]};--rk2:${T.c[1]};--rk3:${T.c[2]};--rkg:${T.glow};--rkr:${T.ray}`;
+  el.innerHTML = `<div class="rkc-conf" aria-hidden="true">${conf}</div><div class="rkc-in">
+    <div class="rkc-stage"><span class="rk-rays" aria-hidden="true"></span><span class="rk-glow" aria-hidden="true"></span><span class="rkc-pop">${rankBadge(k.t, k.div, 'celeb', true)}</span></div>
+    <p class="rkc-eb">Aufgestiegen</p><h2 id="rkc-t">${esc(rankName(k))}</h2>
+    <p class="rkc-p">${k.top ? 'Ganz oben angekommen. Jetzt heißt es: halten.' : `Weiter so. Als Nächstes wartet ${esc(nextName(k))}.`}</p>
+    <button class="btn rkc-btn" data-act="rank-celeb-close">Weiter</button></div>`;
+  el.addEventListener('keydown', e => { if (e.key === 'Escape') el.remove(); });
+  document.body.appendChild(el);
+  requestAnimationFrame(() => el.classList.add('on'));
+  setTimeout(() => { const b = el.querySelector('.rkc-btn'); if (b) b.focus(); }, 300);
+}
+
 function fortAll() {
   const F = fortSpecs();
   const tile = (seg, label, inner, wide) => `<button class="card otile ${wide ? 'wide' : ''}" data-act="fort-seg" data-s="${seg}" aria-label="${label} öffnen">${inner}</button>`;
-  return streakCard() + rangeRow() + `<div class="otiles">`
+  return rankCard() + streakCard() + rangeRow() + `<div class="otiles">`
     + tile('gym', 'Gym', tileSub('tg', 'Gym', F.g.pts, F.g.o))
     + tile('weight', 'Körpergewicht', tileSub('tw', 'Körpergewicht', F.w.pts, F.w.o))
     + tile('run', 'Laufen', `<span class="ft-h">Laufen</span><span class="ft-two">${tileSub('tp', 'Tempo', F.p.pts, F.p.o, 56)}${tileSub('td', 'Distanz', F.dk.pts, F.dk.o, 56)}</span>`, true)
@@ -5837,6 +6253,7 @@ function renderFort() {
   const keep = document.activeElement && body.contains(document.activeElement) ? document.activeElement.id || null : null;
   body.innerHTML = S.fseg === 'gym' ? fortGym() : S.fseg === 'run' ? fortRun() : S.fseg === 'weight' ? fortWeight() : fortAll();
   drawCharts(body);
+  if (S.fseg === 'all' && S.tab === 'fort') rankAfterRender();
   if (keep && document.getElementById(keep)) document.getElementById(keep).focus();
 }
 function gymSave() {
@@ -5883,8 +6300,12 @@ function showEstimate(r, manual, keep) {
   const near = S.kantineSlot ? todayPlan.slots.find(s => s.id === S.kantineSlot) : nearestOpenSlot();
   const num = (k, lbl) => `<div class="field"><label for="e-${k}">${lbl}</label><input id="e-${k}" name="e-${k}" autocomplete="off" inputmode="decimal" value="${esc(r[k] === '' ? '' : Math.round(+r[k] || 0))}"></div>`;
   const MULTS = [[0.5, '½×'], [1, '1×'], [1.5, '1½×'], [2, '2×']];
-  const dishTop = isDish ? `<div class="label">Wie viele Portionen?</div>
-    <div class="seg" role="group" aria-label="Portion">${MULTS.map(([m, l]) => `<button data-act="dish-mult" data-m="${m}" aria-pressed="${m === (r.mult || 1)}">${l}</button>`).join('')}</div>
+  const pc = isDish ? dishPcs(dishById(r.dish)) : null, cnt = pc ? Math.max(1, Math.round((r.mult || 1) * pc.n)) : 0;
+  const dishTop = isDish ? `${pc ? `<div class="label" id="pcs-l">Wie viele ${pc.u[1]}?</div>
+    <div class="pcs" role="group" aria-labelledby="pcs-l"><button class="pcs-b" data-act="dish-pcs" data-d="-1" aria-label="Eins weniger">${icon('minus')}</button><label class="pcs-in"><input id="dish-n" inputmode="numeric" autocomplete="off" value="${cnt}" aria-label="Anzahl ${pc.u[1]}"><span id="dish-u">${cnt === 1 ? pc.u[0] : pc.u[1]}</span></label><button class="pcs-b" data-act="dish-pcs" data-d="1" aria-label="Eins mehr">${icon('plus')}</button></div>
+    <div class="seg pcs-q" role="group" aria-label="Schnell wählen">${pc.opts.map(n => `<button data-act="dish-cnt" data-n="${n}" aria-pressed="${n === cnt}">${n}</button>`).join('')}</div>`
+    : `<div class="label">Wie viele Portionen?</div>
+    <div class="seg" role="group" aria-label="Portion">${MULTS.map(([m, l]) => `<button data-act="dish-mult" data-m="${m}" aria-pressed="${m === (r.mult || 1)}">${l}</button>`).join('')}</div>`}
     <p class="dsum num" id="dishSum"></p>
     ${(() => { const d = dishById(r.dish); if (!d || d.cat !== 'mine') return ''; return `${d.ings ? `<p class="dings">${d.ings.map(([id, amt]) => INGS[id] ? `${String(Math.round(amt / (d.portions || 1) * 10) / 10).replace('.', ',')} ${INGS[id].unit} ${esc(INGS[id].n)}` : '').filter(Boolean).join(' · ')}${(d.portions || 1) > 1 ? ' (pro Portion)' : ''}</p>` : ''}
       <div class="dlinks" id="dlinks-${esc(d.id)}"><button class="linkbtn" data-act="dish-rename" data-id="${esc(d.id)}">${icon('pencil-simple')}Umbenennen</button>${d.ings ? `<button class="linkbtn" data-act="dish-edit" data-id="${esc(d.id)}">${icon('cooking-pot')}Zutaten ändern</button>` : ''}<button class="linkbtn" data-act="dish-del" data-id="${esc(d.id)}">Löschen</button></div>`; })()}` : '';
@@ -5908,6 +6329,18 @@ function showEstimate(r, manual, keep) {
   </div>`;
   if (isDish) updateDishSum();
   if (manual) $('#e-name').focus();
+}
+function setDishCount(n, typing) {
+  const d = S.est && S.est.result && dishById(S.est.result.dish), pc = dishPcs(d); if (!pc) return;
+  n = Math.max(1, Math.min(99, Math.round(n) || 1));
+  const r = dishResult(d, n / pc.n);
+  S.est.result = r;
+  for (const k of ['kcal', 'p', 'c', 'f', 'fib']) { const el = $('#e-' + k); if (el) el.value = r[k]; }
+  if ($('#e-name')) $('#e-name').value = r.name;
+  const inp = $('#dish-n'); if (inp && !typing) inp.value = n;
+  if ($('#dish-u')) $('#dish-u').textContent = n === 1 ? pc.u[0] : pc.u[1];
+  document.querySelectorAll('[data-act="dish-cnt"]').forEach(x => x.setAttribute('aria-pressed', String(+x.dataset.n === n)));
+  updateDishSum();
 }
 function updateDishSum() {
   const el = $('#dishSum'); if (!el) return;
