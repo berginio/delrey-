@@ -6023,9 +6023,50 @@ function rankCompute() {
 
 /* ---------- Abzeichen ----------
    lvl 0 = still (Rangleiter), 1 = klein (zugeklappt), 2 = groß mit allen Effekten */
+/* Holz: echte Baumscheibe mit Rinde, Jahresringen, Riss, eingebranntem Spross und genageltem Schild */
+function woodBadge(div, u, live, big) {
+  const P = (x, y) => `${x.toFixed(1)} ${y.toFixed(1)}`;
+  const blob = (cx, cy, r, wob, n, seed) => 'M' + Array.from({ length: n }, (_, i) => { const a = i / n * Math.PI * 2, rr = r + Math.sin(i * 2.7 + seed) * wob + Math.cos(i * 1.3 + seed * 2) * wob * .7; return P(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr * .97); }).join(' L') + ' Z';
+  const bark = blob(60, 54, 42, 1.6, 40, 0), wood = blob(60, 54, 35.5, .9, 40, 1);
+  const rings = [30, 25, 20.5, 16, 11.5, 7.5, 4].map((r, i) => `<path d="${blob(61 + i * .15, 55 + i * .1, r, .45 + i * .04, 32, i + 2)}" fill="none" stroke="#7a4a22" stroke-opacity="${.35 + (i % 2) * .2}" stroke-width="${i % 3 ? .8 : 1.3}" stroke-linejoin="round"/>`).join('');
+  const barkLines = Array.from({ length: 30 }, (_, i) => { const a = i / 30 * Math.PI * 2 + (i % 3) * .04, r1 = 36.5, r2 = 41 + (i % 2); return `M${P(60 + Math.cos(a) * r1, 54 + Math.sin(a) * r1)} L${P(60 + Math.cos(a + .05) * r2, 54 + Math.sin(a + .05) * r2)}`; }).join(' ');
+  const sprout = 'M60 70 V54 M60 60 C53 60 48 55 48 48 C55 48 60 52 60 60 M60 56 C67 56 72 51 72 44 C65 44 60 48 60 56';
+  const glints = live ? [[22, 18, 0], [100, 22, 1.2], [104, 88, 2.4]].slice(0, big ? 3 : 2).map(([x, y, dl]) => `<g transform="translate(${x} ${y}) scale(.75)"><path class="rk-sp" style="animation-delay:${dl}s" d="M0 -6 C.8 -1.2 1.2 -.8 6 0 C1.2 .8 .8 1.2 0 6 C-.8 1.2 -1.2 .8 -6 0 C-1.2 -.8 -.8 -1.2 0 -6 Z" fill="#fff3d6"/></g>`).join('') : '';
+  return `<svg class="rk-svg" viewBox="0 0 120 120" aria-hidden="true">
+    <defs>
+      <radialGradient id="wd-${u}" cx=".47" cy=".45" r=".6"><stop offset="0" stop-color="#9a5f2e"/><stop offset=".25" stop-color="#d9a466"/><stop offset=".7" stop-color="#e8bb7c"/><stop offset="1" stop-color="#c48b50"/></radialGradient>
+      <radialGradient id="bk-${u}" cx=".45" cy=".4" r=".62"><stop offset=".8" stop-color="#5a351a"/><stop offset="1" stop-color="#2c180a"/></radialGradient>
+      <linearGradient id="pl-${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d7a167"/><stop offset=".55" stop-color="#b67a42"/><stop offset="1" stop-color="#8e5a2c"/></linearGradient>
+      <linearGradient id="s-${u}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff3d6" stop-opacity=".45"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <clipPath id="c-${u}"><path d="${bark}"/></clipPath>
+    </defs>
+    <path d="${bark}" fill="url(#bk-${u})" stroke="#24130a" stroke-width="1.2"/>
+    <path d="${barkLines}" stroke="#1e0f06" stroke-opacity=".7" stroke-width="1.1" stroke-linecap="round"/>
+    <path d="${wood}" fill="url(#wd-${u})" stroke="#6b3f1c" stroke-width="1"/>
+    <path d="${wood}" fill="none" stroke="#fff1d2" stroke-opacity=".35" stroke-width="1" transform="translate(-.6 -.8)"/>
+    ${rings}
+    <path d="M68 66 L72 71 L75 77 L79 83" fill="none" stroke="#3a210d" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M68.8 65.4 L72.8 70.4 L75.8 76.4" fill="none" stroke="#fff1d2" stroke-opacity=".35" stroke-width=".7"/>
+    <path d="${sprout}" fill="none" stroke="#fff1d2" stroke-opacity=".45" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" transform="translate(.7 .9)"/>
+    <path d="${sprout}" fill="none" stroke="#3b200b" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M60 60 C55 57 51 53 49.5 49 M60 56 C65 53 69 49 70.5 45.5" fill="none" stroke="#3b200b" stroke-width="1" stroke-opacity=".8"/>
+    <g clip-path="url(#c-${u})"><rect class="${live ? 'rk-shine' : ''}" x="-46" y="0" width="30" height="120" fill="url(#s-${u})" transform="skewX(-18)" opacity="${live ? 1 : 0}"/></g>
+    <path d="M45 92 L49 86 M75 92 L71 86" stroke="#d9c08a" stroke-width="1.6" stroke-linecap="round"/>
+    <path d="M45 92 L49 86 M75 92 L71 86" stroke="#7a6038" stroke-width=".6" stroke-dasharray="1.2 1.2"/>
+    <path d="M36 92 L84 91 L85.5 107 L35 108 Z" fill="url(#pl-${u})" stroke="#4a2a12" stroke-width="1.2" stroke-linejoin="round"/>
+    <path d="M38 96 C50 94.5 62 97.5 82 95.5 M38 101 C52 99.5 66 102.5 83 100.5 M38 105 C48 104 60 106 83 104.5" fill="none" stroke="#7a4a22" stroke-opacity=".55" stroke-width=".7"/>
+    <path d="M37 92.6 L83.5 91.6" stroke="#f3d2a0" stroke-opacity=".6" stroke-width=".8"/>
+    <circle cx="40.5" cy="99.5" r="1.7" fill="#3d3d42" stroke="#1d1d20" stroke-width=".6"/><circle cx="40" cy="99" r=".5" fill="#c9c9cf"/>
+    <circle cx="80" cy="99" r="1.7" fill="#3d3d42" stroke="#1d1d20" stroke-width=".6"/><circle cx="79.5" cy="98.5" r=".5" fill="#c9c9cf"/>
+    <text x="60.6" y="104.6" text-anchor="middle" font-size="10" font-weight="800" letter-spacing="1.4" fill="#f3d2a0" fill-opacity=".55">${ROMAN[div]}</text>
+    <text x="60" y="104" text-anchor="middle" font-size="10" font-weight="800" letter-spacing="1.4" fill="#3b200b">${ROMAN[div]}</text>
+    ${glints}
+  </svg>`;
+}
 function rankBadge(t, div, uid, lvl) {
   lvl = lvl === true ? 2 : lvl || 0;
   const R = RANKS[t], [c1, c2, c3] = R.c, u = 'rk' + uid, id = R.id, live = lvl > 0, big = lvl > 1;
+  if (id === 'wood') return woodBadge(div, u, live, big);
   const P = (x, y) => `${x.toFixed(1)} ${y.toFixed(1)}`;
   const hexV = [[60, 16], [96.4, 37], [96.4, 79], [60, 100], [23.6, 79], [23.6, 37]];
   const hex = 'M' + hexV.map(([x, y]) => P(x, y)).join(' L') + ' Z';
