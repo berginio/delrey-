@@ -679,32 +679,35 @@ details.trip[open] > summary .ico.car{transform:rotate(180deg)}
 .spl .ico{width:15px;height:15px;flex:none;margin-top:2px}
 .spl em{font-style:normal;font-weight:650;color:var(--warn)}
 /* ---------- Rang ---------- */
-.rk{position:relative;overflow:hidden;isolation:isolate;color:#f4f6fb;text-align:center;padding:18px 18px 16px;border:1px solid color-mix(in srgb,var(--rk2) 45%,transparent);background:radial-gradient(130% 78% at 50% 0%,color-mix(in srgb,var(--rk2) 40%,#0c1018) 0%,#0b0e15 62%,#090b10 100%);box-shadow:0 18px 40px -18px color-mix(in srgb,var(--rk1) 70%,transparent)}
-.rk::after{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(58% 36% at 50% 30%,color-mix(in srgb,var(--rkg) 26%,transparent),transparent 72%);pointer-events:none}
-.rk-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
-.rk-eb{font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:color-mix(in srgb,var(--rk3) 75%,#fff)}
-.rk-wk{font-size:12px;font-weight:700;padding:4px 9px;border-radius:999px;background:rgb(255 255 255 / .08);font-variant-numeric:tabular-nums}
+.rk{position:relative;overflow:hidden;isolation:isolate;color:#f4f6fb;text-align:left;padding:12px 14px 10px;border:1px solid color-mix(in srgb,var(--rk2) 45%,transparent);background:radial-gradient(130% 78% at 50% 0%,color-mix(in srgb,var(--rk2) 40%,#0c1018) 0%,#0b0e15 62%,#090b10 100%);box-shadow:0 18px 40px -18px color-mix(in srgb,var(--rk1) 70%,transparent)}
+.rk::after{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(40% 60% at 14% 30%,color-mix(in srgb,var(--rkg) 26%,transparent),transparent 72%);pointer-events:none}
+.rk-main{display:grid;grid-template-columns:92px minmax(0,1fr);gap:12px;align-items:center}
+.rk-info{min-width:0}
+.rk-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.rk-eb{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:color-mix(in srgb,var(--rk3) 75%,#fff)}
+.rk-wk{font-size:11px;font-weight:700;padding:3px 8px;white-space:nowrap;border-radius:999px;background:rgb(255 255 255 / .08);font-variant-numeric:tabular-nums}
 .rk .up{color:#7cefae}
 .rk .down{color:#ff9d9d}
-.rk-stage{all:unset;box-sizing:border-box;position:relative;display:grid;place-items:center;width:196px;height:196px;margin:4px auto 0;cursor:pointer;-webkit-tap-highlight-color:transparent;border-radius:50%}
+.rk-stage{all:unset;box-sizing:border-box;position:relative;display:grid;place-items:center;width:92px;height:92px;margin:0;cursor:pointer;-webkit-tap-highlight-color:transparent;border-radius:50%}
 .rk-stage:focus-visible{outline:2px solid var(--rk3);outline-offset:4px}
 .rk-stage:active .rk-float{transform:scale(.97)}
-.rk-rays{position:absolute;inset:-14%;border-radius:50%;background:repeating-conic-gradient(from 0deg,color-mix(in srgb,var(--rkg) 70%,transparent) 0deg 5deg,transparent 5deg 22deg);-webkit-mask:radial-gradient(circle,#000 16%,transparent 66%);mask:radial-gradient(circle,#000 16%,transparent 66%);opacity:var(--rkr);pointer-events:none}
+.rk-rays{position:absolute;inset:-12%;border-radius:50%;background:repeating-conic-gradient(from 0deg,color-mix(in srgb,var(--rkg) 70%,transparent) 0deg 5deg,transparent 5deg 22deg);-webkit-mask:radial-gradient(circle,#000 16%,transparent 66%);mask:radial-gradient(circle,#000 16%,transparent 66%);opacity:var(--rkr);pointer-events:none}
 .rk-glow{position:absolute;inset:18%;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--rkg) 78%,transparent),transparent 70%);filter:blur(10px);opacity:.7;pointer-events:none}
-.rk-float{position:relative;width:152px;height:152px;display:block;filter:drop-shadow(0 10px 16px rgb(0 0 0 / .5)) drop-shadow(0 0 12px color-mix(in srgb,var(--rkg) 50%,transparent));transition:transform .2s}
+.rk-float{position:relative;width:82px;height:82px;display:block;filter:drop-shadow(0 6px 10px rgb(0 0 0 / .5)) drop-shadow(0 0 9px color-mix(in srgb,var(--rkg) 50%,transparent));transition:transform .2s}
 .rk-svg{width:100%;height:100%;display:block;overflow:visible}
-.rk-name{margin:0;font-family:var(--font-display);font-size:27px;font-weight:750;letter-spacing:-.01em;color:#fff;text-shadow:0 0 18px color-mix(in srgb,var(--rkg) 55%,transparent)}
+.rk-name{margin:2px 0 0;font-family:var(--font-display);font-size:21px;line-height:1.15;font-weight:750;letter-spacing:-.01em;color:#fff;text-shadow:0 0 18px color-mix(in srgb,var(--rkg) 55%,transparent)}
 .rk-lp{margin:2px 0 10px;font-size:13.5px;font-weight:650;color:rgb(255 255 255 / .72)}
-.rk-bar{position:relative;height:10px;border-radius:999px;background:rgb(255 255 255 / .1);overflow:hidden;max-width:280px;margin:0 auto}
+.rk-bar{position:relative;height:7px;border-radius:999px;background:rgb(255 255 255 / .1);overflow:hidden;margin:7px 0 0}
 .rk-bar i{position:absolute;inset:0 auto 0 0;overflow:hidden;border-radius:inherit;background:linear-gradient(90deg,var(--rk2),var(--rk3));box-shadow:0 0 12px color-mix(in srgb,var(--rkg) 70%,transparent)}
 .rk-bar i::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgb(255 255 255 / .7),transparent);transform:translateX(-100%)}
-.rk-next{margin:7px 0 0;font-size:12.5px;color:rgb(255 255 255 / .64)}
-.rk-stats{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:6px;margin-top:14px}
-.rk-stats div{padding:9px 4px;border-radius:12px;background:rgb(255 255 255 / .06);border:1px solid rgb(255 255 255 / .07)}
-.rk-stats b{display:block;font-size:16px;font-weight:750;color:#fff}
-.rk-stats span{display:block;font-size:11px;color:rgb(255 255 255 / .62);margin-top:1px;font-weight:600}
-.rk-hint{margin:10px 0 0;font-size:12.5px;color:#ffd59e;line-height:1.4}
-.rk-tog{all:unset;display:inline-flex;align-items:center;gap:6px;margin-top:12px;padding:4px 2px;font-size:13px;font-weight:650;color:color-mix(in srgb,var(--rk3) 80%,#fff);cursor:pointer}
+.rk-next{margin:5px 0 0;font-size:11.5px;color:rgb(255 255 255 / .64);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rk-next b{color:#fff;font-weight:700}
+.rk-stats{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:6px;margin-top:10px;text-align:center}
+.rk-stats div{padding:6px 2px;border-radius:10px;background:rgb(255 255 255 / .06);border:1px solid rgb(255 255 255 / .07)}
+.rk-stats b{display:block;font-size:14px;font-weight:750;color:#fff}
+.rk-stats span{display:block;font-size:10.5px;color:rgb(255 255 255 / .62);margin-top:1px;font-weight:600}
+.rk-hint{margin:8px 0 0;font-size:12px;color:#ffd59e;line-height:1.4}
+.rk-tog{all:unset;display:inline-flex;align-items:center;gap:6px;margin-top:6px;padding:4px 2px;font-size:12.5px;font-weight:650;color:color-mix(in srgb,var(--rk3) 80%,#fff);cursor:pointer}
 .rk-tog:focus-visible{outline:2px solid var(--rk3);outline-offset:2px;border-radius:6px}
 .rk-tog .ico{width:15px;height:15px;transition:transform .25s}
 .rk-tog[aria-expanded="true"] .ico{transform:rotate(180deg)}
@@ -755,7 +758,7 @@ details.trip[open] > summary .ico.car{transform:rotate(180deg)}
 @media (prefers-reduced-motion: reduce){ .rk-sp{opacity:.8} }
 @keyframes rkSpin{to{transform:rotate(360deg)}}
 @keyframes rkGlow{0%,100%{opacity:.5;transform:scale(.92)}50%{opacity:.95;transform:scale(1.07)}}
-@keyframes rkFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes rkFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
 @keyframes rkShine{0%,56%{transform:skewX(-18deg) translateX(0)}86%,100%{transform:skewX(-18deg) translateX(196px)}}
 @keyframes rkTw{0%,100%{opacity:0;transform:scale(.2) rotate(0deg)}45%,55%{opacity:1;transform:scale(1) rotate(45deg)}}
 @keyframes rkFlap{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-5deg)}}
@@ -6061,14 +6064,17 @@ function rankCard() {
   const name = rankName(k);
   const stats = [[`${w.done}/${w.plan}`, 'Trainings'], [`${w.nutHit}/${w.days}`, 'Nährwerte'], R.cOn ? [`${w.crea}/${w.days}`, 'Creatin'] : null, [String(w.prs), w.prs === 1 ? 'Rekord' : 'Rekorde']].filter(Boolean);
   return `<section class="card rk rk-${T.id}" style="--rk1:${T.c[0]};--rk2:${T.c[1]};--rk3:${T.c[2]};--rkg:${T.glow};--rkr:${T.ray}" aria-label="Dein Rang">
-    <div class="rk-head"><span class="rk-eb">Dein Rang</span><span class="rk-wk ${w.gain >= 0 ? 'up' : 'down'}">${signLp(w.gain)} LP diese Woche</span></div>
-    <button class="rk-stage" data-act="rank-more" aria-expanded="${S.rankMore}" aria-label="${esc(name)}, Rangleiter ${S.rankMore ? 'schließen' : 'öffnen'}"><span class="rk-rays" aria-hidden="true"></span><span class="rk-glow" aria-hidden="true"></span><span class="rk-float">${rankBadge(k.t, k.div, 'main', true)}</span></button>
-    <h3 class="rk-name">${esc(name)}</h3>
-    <p class="rk-lp num">${k.top ? `${fmt(k.inDiv)} LP im Olymp` : `${k.inDiv} / ${k.size} LP`}</p>
-    ${k.top ? '' : `<div class="rk-bar" role="progressbar" aria-valuemin="0" aria-valuemax="${k.size}" aria-valuenow="${k.inDiv}" aria-label="Fortschritt bis ${esc(nextName(k))}"><i style="width:${Math.max(3, pctv)}%"></i></div>
-    <p class="rk-next">Noch ${k.size - k.inDiv} LP bis ${esc(nextName(k))}</p>`}
+    <div class="rk-main">
+      <button class="rk-stage" data-act="rank-more" aria-expanded="${S.rankMore}" aria-label="${esc(name)}, Rangleiter ${S.rankMore ? 'schließen' : 'öffnen'}"><span class="rk-rays" aria-hidden="true"></span><span class="rk-glow" aria-hidden="true"></span><span class="rk-float">${rankBadge(k.t, k.div, 'main', true)}</span></button>
+      <div class="rk-info">
+        <div class="rk-head"><span class="rk-eb">Dein Rang</span><span class="rk-wk ${w.gain >= 0 ? 'up' : 'down'}">${signLp(w.gain)} LP Woche</span></div>
+        <h3 class="rk-name">${esc(name)}</h3>
+        ${k.top ? `<p class="rk-next">${fmt(k.inDiv)} LP im Olymp</p>` : `<div class="rk-bar" role="progressbar" aria-valuemin="0" aria-valuemax="${k.size}" aria-valuenow="${k.inDiv}" aria-label="Fortschritt bis ${esc(nextName(k))}"><i style="width:${Math.max(3, pctv)}%"></i></div>
+        <p class="rk-next"><b class="num">${k.inDiv}/${k.size} LP</b> · noch ${k.size - k.inDiv} bis ${esc(nextName(k))}</p>`}
+      </div>
+    </div>
     <div class="rk-stats" style="--n:${stats.length}">${stats.map(([v, l]) => `<div><b class="num">${v}</b><span>${l}</span></div>`).join('')}</div>
-    ${w.open > 0 ? `<p class="rk-hint">Diese Woche ${w.open === 1 ? 'fehlt noch 1 Training' : `fehlen noch ${w.open} Trainings`}. Was bis Sonntag nicht gemacht ist, kostet je ${Math.abs(LP_RULE.miss)} LP.</p>` : ''}
+    ${w.open > 0 ? `<p class="rk-hint">Noch ${w.open} ${w.open === 1 ? 'Training' : 'Trainings'} bis Sonntag, sonst je ${Math.abs(LP_RULE.miss)} LP Abzug.</p>` : ''}
     <button class="rk-tog" data-act="rank-more" aria-expanded="${S.rankMore}">${S.rankMore ? 'Weniger anzeigen' : 'Rangleiter und Verlauf'}${icon('caret-down')}</button>
     ${S.rankMore ? rankMore(R) : ''}
   </section>`;
