@@ -1656,7 +1656,19 @@ const MEALS = {
                how:'Spaghetti in Salzwasser kochen. {1n} in der Pfanne krümelig anbraten, salzen und pfeffern. {2n} dazu und 10 Minuten köcheln lassen. {4n} drüber.'},
   steak:      {n:'{0n} mit {1d}', cook:true, icon:'fork-knife', items:[['steak',200,'P','main'],['potato',350,'C','main'],['butter',10,'F'],['mushrooms',120,0]],
                how:'{1n} kochen. {0n} pro Seite 2 bis 3 Minuten braten und 5 Minuten rasten lassen. {3n} in der Pfanne anbraten. {2n} drauf.'},
-  topfen:     {n:'{0p}-Creme', icon:'bowl-food', items:[['topfen',200,'P','main'],['milk',50,0],['chia',10,0],['honey',5,0]],
+  curry:      {n:'{2p}-Curry mit {0d} und {1d}', cook:true, icon:'cooking-pot', items:[['shrimp',200,'P','main'],['rice',85,'C','main'],['coconut',80,'F','core'],['peas',80,0],['paprika',100,0],['oil',5,'F']],
+               how:'{1n} kochen. {0n} auftauen lassen. {4n} in Streifen anbraten und mit Currypulver bestäuben. {2n} und {3n} dazu und 5 Minuten köcheln lassen. {0n} dazu und 3 Minuten mitziehen lassen. Mit Salz abschmecken.'},
+  chili:      {n:'Chili con Carne mit {4d}', cook:true, icon:'cooking-pot', items:[['beef',160,'P','main'],['kidney',120,'C'],['corn',60,0],['passata',200,0,'main'],['rice',70,'C','main'],['oil',5,'F']],
+               how:'{0n} im Topf krümelig anbraten. Mit Chilipulver, Kreuzkümmel und Salz würzen. {3n} dazu. {1n} abspülen und dazu. {2n} dazu. 15 Minuten köcheln lassen. {4n} daneben kochen.'},
+  gnocchi:    {n:'Gnocchi-Pfanne mit {1d}', cook:true, icon:'cooking-pot', items:[['gnocchi',250,'C','core'],['chicken',150,'P','main'],['tomsauce5',150,0,'main'],['mozza',60,'F'],['spinach',100,0],['oil',5,'F']],
+               how:'{0n} in der Pfanne goldbraun anbraten und kurz herausnehmen. {1n} in Würfeln anbraten. {4n} zusammenfallen lassen. {2n} und die Gnocchi dazu. {3n} in Stücken drauf und zugedeckt schmelzen lassen. Mit Oregano und Salz würzen.'},
+  geschnetzeltes:{n:'Rahmgeschnetzeltes mit {1d}', cook:true, icon:'cooking-pot', items:[['turkey',170,'P','main'],['spaetzle',90,'C','core'],['creamch',40,'F'],['mushrooms',150,0],['oil',5,'F']],
+               how:'{1n} in Salzwasser kochen. {0n} in Streifen scharf anbraten, salzen und pfeffern. {3n} in Scheiben mitbraten. {2n} mit einem Schuss Wasser zu einer cremigen Sauce einrühren.'},
+  couscous:   {n:'{1p}-Bowl mit {0d}', cook:true, icon:'bowl-food', items:[['pork',170,'P','main'],['couscous',80,'C','core'],['zucchini',150,0],['paprika',100,0],['greekyog',80,0],['oil',8,'F']],
+               how:'{1n} mit kochendem Wasser übergießen, salzen und 5 Minuten quellen lassen. {0n} in Medaillons schneiden, salzen, pfeffern und von beiden Seiten braten. {2n} in Würfeln mitbraten. {3n} in Würfeln mitbraten. {4n} mit Knoblauch und Salz als Dip.'},
+  ofen:       {n:'Ofen-{0p} mit {1d} und Kräuter-Dip', cook:true, icon:'fork-knife', items:[['potato',350,'C','core'],['turkey',170,'P','main'],['skyr',100,0],['oil',8,'F'],['zucchini',150,0]],
+               how:'{0n} in Spalten schneiden, mit {3d}, Salz und Knoblauch mischen und bei 200 °C etwa 30 Minuten backen. {4n} in Scheiben die letzten 15 Minuten mit aufs Blech. {1n} in Streifen anbraten, salzen und pfeffern. {2n} mit Kräutern, Salz und Pfeffer als Dip.'},
+  topfen:    {n:'{0p}-Creme', icon:'bowl-food', items:[['topfen',200,'P','main'],['milk',50,0],['chia',10,0],['honey',5,0]],
                how:'{0n} mit {1d} glatt rühren. {2n} rein. {3n} dazu. Langsames Eiweiß für die Nacht.'},
   skyrlate:   {n:'{0n} mit {1d}', icon:'bowl-food', items:[['skyr',200,'P','main'],['berries',100,0,'main'],['honey',5,0]],
                how:'{1n} auftauen lassen und unter {0d} rühren. {2n} drüber.'},
@@ -1689,7 +1701,10 @@ const POOLS = {
   lunch:  ['chickenbox','turkeywrap','tunabowl','turkeyrice'],
   pregym: ['prerice','prerun'],
   prerun: ['prerun','prerice'],
-  dinner: ['burgerbowl','salmon','wraps','bolognese','turkeyrice','friedrice','steak','chickenbox','pasta'],
+  dinner: ['burgerbowl','salmon','wraps','bolognese','turkeyrice','friedrice','steak','chickenbox','pasta','curry','chili','gnocchi','ofen','geschnetzeltes','couscous'],
+  // Alle Hauptgerichte in einer Runde. Jede Woche bekommt die nächsten 9 davon (siehe mainWindow).
+  // Nachbarn unterscheiden sich in Beilage und Fleisch, ähnliche Gerichte stehen 7 bis 8 Plätze auseinander.
+  main:   ['chickenbox','burgerbowl','curry','bolognese','turkeywrap','steak','gnocchi','couscous','turkeyrice','salmon','friedrice','geschnetzeltes','wraps','tunabowl','pasta','chili','ofen'],
   late:   ['topfen','skyrlate','cottagelate'],
   work:   ['isoshake','wheyshake'],
   workpre:['prerun','isobanana'],
@@ -1766,30 +1781,67 @@ function pickMeal(pref, pool, taste, used) {
 const SPICES = {
   salz: { n: 'Salz' }, pfeffer: { n: 'Pfeffer' }, knoblauch: { n: 'Knoblauchpulver', s: 'Knoblauch', note: 'oder frischer Knoblauch' },
   kreuzkuemmel: { n: 'Kreuzkümmel gemahlen', s: 'Kreuzkümmel' }, dill: { n: 'Dill', note: 'getrocknet oder tiefgekühlt' }, zimt: { n: 'Zimt' },
+  curry: { n: 'Currypulver' }, chili: { n: 'Chilipulver', note: 'oder Chiliflocken' }, oregano: { n: 'Oregano', note: 'getrocknet' },
+  kraeuter: { n: 'Kräutermischung', s: 'Kräuter', note: 'tiefgekühlt oder getrocknet' },
 };
-const MEAL_SPICES = { cottagebread: ['salz', 'pfeffer'], turkeywrap: ['salz', 'knoblauch'], salmon: ['salz', 'dill'], wraps: ['salz', 'kreuzkuemmel', 'knoblauch'], bolognese: ['salz', 'pfeffer'], cottagelate: ['zimt'] };
+const MEAL_SPICES = { cottagebread: ['salz', 'pfeffer'], turkeywrap: ['salz', 'knoblauch'], salmon: ['salz', 'dill'], wraps: ['salz', 'kreuzkuemmel', 'knoblauch'], bolognese: ['salz', 'pfeffer'], cottagelate: ['zimt'],
+  curry: ['curry', 'salz'], chili: ['chili', 'kreuzkuemmel', 'salz'], gnocchi: ['oregano', 'salz'], ofen: ['salz', 'pfeffer', 'knoblauch', 'kraeuter'],
+  geschnetzeltes: ['salz', 'pfeffer'], couscous: ['salz', 'pfeffer', 'knoblauch'] };
 
 /* Gericht-Familien: zwei Hauptmahlzeiten am selben Tag sollen sich klar unterscheiden
    (nicht zweimal Reis mit Teriyaki, nicht zweimal Wraps). Reste vom Mittag isst man abends sowieso. */
-const FAM = { chickenbox:'reis', tunabowl:'reis', turkeyrice:'reis', friedrice:'reis', turkeywrap:'wrap', wraps:'wrap', coldwrap:'wrap',
-  burgerbowl:'erdapfel', salmon:'erdapfel', steak:'erdapfel', pasta:'pasta', bolognese:'pasta', jause:'brot', lachsbrot:'brot', skyrbig:'muesli' };
+const FAM = { chickenbox:'reis', tunabowl:'reis', turkeyrice:'reis', friedrice:'reis', curry:'reis', turkeywrap:'wrap', wraps:'wrap', coldwrap:'wrap',
+  burgerbowl:'erdapfel', salmon:'erdapfel', steak:'erdapfel', ofen:'erdapfel', pasta:'pasta', bolognese:'pasta', chili:'eintopf', gnocchi:'gnocchi',
+  geschnetzeltes:'spaetzle', couscous:'couscous', jause:'brot', lachsbrot:'brot', skyrbig:'muesli' };
+/* Gerichte, die sich zu ähnlich sind: in einer Woche höchstens eines davon */
+const TWIN = { chickenbox:'teriyaki', turkeyrice:'teriyaki', turkeywrap:'fleischwrap', wraps:'fleischwrap' };
+const dishKey = k => TWIN[k] || k;
 const mainProtein = meal => { const it = meal.items.find(i => FOODS[i[0]].grp === 'meat'); return it && it[0]; };
-function pickVaried(pref, pool, taste, usedFoods, usedFam, avoid) {
-  const prefOk = !!resolveMeal(pref, taste, usedFoods);
-  // nach dem Wunschgericht reihum weiter, Gerichte vom Vortag ganz ans Ende
+/* Hauptbeilage (Reis, Erdäpfel, Nudeln ...) und Fleisch + Beilage, z. B. "chicken|rice":
+   zweimal Hähnchen mit Reis in einer Woche fühlt sich gleich an */
+const mainCarb = meal => { const c = meal.items.find(i => i[2] === 'C' && (i[3] === 'main' || i[3] === 'core')) || meal.items.find(i => i[2] === 'C'); return c && c[0]; };
+const mealSig = meal => { const p = mainProtein(meal), c = mainCarb(meal); return p && c ? p + '|' + c : null; };
+const bump = (m, k) => { if (k) m.set(k, (m.get(k) || 0) + 1); };
+function histAdd(H, meal) { bump(H.week, dishKey(meal.key)); bump(H.sig, mealSig(meal)); bump(H.fam, FAM[meal.key]); bump(H.prot, mainProtein(meal)); bump(H.carb, mainCarb(meal)); }
+/* Die Gerichte dieser Woche: 9 aufeinanderfolgende aus POOLS.main, jede Woche 9 Plätze weiter.
+   So kommt jedes Gericht etwa jede zweite Woche dran und zwei Wochen sehen nie gleich aus. */
+const WEEK_MAINS = 9;
+function mainWindow(d) {
+  const L = POOLS.main, n = L.length, s = ((weekNo(d) * WEEK_MAINS) % n + n) % n;
+  return Array.from({ length: Math.min(WEEK_MAINS, n) }, (_, i) => L[(s + i) % n]);
+}
+/* Strafpunkte: je kleiner, desto besser passt das Gericht in die Woche.
+   usedFam enthält die Gerichtsarten des Tages und als "carb:<Beilage>" die Beilagen des Tages. */
+function varietyScore(k, r, H, usedFoods, usedFam) {
+  const n = (m, key) => (m && key ? m.get(key) || 0 : 0), mp = mainProtein(r), fam = FAM[k], mc = mainCarb(r);
+  let s = 0;
+  if (mp && usedFoods.has(mp)) s += 50;                // gleiches Fleisch wie mittags
+  if (mc && usedFam.has('carb:' + mc)) s += 50;        // gleiche Beilage wie mittags
+  if (H.win && POOLS.main.includes(k) && !H.win.includes(k)) s += 45;   // nicht in der Auswahl dieser Woche
+  s += n(H.week, dishKey(k)) * 100;                    // dasselbe Gericht (oder sein Zwilling) diese Woche schon
+  s += n(H.sig, mealSig(r)) * 70;                      // gleiches Fleisch mit gleicher Beilage
+  s += n(H.fam, fam) * 4 + n(H.carb, mc) * 4;          // gleiche Art Gericht, gleiche Beilage diese Woche
+  if (H.prevFam && H.prevFam.has(fam)) s += 6;         // gestern schon so etwas
+  if (H.prevCarb && H.prevCarb.has(mc)) s += 6;        // gestern schon diese Beilage
+  if (H.prev && H.prev.has(k)) s += 100;               // gestern genau das
+  s += n(H.prot, mp) * 3;                              // gleiches Fleisch diese Woche
+  return s;
+}
+function pickVaried(pref, pool, taste, usedFoods, usedFam, hist) {
+  const H = hist instanceof Set ? { prev: hist } : (hist || {});
+  // Mit Wochenplan ist das Wunschgericht nur der Startpunkt der Runde, kein "statt X"
+  const prefOk = H.week ? true : !!resolveMeal(pref, taste, usedFoods);
+  // ab dem Wunschgericht reihum; gewählt wird das Gericht mit den wenigsten Strafpunkten
   const i0 = Math.max(0, pool.indexOf(pref));
-  let order = [pref].concat(pool.slice(i0 + 1), pool.slice(0, i0)).filter((k, i, a) => a.indexOf(k) === i);
-  if (avoid && avoid.size) order = order.filter(k => !avoid.has(k)).concat(order.filter(k => avoid.has(k)));
-  let fallback = null;
-  for (const k of order) {
-    if (FAM[k] && usedFam.has(FAM[k])) continue;
-    const r = resolveMeal(k, taste, usedFoods); if (!r) continue;
-    const cand = { ...r, replaced: k !== pref && !prefOk ? pref : null };
-    const mp = mainProtein(r);
-    if (!mp || !usedFoods.has(mp)) return cand;
-    if (!fallback) fallback = cand;
-  }
-  return fallback || pickMeal(pref, pool, taste, usedFoods);
+  const order = [pref].concat(pool.slice(i0 + 1), pool.slice(0, i0)).filter((k, i, a) => a.indexOf(k) === i);
+  let best = null, bestS = Infinity;
+  order.forEach((k, i) => {
+    if (FAM[k] && usedFam.has(FAM[k])) return;
+    const r = resolveMeal(k, taste, usedFoods); if (!r) return;
+    const s = varietyScore(k, r, H, usedFoods, usedFam) + i * 0.01;
+    if (s < bestS) { bestS = s; best = { ...r, replaced: k !== pref && !prefOk ? pref : null }; }
+  });
+  return best || pickMeal(pref, pool, taste, usedFoods);
 }
 const DAYNAMES = ['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'];
 const DAYSHORT = ['Mo','Di','Mi','Do','Fr','Sa','So'];
@@ -1989,14 +2041,16 @@ function refine(itemLists, target, minMain, mk) {
 }
 
 /* ---------- Tagesplan ---------- */
+/* Laufende Wochennummer (Montag 1.1.2024 = Woche 0) */
+const weekNo = d => Math.floor((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - Date.UTC(2024, 0, 1)) / 6048e5);
 function mealKeysFor(d, type) {
-  const w = dow(d);
+  const w = dow(d), m0 = mainWindow(d)[0];
   return {
     bf:     { pref: w === 6 ? 'pancakes' : (type === 'rest' ? 'eggbread' : 'porridge'), pool: 'bf' },
     snack:  { pref: w % 2 === 0 ? 'skyrbowl' : 'cottagebread', pool: 'snack' },
-    lunch:  { pref: ['chickenbox','turkeywrap','chickenbox','turkeywrap','chickenbox','tunabowl','turkeywrap'][w], pool: 'lunch' },
+    lunch:  { pref: m0, pool: 'lunch' },
     pre:    { pref: type === 'run' ? 'prerun' : 'prerice', pool: type === 'run' ? 'prerun' : 'pregym' },
-    dinner: { pref: ['burgerbowl','salmon','wraps','bolognese','turkeyrice','friedrice','steak'][w], pool: 'dinner' },
+    dinner: { pref: m0, pool: 'dinner' },
     late:   { pref: 'topfen', pool: 'late' },
   };
 }
@@ -2027,14 +2081,19 @@ function trainTime(pr, type, d) {
   }
   return toMin(pr.trainGym || pr.train || '17:00');
 }
-/* Hauptgerichte vom Vortag: die Woche wird ab Montag der Reihe nach durchgerechnet, damit es zum echten Vortag passt */
-function prevMains(d, pr) {
-  let prev = new Set();
+/* Was diese Woche schon gegessen wird: die Woche wird ab Montag der Reihe nach durchgerechnet,
+   damit sich Gerichte nicht wiederholen und der echte Vortag passt */
+function mainsHist(d, pr) {
+  const H = { win: mainWindow(d), prev: new Set(), prevFam: new Set(), prevCarb: new Set(), week: new Map(), sig: new Map(), fam: new Map(), prot: new Map(), carb: new Map() };
   const target = isoDate(d);
-  for (let x = addDays(d, -dow(d)); isoDate(x) < target; x = addDays(x, 1))
-    prev = new Set(slotsFor(x, typeOn(pr, x), pr, prev).filter(sl => FAM[sl.key]).map(sl => sl.key));
-  return prev;
+  for (let x = addDays(d, -dow(d)); isoDate(x) < target; x = addDays(x, 1)) {
+    const mains = slotsFor(x, evNoTrain(pr, x) ? 'rest' : typeOn(pr, x), pr, H).filter(sl => FAM[sl.key]);
+    H.prev = new Set(mains.map(sl => sl.key)); H.prevFam = new Set(mains.map(sl => FAM[sl.key])); H.prevCarb = new Set(mains.map(sl => mainCarb(sl.meal)));
+    for (const sl of mains) histAdd(H, sl.meal);
+  }
+  return H;
 }
+const prevMains = (d, pr) => mainsHist(d, pr).prev;
 function evNoTrain(pr, d) { return (pr.events || []).some(e => e.date === isoDate(d) && e.noTrain); }
 function evWindows(pr, d) {
   const iso = isoDate(d);
@@ -2044,8 +2103,8 @@ function evWindows(pr, d) {
     return { ...e, s0, e0 };
   }).sort((a, b) => a.s0 - b.s0);
 }
-function slotsFor(d, type, pr, prevKeys) {
-  if (!prevKeys) prevKeys = prevMains(d, pr);
+function slotsFor(d, type, pr, hist) {
+  if (!hist) hist = mainsHist(d, pr);
   const K = mealKeysFor(d, type);
   const W = toMin(pr.wake), T = trainTime(pr, type, d);
   const slots = [];
@@ -2163,12 +2222,15 @@ function slotsFor(d, type, pr, prevKeys) {
   for (const id of order) {
     const sl = slots.find(x => x.id === id); if (!sl) continue;
     const isMain = sl.spec.pool === 'lunch' || sl.spec.pool === 'dinner';
-    // Hauptmahlzeiten: aus beiden Listen wählen, damit sich Mittag und Abend klar unterscheiden
-    const base = isMain ? [...new Set(POOLS[sl.spec.pool].concat(POOLS.lunch, POOLS.dinner))] : POOLS[sl.spec.pool];
-    const pool = base.filter(k => !usedMeals.has(k) || k === sl.spec.pref || sl.spec.pool === 'work');
-    sl.meal = isMain ? pickVaried(usedMeals.has(sl.spec.pref) ? pool[0] : sl.spec.pref, pool, pr.taste, usedFoods, usedFam, prevKeys) : pickMeal(sl.spec.pref, pool, pr.taste, usedFoods);
+    // Hauptmahlzeiten: aus der ganzen Runde wählen, damit sich Mittag, Abend und die Tage der Woche klar unterscheiden
+    const base = isMain ? [...new Set(POOLS.main.concat(POOLS.lunch, POOLS.dinner))] : POOLS[sl.spec.pool];
+    const pool = base.filter(k => !usedMeals.has(k) || sl.spec.pool === 'work');
+    const ri = base.indexOf(sl.spec.pref);
+    const pref = !isMain || !usedMeals.has(sl.spec.pref) ? sl.spec.pref : base.slice(ri + 1).concat(base.slice(0, ri)).find(k => pool.includes(k)) || pool[0];
+    sl.meal = isMain ? pickVaried(pref, pool, pr.taste, usedFoods, usedFam, hist) : pickMeal(sl.spec.pref, base.filter(k => !usedMeals.has(k) || k === sl.spec.pref || sl.spec.pool === 'work'), pr.taste, usedFoods);
     sl.key = sl.meal.key; usedMeals.add(sl.key);
     if (FAM[sl.key]) usedFam.add(FAM[sl.key]);
+    if (isMain && mainCarb(sl.meal)) usedFam.add('carb:' + mainCarb(sl.meal));
     for (const it of sl.meal.items) if (FOODS[it[0]].grp === 'meat') usedFoods.add(it[0]);
   }
   // Ohne Kochen: generell (Body Lab) oder für einzelne Mahlzeiten
@@ -2181,7 +2243,7 @@ function slotsFor(d, type, pr, prevKeys) {
     const pref = isBf ? 'overnight' : POOLS.nocook[dow(d) % 3];
     const famOther = new Set(slots.filter(x => x !== sl && FAM[x.key]).map(x => FAM[x.key]));
     const m = isBf ? pickMeal(pool.includes(pref) ? pref : pool[0], pool, pr.taste, usedFoods)
-      : pickVaried(pool.includes(pref) ? pref : pool[0], pool, pr.taste, usedFoods, famOther, prevKeys);
+      : pickVaried(pool.includes(pref) ? pref : pool[0], pool, pr.taste, usedFoods, famOther, hist);
     const orig = sl.key;
     sl.meal = { ...m, lazy: true, orig, replaced: null, awayLock: !!sl.away }; sl.key = m.key; usedMeals.add(m.key);
   }
