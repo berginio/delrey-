@@ -1398,6 +1398,27 @@ button.hn-row:active .hn-ic{transform:scale(.94)}
 @media (prefers-reduced-motion: no-preference){ .hn-now::after{animation:hnGlow 7s ease-in-out infinite} }
 @keyframes hnGlow{0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.18);opacity:1}}
 @media (max-width:370px){ .hn-grid{grid-template-columns:112px minmax(0,1fr);gap:14px} .hn-rings{width:112px;height:112px} .hn-rings .rings-c .big{font-size:19px} .hn-rings .rings-c small{font-size:10.5px} .hn-hero,.hn-now,.hn-list{padding-inline:14px} .hn-goal-row > small{display:none} }
+/* ---------- Schneller eintragen ---------- */
+.wd-days{display:flex;flex-wrap:wrap;gap:6px}
+.wd-days .pchip{min-width:44px;min-height:40px;justify-content:center}
+.wd-same{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.wd-same b{display:block;font-size:14.5px;font-weight:650}
+.wd-same small{display:block;font-size:12.5px;color:var(--muted);margin-top:1px}
+.wday.wd2 .wd-top{grid-template-columns:minmax(28px,auto) minmax(0,1fr) 10px minmax(0,1fr)}
+.wday.wd2 .wd-pause{padding-left:0}
+.fr-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.fr-chips .pchip{min-height:36px}
+.past-all{width:100%;margin:2px 0 10px}
+.hn-past{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:10px;width:100%;margin-top:12px;padding:10px 12px;border-radius:14px;background:color-mix(in srgb,var(--warn) 12%,transparent);font-size:13px;line-height:1.35;color:var(--ink);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.hn-past > .ico{width:18px;height:18px;color:var(--warn);flex:none}
+.hn-past b{display:block;color:var(--accent);font-weight:650;margin-top:1px}
+.hn-past:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hn-past:active{transform:scale(.985)}
+.gx-q{all:unset;box-sizing:border-box;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:2px solid color-mix(in srgb,var(--accent) 50%,transparent);color:color-mix(in srgb,var(--accent) 40%,transparent);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .2s,border-color .2s,color .2s,transform .15s var(--ease)}
+.gx-q .ico{width:17px;height:17px}
+.gx-q.on{background:var(--up);border-color:var(--up);color:#fff}
+.gx-q:active{transform:scale(.9)}
+.gx-q:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 /* ================= Apple-Design (data-ui="apple"): iOS-Systemfarben, SF Pro, Liquid Glass =================
    Inhalte liegen auf ruhigen, festen Flächen; Glas nur für die schwebende Ebene darüber (Tableiste, Kopf-Knöpfe, Meldungen, Sheets). */
 :root[data-ui="apple"]{--font-body:-apple-system,BlinkMacSystemFont,"SF Pro Text","Geist",system-ui,"Segoe UI",Roboto,sans-serif;--font-display:-apple-system,BlinkMacSystemFont,"SF Pro Display","Geist",system-ui,"Segoe UI",Roboto,sans-serif;--r-card:24px;--r-input:12px;--tc:#007AFF}
@@ -1567,6 +1588,11 @@ button.hn-row:active .hn-ic{transform:scale(.94)}
 :root[data-ui="apple"] .tl-acts button{border-color:transparent;background:var(--fill);color:var(--ink)}
 :root[data-ui="apple"] .tl-item.open .tl-body{background:var(--fill2)}
 :root[data-ui="apple"] .seg.wrap3{border-radius:20px}
+/* Zahlenfelder mit Einheit: eine Fläche, kein Rahmen */
+:root[data-ui="apple"] .gin{background:var(--fill2);border-color:transparent;border-radius:var(--r-input)}
+:root[data-ui="apple"] .gin input,:root[data-ui="apple"] .field .gin input{background:transparent !important;box-shadow:none !important}
+:root[data-ui="apple"] .gin:focus-within{outline:0;background:var(--surface);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 32%,transparent)}
+:root[data-ui="apple"] .gstep button{border:0;background:var(--fill);border-radius:999px}
 /* Akzentfarbe wählen */
 .tints{display:flex;flex-wrap:wrap;gap:12px;margin:12px 0 4px}
 .tsw{all:unset;box-sizing:border-box;width:36px;height:36px;border-radius:50%;background:var(--sw);cursor:pointer;display:grid;place-items:center;transition:transform .15s var(--ease),box-shadow .2s;-webkit-tap-highlight-color:transparent}
@@ -3262,6 +3288,8 @@ function renderHomeNeu(next) {
   }
   // Als Nächstes
   let nowHtml;
+  const past = pastOpen().filter(sl => !next || sl.id !== next.id);
+  const pastHtml = past.length ? `<button class="hn-past" data-act="eat-past">${icon('check')}<span>${past.length === 1 ? `${esc(past[0].label)} (${past[0].time}) noch nicht abgehakt` : `${past.length} Mahlzeiten von vorhin noch nicht abgehakt`}<b>Wie geplant abhaken</b></span></button>` : '';
   if (next) {
     const adj = R.open.find(o => o.id === next.id), tot = (adj && adj.tot) || next.tot || { kcal: 0, p: 0 };
     const chip = next.buy ? `<span class="chip warn">${icon('storefront')}Kaufen</span>` : next.away ? `<span class="chip warn">${icon('package')}Mitnehmen</span>` : next.atWork ? `<span class="chip">${icon('briefcase')}Auf Arbeit</span>` : '';
@@ -3273,11 +3301,11 @@ function renderHomeNeu(next) {
       <div class="hn-time"><b class="num">${next.time}</b><span>${esc(relTime(next.t - now))}</span></div>
       <h2 class="hn-meal">${next.buy ? 'Unterwegs kaufen' : esc(next.meal.n)}</h2>
       ${next.buy ? '' : `<p class="hn-meta">${fmt(tot.kcal)} kcal · Eiweiß ${fmt(tot.p)} g</p>`}
-      <div class="hn-act">${acts}</div></article>`;
+      <div class="hn-act">${acts}</div>${pastHtml}</article>`;
   } else {
     const openLeft = R.open.filter(o => !o.skip).length;
     nowHtml = `<article class="card hn-now"><div class="hn-done">${icon(openLeft ? 'clock' : 'check')}<div><b>${openLeft ? 'Noch etwas von vorhin offen' : 'Für heute erledigt'}</b><small>${openLeft ? 'Hak es im Plan ab oder lass es aus.' : 'Alle Mahlzeiten sind abgehakt. Morgen geht es frisch weiter.'}</small></div></div>
-      ${openLeft ? `<div class="hn-act"><button class="btn ghost" data-act="tab" data-tab="plan">${icon('calendar-dots')}Zum Plan</button></div>` : ''}</article>`;
+      ${openLeft ? `<div class="hn-act">${past.length ? `<button class="btn" data-act="eat-past">${icon('check')}Alles wie geplant</button>` : ''}<button class="btn ghost" data-act="tab" data-tab="plan">${icon('calendar-dots')}Zum Plan</button></div>` : ''}</article>`;
   }
   setAnimated($('#hnNow'), nowHtml);
   // Heute erledigen: Creatin, Wasser, Wiegen, Garmin
@@ -3294,7 +3322,7 @@ function renderHomeNeu(next) {
   }
   const w = S.log.waterMl || 0;
   rows.push(`<div class="hn-row water"><span class="hn-ic">${icon('drop')}</span><span class="hn-t"><b>Wasser</b><small>${litre(w)} von ${litre(T.water)} l</small><span class="bar" aria-hidden="true"><i data-bar="w" data-w="${pctW(w, T.water)}"></i></span></span>
-    <span class="hn-w"><button data-act="water" data-v="-250" aria-label="250 ml Wasser abziehen" ${w ? '' : 'disabled'}>${icon('minus')}</button><button class="plus" data-act="water" data-v="250" aria-label="250 ml Wasser dazu">${icon('plus')}250</button></span></div>`);
+    <span class="hn-w"><button data-act="water" data-v="-250" aria-label="250 ml Wasser abziehen" ${w ? '' : 'disabled'}>${icon('minus')}</button><button class="plus" data-act="water" data-v="250" aria-label="250 ml Wasser dazu">${icon('plus')}250</button><button class="plus" data-act="water" data-v="500" aria-label="500 ml Wasser dazu">${icon('plus')}500</button></span></div>`);
   const ws = weighStatus();
   if (!pr.example && ws.due) rows.push(`<button class="hn-row weigh" data-act="fort-seg" data-s="weight"><span class="hn-ic">${icon('scales')}</span><span class="hn-t"><b>Wiegen der Woche</b><small>Körpergewicht eintragen</small></span>${icon('caret-down', 'rot hn-car')}</button>`);
   if (pr.garmin === 'on') {
@@ -3302,6 +3330,12 @@ function renderHomeNeu(next) {
     rows.push(`<button class="hn-row garmin" data-act="home-open" data-k="garmin" aria-expanded="${gx}" aria-controls="garminCard"><span class="hn-ic">${icon('watch')}</span><span class="hn-t"><b>Verbrauch laut Garmin</b><small>${burned ? `${fmt(burned)} kcal eingetragen` : now < 18 * 60 ? 'Ab 18:00 Uhr eintragen' : 'Jetzt eintragen'}</small></span>${icon('caret-down', (gx ? '' : 'rot ') + 'hn-car')}</button>`);
   }
   setAnimated($('#hnList'), `<h2 class="hn-h">Heute</h2>${rows.join('')}`);
+}
+/* Mahlzeiten von heute, deren Zeit vorbei ist und die noch nicht abgehakt sind (ohne "Unterwegs kaufen") */
+function pastOpen() {
+  if (!todayPlan) return [];
+  const meals = (S.log && S.log.meals) || {}, now = nowMin();
+  return todayPlan.slots.filter(sl => !meals[sl.id] && sl.t <= now - 10 && !sl.buy);
 }
 function renderUiSwitch() {
   const el = $('#uiSwitch'); if (!el) return;
@@ -3687,7 +3721,9 @@ function planDayList(p, R, isToday) {
   }
   if (!nowDone) html += nowRow;
   const eatenN = p.slots.filter(s => meals[s.id] && meals[s.id].state === 'eaten').length;
+  const pastN = isToday ? pastOpen().length : 0;
   return `<div class="card"><div class="spread" style="margin-bottom:6px"><h3>${isToday ? 'Dein Tag' : 'Ablauf'}</h3><span class="muted num" style="font-size:13px">${isToday ? `${eatenN} von ${p.slots.length} gegessen` : `${p.slots.length} Mahlzeiten · tipp für Rezept`}</span></div>
+    ${pastN >= 2 ? `<button class="btn soft past-all" data-act="eat-past">${icon('check')}Alles bis jetzt wie geplant gegessen (${pastN})</button>` : ''}
     <ol class="tl">${html}</ol>
     ${isToday ? `<button class="btn soft" data-act="track-open" style="width:100%;margin-top:12px">${icon('plus')}Etwas anderes gegessen? Eintragen</button>` : ''}</div>`;
 }
@@ -3911,22 +3947,30 @@ function renderForm() {
     </div>
     <div class="field"><label>Alltag ohne Training</label>${seg('job', Object.entries(JOBS).map(([k, v]) => [k, v.n]), 'Alltag ohne Training')}</div>`;
 
-  const W = workWeek(p);
-  $('#zWork').innerHTML = `
-    <p class="fhint" style="margin:0">Für jeden Tag eigene Zeiten. Das Mittagessen auf Arbeit liegt in deiner Pause, Shakes und Snacks gibt es davor und danach.</p>
-    <div class="wdays">${W.map((w, i) => `
-      <div class="wday ${w.on ? '' : 'off'}">
+  const W = workWeek(p), onIdx = W.map((w, i) => (w.on ? i : -1)).filter(i => i >= 0);
+  const wsig = w => [w.start, w.end, !!w.pause, w.pauseAt || '12:00', +w.pauseDur || 30].join('|');
+  const allSame = onIdx.length > 0 && onIdx.every(i => wsig(W[i]) === wsig(W[onIdx[0]]));
+  const same = onIdx.length > 1 && allSame && p.workSame !== false;
+  const daysLbl = idx => { const runs = []; for (const i of idx) { const r = runs[runs.length - 1]; if (r && i === r[1] + 1) r[1] = i; else runs.push([i, i]); }
+    return runs.map(([a, b]) => a === b ? DAYSHORT[a] : b === a + 1 ? `${DAYSHORT[a]}, ${DAYSHORT[b]}` : `${DAYSHORT[a]}–${DAYSHORT[b]}`).join(', '); };
+  const wdRow = (w, key, name, lbl) => `
+      <div class="wday wd2">
         <div class="wd-top">
-          <span class="wd-name">${DAYSHORT[i]}</span>
-          ${w.on ? `<input type="time" aria-label="${DAYNAMES[i]} Arbeitsbeginn" data-wd="${i}" data-wk="start" value="${esc(w.start)}"><span class="wd-dash">–</span><input type="time" aria-label="${DAYNAMES[i]} Feierabend" data-wd="${i}" data-wk="end" value="${esc(w.end)}">` : `<span class="wd-free">Frei</span>`}
-          <button class="tg" role="switch" aria-checked="${!!w.on}" aria-label="${DAYNAMES[i]}: Arbeit" data-act="wd-on" data-i="${i}"></button>
+          <span class="wd-name">${name}</span>
+          <input type="time" aria-label="${lbl}: Arbeitsbeginn" data-wd="${key}" data-wk="start" value="${esc(w.start)}"><span class="wd-dash">–</span><input type="time" aria-label="${lbl}: Feierabend" data-wd="${key}" data-wk="end" value="${esc(w.end)}">
         </div>
-        ${w.on ? `<div class="wd-pause ${w.pause ? '' : 'none'}">
-          <button class="pchip" aria-pressed="${!!w.pause}" data-act="wd-pause" data-i="${i}">${icon(w.pause ? 'fork-knife' : 'x')}${w.pause ? 'Pause' : 'Keine Pause'}</button>
-          ${w.pause ? `<input type="time" aria-label="${DAYNAMES[i]} Pause um" data-wd="${i}" data-wk="pauseAt" value="${esc(w.pauseAt || '12:00')}"><select aria-label="${DAYNAMES[i]} Pause dauert" data-wd="${i}" data-wk="pauseDur">${[15, 20, 30, 45, 60].map(m => `<option value="${m}" ${+(w.pauseDur || 30) === m ? 'selected' : ''}>${m} min</option>`).join('')}</select>` : `<span class="fhint" style="margin:0">Essen nur vor oder nach der Arbeit</span>`}
-        </div>` : ''}
-      </div>`).join('')}</div>
-    ${W[0].on ? `<button class="linkbtn" data-act="wd-copy" style="justify-self:start;font-size:13px">${icon('copy')}Montag auf Di bis Fr übertragen</button>` : ''}
+        <div class="wd-pause ${w.pause ? '' : 'none'}">
+          <button class="pchip" aria-pressed="${!!w.pause}" data-act="wd-pause" data-i="${key}">${icon(w.pause ? 'fork-knife' : 'x')}${w.pause ? 'Pause' : 'Keine Pause'}</button>
+          ${w.pause ? `<input type="time" aria-label="${lbl}: Pause um" data-wd="${key}" data-wk="pauseAt" value="${esc(w.pauseAt || '12:00')}"><select aria-label="${lbl}: Pause dauert" data-wd="${key}" data-wk="pauseDur">${[15, 20, 30, 45, 60].map(m => `<option value="${m}" ${+(w.pauseDur || 30) === m ? 'selected' : ''}>${m} min</option>`).join('')}</select>` : `<span class="fhint" style="margin:0">Essen nur vor oder nach der Arbeit</span>`}
+        </div>
+      </div>`;
+  $('#zWork').innerHTML = `
+    <div class="field"><label>Tipp an, an welchen Tagen du arbeitest</label>
+      <div class="wd-days" role="group" aria-label="Arbeitstage">${DAYSHORT.map((d, i) => `<button class="pchip" data-act="wd-on" data-i="${i}" aria-pressed="${!!W[i].on}" aria-label="${DAYNAMES[i]}">${d}</button>`).join('')}</div></div>
+    ${onIdx.length > 1 ? `<div class="wd-same"><span><b>Jeden Arbeitstag gleich</b><small>${same ? `Eine Zeit für ${daysLbl(onIdx)}` : 'Jeder Tag hat eigene Zeiten'}</small></span><button class="tg" role="switch" aria-checked="${same}" aria-label="Jeden Arbeitstag gleiche Zeiten" data-act="wd-same"></button></div>` : ''}
+    ${onIdx.length ? `<div class="wdays">${same ? wdRow(W[onIdx[0]], 'all', daysLbl(onIdx), 'Alle Arbeitstage') : onIdx.map(i => wdRow(W[i], i, DAYSHORT[i], DAYNAMES[i])).join('')}</div>`
+      : `<p class="fhint" style="margin:0">Keine Arbeitstage. Die App plant jeden Tag wie einen freien Tag.</p>`}
+    <p class="fhint" style="margin:0">Das Mittagessen auf Arbeit liegt in deiner Pause, Shakes und Snacks gibt es davor und danach.</p>
     <div class="field"><label>Mittag auf Arbeit</label>${seg('workLunch', [['kantine', 'Kantine & Shakes'], ['box', 'Essen mitnehmen']], 'Mittag auf Arbeit')}</div>`;
 
   const bf = p.breakfast || 'daily';
@@ -5106,6 +5150,11 @@ document.addEventListener('click', e => {
   }
   if (a === 'water') return mutateLog(l => { l.waterMl = Math.max(0, (l.waterMl || 0) + (+b.dataset.v)); });
   if (a === 'eat' || a === 'skip' || a === 'undo') delete S.rowOpen[S.today + ':' + b.dataset.slot];
+  if (a === 'eat-past') {
+    const list = pastOpen(); if (!list.length) return;
+    const snaps = list.map(sl => [sl.id, sl.time, snapshotSlot(sl.id)]);
+    return mutateLog(l => { for (const [id, at, snap] of snaps) l.meals[id] = { state: 'eaten', at, ...snap }; }, list.length === 1 ? 'Abgehakt' : `${list.length} Mahlzeiten abgehakt`);
+  }
   if (a === 'eat') { const id = b.dataset.slot; const snap = snapshotSlot(id); return mutateLog(l => { l.meals[id] = { state: 'eaten', at: toHHMM(nowMin()), ...snap }; }, 'Abgehakt'); }
   if (a === 'skip') { const id = b.dataset.slot; return mutateLog(l => { l.meals[id] = { state: 'skipped' }; }, 'Ausgelassen, Rest angepasst'); }
   if (a === 'undo') { const id = b.dataset.slot; return mutateLog(l => { delete l.meals[id]; }); }
@@ -5381,11 +5430,22 @@ document.addEventListener('click', e => {
     if (S.acc.has(k)) setTimeout(() => { const el = b.closest('.acc'); const r = el.getBoundingClientRect(); if (r.bottom > innerHeight - 90) el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'nearest' }); }, 430);
     return;
   }
-  if (a === 'wd-on' || a === 'wd-pause' || a === 'wd-copy') {
-    const W = workWeek(S.profile).map(w => ({ ...w })), i = +b.dataset.i;
-    if (a === 'wd-on') W[i].on = !W[i].on;
-    if (a === 'wd-pause') W[i].pause = !W[i].pause;
+  if (a === 'wd-on' || a === 'wd-pause' || a === 'wd-copy' || a === 'wd-same') {
+    const W = workWeek(S.profile).map(w => ({ ...w })), all = b.dataset.i === 'all', i = +b.dataset.i;
+    const onIdx = W.map((w, k) => (w.on ? k : -1)).filter(k => k >= 0), first = onIdx.length ? W[onIdx[0]] : null;
+    const times = w => ({ start: w.start, end: w.end, pause: w.pause, pauseAt: w.pauseAt, pauseDur: w.pauseDur });
+    if (a === 'wd-on') {
+      const turnOn = !W[i].on; W[i].on = turnOn;
+      // neuer Arbeitstag bekommt die gleichen Zeiten wie die anderen
+      if (turnOn && first && S.profile.workSame !== false) Object.assign(W[i], times(first));
+    }
+    if (a === 'wd-pause') { if (all) { const v = !(first && first.pause); onIdx.forEach(k => { W[k].pause = v; }); } else W[i].pause = !W[i].pause; }
     if (a === 'wd-copy') for (let j = 1; j < 5; j++) W[j] = { ...W[0] };
+    if (a === 'wd-same') {
+      const on = b.getAttribute('aria-checked') !== 'true';
+      S.profile.workSame = on;
+      if (on && first) onIdx.forEach(k => Object.assign(W[k], times(first)));
+    }
     S.profile.work = W; renderForm(); profileChanged(false);
     if (a === 'wd-copy') toast('Montag auf Di bis Fr übertragen');
     return;
@@ -5458,7 +5518,7 @@ document.addEventListener('click', e => {
     renderDishes(); toast(`Umbenannt in „${name}“`); return;
   }
   if (a === 'frange') { S.frange = b.dataset.r; try { localStorage.setItem('np:frange', S.frange); } catch (e) {} renderFort(); return; }
-  if (a === 'fw-step') { const i = $('#fw-kg'), v = num(i.value); i.value = dec1(Math.max(30, (isFinite(v) ? v : 80) + (+b.dataset.d))); return; }
+  if (a === 'fw-step') { const i = $('#fw-kg'), v = num(i.value); i.value = dec1(Math.max(30, (isFinite(v) && v > 0 ? v : (+S.profile.weight || 75)) + (+b.dataset.d))); return; }
   if (a === 'fort-seg') { S.fseg = b.dataset.s; try { localStorage.setItem('np:fseg', S.fseg); } catch (e) {} if (S.tab !== 'fort') setTab('fort'); else { renderFort(); window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }); } return; }
   if (a === 'fw-save') {
     const v = num($('#fw-kg').value), date = $('#fw-date').value || S.today;
@@ -5469,6 +5529,7 @@ document.addEventListener('click', e => {
     if (latest && latest.d === date) { S.profile.weight = kg; profileChanged(false); }
     renderFort(); toast('Gewicht gespeichert'); return;
   }
+  if (a === 'fr-km') { const i = $('#fr-km'); if (i) i.value = dec1(+b.dataset.v); document.querySelectorAll('[data-act="fr-km"]').forEach(x => x.setAttribute('aria-pressed', x === b)); const m = $('#fr-min'); if (m) m.focus(); return; }
   if (a === 'fr-save') {
     const km = num($('#fr-km').value), mi = num($('#fr-min').value) || 0, se = num($('#fr-sec').value) || 0, date = $('#fr-date').value || S.today;
     if (!(km > 0 && km < 200)) { toast('Bitte die Distanz in km eingeben, z. B. 5,2'); $('#fr-km').focus(); return; }
@@ -5515,17 +5576,28 @@ document.addEventListener('click', e => {
   if (a === 'gx-add' || a === 'gx-less') {
     const D = gymDraft(), ex = exById(b.dataset.id), E = exDraft(ex, D);
     if (a === 'gx-add') E.r = E.r.concat(E.r.length ? E.r[E.r.length - 1] : (ex.reps || 10)); else if (E.r.length > 1) E.r = E.r.slice(0, -1);
+    E.edited = true;
     saveDraft(); renderFort(); return;
   }
   if (a === 'gw-step') {
     const D = gymDraft(), ex = exById(b.dataset.id), E = exDraft(ex, D), v = num(E.w);
-    E.w = Math.max(0, roundHalf((isFinite(v) ? v : 0) + (+b.dataset.d))); E.done = true;
+    E.w = Math.max(0, roundHalf((isFinite(v) ? v : 0) + (+b.dataset.d))); E.done = true; E.edited = true;
     saveDraft(); renderFort(); return;
   }
   if (a === 'gx-up') {
     const D = gymDraft(), ex = exById(b.dataset.id), E = exDraft(ex, D), t = progTip(ex); if (!t || t.kind !== 'up') return;
-    E.w = t.to; E.r = E.r.map(() => t.target);
+    E.w = t.to; E.r = E.r.map(() => t.target); E.edited = true;
     saveDraft(); renderFort(); toast(`Auf ${dec1(t.to)} kg erhöht. Schaff so viele Wdh. wie möglich`); return;
+  }
+  if (a === 'gx-quick') {
+    e.preventDefault();   // nicht auf- oder zuklappen
+    const D = gymDraft(), ex = exById(b.dataset.id), E = exDraft(ex, D);
+    // Unverändert: genau die Werte vom letzten Mal nehmen, auch wenn der Entwurf älter ist
+    const h = exHistory(ex.id), last = h[h.length - 1];
+    if (!E.done && !E.edited && last) { E.w = workW(last.sets); E.r = last.sets.map(st => +st[1] || (ex.reps || 10)); }
+    E.done = !E.done; saveDraft(); renderFort();
+    if (E.done) toast(`${ex.n}: ${+E.w ? dec1(+E.w) + ' kg · ' : ''}${E.r.join(' · ')}${ex.time ? ' s' : ''}`);
+    return;
   }
   if (a === 'gx-undone') { const D = gymDraft(), E = exDraft(exById(b.dataset.id), D); E.done = false; saveDraft(); renderFort(); return; }
   if (a === 'gx-done') {
@@ -5661,8 +5733,8 @@ document.addEventListener('input', e => {
     return;
   }
   if (t.id === 'qz-tw' && S.qz) { const h = $('#qzTwHint'); if (h) h.innerHTML = qzTwHint(S.qz.a, parseFloat(String(t.value).replace(',', '.'))); return; }
-  if (t.dataset && t.dataset.gw != null) { const D = gymDraft(), E = exDraft(exById(t.dataset.gw), D); E.w = t.value.replace(',', '.'); E.done = true; saveDraft(); }
-  if (t.dataset && t.dataset.gr != null) { const D = gymDraft(), E = exDraft(exById(t.dataset.gr), D); E.r = E.r.slice(); E.r[+t.dataset.si] = t.value; E.done = true; saveDraft(); }
+  if (t.dataset && t.dataset.gw != null) { const D = gymDraft(), E = exDraft(exById(t.dataset.gw), D); E.w = t.value.replace(',', '.'); E.done = true; E.edited = true; saveDraft(); }
+  if (t.dataset && t.dataset.gr != null) { const D = gymDraft(), E = exDraft(exById(t.dataset.gr), D); E.r = E.r.slice(); E.r[+t.dataset.si] = t.value; E.done = true; E.edited = true; saveDraft(); }
 });
 document.addEventListener('change', e => {
   if (e.target.id === 'bfPhoto') { const f = e.target.files && e.target.files[0]; if (f) bfPhotoEstimate(f); return; }
@@ -5699,9 +5771,11 @@ document.addEventListener('input', e => {
   if (e.target.id === 'dish-n') { const v = parseInt(e.target.value, 10); if (v > 0) setDishCount(v, true); return; }
   const wdEl = e.target.closest('[data-wd]');
   if (wdEl) {
-    const W = workWeek(S.profile).map(w => ({ ...w })), i = +wdEl.dataset.wd, k = wdEl.dataset.wk;
+    const W = workWeek(S.profile).map(w => ({ ...w })), k = wdEl.dataset.wk;
     if (k !== 'pauseDur' && !/^\d{2}:\d{2}$/.test(wdEl.value)) return;
-    W[i][k] = k === 'pauseDur' ? +wdEl.value : wdEl.value;
+    const v = k === 'pauseDur' ? +wdEl.value : wdEl.value;
+    // "Jeden Arbeitstag gleich": eine Eingabe gilt für alle Arbeitstage
+    if (wdEl.dataset.wd === 'all') W.forEach(w => { if (w.on) w[k] = v; }); else W[+wdEl.dataset.wd][k] = v;
     S.profile.work = W;
     if ($('#gymHint')) $('#gymHint').textContent = gymHint(S.profile);
     profileChanged(false); return;
@@ -6876,11 +6950,11 @@ function fortWeight() {
   const w = weightPts(), last = w[w.length - 1], goal = S.profile.goal || 'recomp';
   const tip = { minicut: 'Im Mini Cut sind etwa 0,5 bis 0,8 kg weniger pro Woche ein guter Richtwert. Die Gewichte im Gym bleiben gleich schwer.', maint: 'In der Erhaltung bleibt dein Gewicht gleich. Kleine Schwankungen sind normal.', mass: 'Im Bulk ist ein Plus von etwa 0,25 bis 0,5 kg pro Woche ein guter Richtwert. Mehr wäre vor allem Fett.', bulk: 'Im Lean Bulk ist ein kleines Plus von etwa 0,1 bis 0,3 kg pro Woche ein guter Richtwert.', cut: 'Im Cut sind etwa 0,3 bis 0,8 kg weniger pro Woche ein guter Richtwert.', recomp: 'Beim Recomp bleibt das Gewicht oft fast gleich, während Fett weniger und Muskeln mehr werden.' }[goal];
   return `<div class="card"><h3>Gewicht eintragen</h3>
-      <div class="two" style="margin-top:10px"><div class="field"><label for="fw-kg">Gewicht</label><label class="gin"><input id="fw-kg" inputmode="decimal" autocomplete="off" value="${last ? dec1(last.y) : ''}" placeholder="80,0"><em>kg</em></label></div>
+      <div class="two" style="margin-top:10px"><div class="field"><label for="fw-kg">Gewicht</label><label class="gin"><input id="fw-kg" inputmode="decimal" autocomplete="off" value="${last ? dec1(last.y) : +S.profile.weight ? dec1(+S.profile.weight) : ''}" placeholder="80,0"><em>kg</em></label></div>
         <div class="field"><label for="fw-date">Tag</label><input id="fw-date" type="date" value="${S.today}" max="${S.today}"></div></div>
       <div class="gstep" style="margin-top:8px"><button data-act="fw-step" data-d="-0.1" aria-label="0,1 kg weniger">−</button><span class="muted" style="text-align:center;font-size:12.5px">± 0,1 kg</span><button data-act="fw-step" data-d="0.1" aria-label="0,1 kg mehr">+</button></div>
       <button class="btn" data-act="fw-save" style="margin-top:12px">${icon('check')}Speichern</button>
-      <p class="fhint">Täglich oder einmal pro Woche, am besten morgens nach dem Aufstehen. ${esc(tip)} Was du im Gym Wiki einträgst, landet auch hier.</p></div>
+      <p class="fhint">Steht schon dein letztes Gewicht drin: mit − und + anpassen und speichern. Täglich oder einmal pro Woche, am besten morgens nach dem Aufstehen. ${esc(tip)} Was du im Gym Wiki einträgst, landet auch hier.</p></div>
     ${w.length > 1 ? (() => { const F = fortSpecs(); return rangeRow() + stockCard('sw', 'Verlauf', F.w.pts, F.w.o); })() : ''}
     ${w.length ? `<div class="card"><h3>Einträge</h3><ul class="flist">${w.slice().reverse().slice(0, 12).map((p, i, arr) => { const prev = arr[i + 1]; return `<li><div><b>${dShort(p.d)}</b><small>${relDay(p.d)}</small></div><span class="muted" style="font-size:12.5px">${prev ? signKg(p.y - prev.y) : ''}</span><span class="num">${dec1(p.y)} kg</span></li>`; }).join('')}</ul></div>` : ''}`;
 }
@@ -6890,7 +6964,8 @@ function fortRun() {
   const runs = runPts(), last = runs[runs.length - 1];
   const best = runs.reduce((b, r) => !b || r.sec / r.km < b.sec / b.km ? r : b, null);
   return `<div class="card"><h3>Lauf eintragen</h3>
-      <div class="field" style="margin-top:10px"><label for="fr-km">Distanz</label><label class="gin"><input id="fr-km" inputmode="decimal" autocomplete="off" placeholder="${last ? dec1(last.km) : '5,0'}"><em>km</em></label></div>
+      <div class="field" style="margin-top:10px"><label for="fr-km">Distanz</label><label class="gin"><input id="fr-km" inputmode="decimal" autocomplete="off" value="${last ? dec1(last.km) : ''}" placeholder="5,0"><em>km</em></label>
+        <div class="fr-chips" role="group" aria-label="Übliche Strecken">${[...new Set([last ? Math.round(last.km * 10) / 10 : null, 3, 5, 7.5, 10, 21.1].filter(Boolean))].slice(0, 5).map(k => `<button class="pchip" data-act="fr-km" data-v="${k}" aria-pressed="${!!last && Math.abs(last.km - k) < 0.05}">${dec1(k)} km</button>`).join('')}</div></div>
       <div class="two" style="margin-top:10px"><div class="field"><label for="fr-min">Zeit</label><label class="gin"><input id="fr-min" inputmode="numeric" autocomplete="off" placeholder="${last ? Math.floor(last.sec / 60) : '30'}"><em>min</em></label></div>
         <div class="field"><label for="fr-sec">&nbsp;</label><label class="gin"><input id="fr-sec" inputmode="numeric" autocomplete="off" placeholder="00"><em>sek</em></label></div></div>
       <div class="field" style="margin-top:10px"><label for="fr-date">Tag</label><input id="fr-date" type="date" value="${S.today}" max="${S.today}"></div>
@@ -6931,7 +7006,7 @@ function gymExBlock(ex, D) {
     ? `<div class="gtip up">${icon('trend-up')}<div><p><b>Stark!</b> Letztes Mal ${tip.reps.every(r => r === tip.top) ? `in allen Sätzen ${tip.top} Wdh.` : `in allen Sätzen ${tip.top} oder mehr Wdh.`} mit ${dec1(tip.w)} kg. Zeit fürs nächste Level: <b>${dec1(tip.to)} kg</b>${ex.reps ? '' : `, dann reichen erst mal ${tip.target} Wdh.`}</p>${+E.w < tip.to ? `<button class="btn sm" data-act="gx-up" data-id="${esc(ex.id)}">${icon('plus')}Auf ${dec1(tip.to)} kg erhöhen</button>` : ''}</div></div>`
     : tip.reps.some(r => r < tip.top) ? `<div class="gtip hold">${icon('target')}<div><p>Bleib bei <b>${dec1(tip.w)} kg</b>, bis du in allen Sätzen ${tip.top} Wdh. schaffst. Letztes Mal: ${tip.reps.join(' · ')}.</p></div></div>` : '';
   return `<details class="gex" data-gxr="${esc(ex.id)}" ${open ? 'open' : ''}><summary class="gex-top"><div><b>${esc(ex.n)}</b><small>${sub}</small></div>
-      <span class="gex-r">${E.done ? `<span class="chip okc">${icon('check')}gemacht</span>` : tip && tip.kind === 'up' ? `<span class="chip upc">${icon('trend-up')}${dec1(tip.to)}</span>` : ''}${icon('caret-down', 'pcar')}</span></summary>
+      <span class="gex-r">${!E.done && tip && tip.kind === 'up' ? `<span class="chip upc">${icon('trend-up')}${dec1(tip.to)}</span>` : ''}${lastH || E.done || ex.time || ex.bw ? `<button class="gx-q ${E.done ? 'on' : ''}" data-act="gx-quick" data-id="${esc(ex.id)}" aria-pressed="${E.done}" aria-label="${esc(ex.n)} gemacht">${icon('check')}</button>` : ''}${icon('caret-down', 'pcar')}</span></summary>
     <div class="gex-in">
       ${ex.de ? `<p class="gex-de">${esc(ex.de)}${best ? ` · Bestwert ${setTxt(ex, best)}` : ''}</p>` : ''}
       ${tipHtml}
@@ -6971,7 +7046,7 @@ function fortGym() {
   return `<div class="card gform">
       <div class="spread"><h3>Training eintragen</h3><input id="gy-date" type="date" value="${D.date}" max="${S.today}" class="fsel" style="width:auto;padding:6px 8px;font-size:14px" aria-label="Tag des Trainings"></div>
       <div class="gchips" role="group" aria-label="Was trainierst du?">${GDAYS.map(([k, n]) => `<button data-act="gy-day" data-k="${k}" aria-pressed="${D.day === k}">${n}</button>`).join('')}${D.day !== 'abs' ? `<button data-act="gy-abs" aria-pressed="${!!D.abs}">${icon('plus')}Bauch</button>` : ''}</div>
-      <p class="fhint" style="margin:-4px 0 0">Die Werte vom letzten Mal sind schon eingetragen. Tipp eine Übung an, pass Gewicht oder Wiederholungen an und tipp auf <b>Gemacht</b>.</p>
+      <p class="fhint" style="margin:-4px 0 0">Die Werte vom letzten Mal sind schon eingetragen. Gleich wie letztes Mal: einfach den Haken rechts antippen. Anders: Übung aufklappen, anpassen, <b>Gemacht</b>.</p>
       ${grpHtml}
       ${hidden ? `<button class="linkbtn" data-act="gx-unhide" style="justify-self:start;font-size:13px">Entfernte Übungen wieder anzeigen (${hidden})</button>` : ''}
       <button class="btn" data-act="gy-save">${icon('check')}Training speichern${doneN ? ` (${doneN} ${doneN === 1 ? 'Übung' : 'Übungen'})` : ''}</button>
