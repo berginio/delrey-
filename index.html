@@ -855,7 +855,7 @@ details.trip[open] > summary .ico.car{transform:rotate(180deg)}
 .tab[aria-selected="true"]{color:var(--accent)}
 .tab[aria-selected="true"] .ico.o{display:none}
 .tab[aria-selected="true"] .ico.f{display:block}
-.tabpill{position:absolute;top:6px;bottom:6px;left:6px;width:calc((100% - 12px) / 5);border-radius:18px;background:var(--tint);transition:transform .45s var(--ease);z-index:0}
+.tabpill{position:absolute;top:6px;bottom:6px;left:6px;width:calc((100% - 12px) / 5);border-radius:18px;background:var(--tint);z-index:0;will-change:transform}
 @supports not (backdrop-filter:blur(2px)){.tabbar-in{background:var(--surface)}}
 
 .toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translate(-50%,16px);opacity:0;pointer-events:none;z-index:30;
@@ -1322,6 +1322,7 @@ div.htile{cursor:default}
 .hn-grid{display:grid;grid-template-columns:136px minmax(0,1fr);gap:20px;align-items:center}
 .hn-rings{width:136px;height:136px}
 .hn-rings .trk,.hn-rings .arc{stroke-width:11}
+.hn-rings .arc.a1.over{stroke:var(--mp)} .hn-rings .arc.a2.over{stroke:var(--mc)} .hn-rings .arc.a3.over{stroke:var(--mf)}
 .hn-rings .rings-c .big{font-size:23px}
 .hn-rings .rings-c small{font-size:11.5px;margin-top:3px}
 .hn-macros{display:grid;gap:13px;min-width:0}
@@ -1407,6 +1408,27 @@ button.hn-row:active .hn-ic{transform:scale(.94)}
 .hn-w button:active{transform:scale(.94)}
 .hn-w button[disabled]{opacity:.4;pointer-events:none}
 .hn-w button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* Heute: Kopf mit Bearbeiten, eigene Supplements */
+.hn-hh{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px}
+.hn-hh .hn-h{margin:0}
+.hn-edit{all:unset;box-sizing:border-box;min-height:36px;padding:0 2px 0 12px;font-size:14px;font-weight:600;color:var(--accent);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.hn-edit:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
+.hn-row.hn-supp{grid-template-columns:40px minmax(0,1fr)}
+.hn-empty{margin:10px 0 14px;font-size:13.5px;line-height:1.45;color:var(--muted)}
+.hn-sub{margin:16px 0 4px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.hn-erow{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px;padding:6px 0}
+.hn-erow + .hn-erow{border-top:.5px solid color-mix(in srgb,var(--line) 80%,transparent)}
+.hn-erow > span{font-size:15px;font-weight:600;min-width:0}
+.hn-erow > span small{display:block;font-size:12.5px;font-weight:500;color:var(--muted);margin-top:1px}
+.hn-x{all:unset;box-sizing:border-box;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--tint);color:var(--muted);cursor:pointer;flex:none}
+.hn-x .ico{width:15px;height:15px}
+.hn-x:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hn-sugg{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 8px}
+.hn-sugg .pchip{min-height:36px}
+.hn-addf{display:flex;gap:8px;margin:4px 0 6px}
+.hn-addf input{flex:1;min-width:0;min-height:40px;border:0;border-radius:12px;background:var(--tint);padding:0 12px;font-size:15px;color:var(--ink)}
+.hn-addf input:focus{outline:0;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 32%,transparent)}
+.hn-list:has(.hn-erow){padding-bottom:12px}
 /* Umschalter Neu / Klassisch */
 @media (hover:hover){ .hn-chip:hover,.hn-w button.plus:hover{background:color-mix(in srgb,var(--accent) 16%,var(--tint))} .hn-gap:not(p):hover > span,.hn-more:hover,.ui-sw:hover{color:var(--accent)} button.hn-row:hover .hn-ic,.hn-w button:not(.plus):hover{background:color-mix(in srgb,var(--accent) 12%,var(--tint))} .hn-chk:not(.on):hover{border-color:var(--accent);color:color-mix(in srgb,var(--accent) 60%,transparent)} button.hn-row:hover b,.hn-tx:hover b{color:var(--accent)} }
 .ui-switch{display:flex;justify-content:center}
@@ -1482,9 +1504,7 @@ button.hn-row:active .hn-ic{transform:scale(.94)}
 :root[data-ui="apple"] .tabbar-in::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;background:linear-gradient(140deg,var(--rim1),transparent 34%,transparent 64%,var(--rim2));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);pointer-events:none;z-index:2}
 :root[data-ui="apple"] .tab{border-radius:999px;padding:7px 0 6px;font-size:10.5px;font-weight:600;color:var(--ink)}
 :root[data-ui="apple"] .tab[aria-selected="true"]{color:var(--accent)}
-:root[data-ui="apple"] .tabpill{top:5px;bottom:5px;left:5px;width:calc((100% - 10px) / 5);border-radius:999px;background:var(--lens);box-shadow:inset 0 1px 0 color-mix(in srgb,var(--ghi) 60%,transparent);transition:transform .55s cubic-bezier(.3,1.32,.42,1)}
-:root[data-ui="apple"] .tabpill.morph{animation:lgMorph .55s cubic-bezier(.3,1.2,.4,1)}
-@keyframes lgMorph{0%{scale:1}32%{scale:1.16 .9}62%{scale:.97 1.04}100%{scale:1}}
+:root[data-ui="apple"] .tabpill{top:5px;bottom:5px;left:5px;width:calc((100% - 10px) / 5);border-radius:999px;background:var(--lens);box-shadow:inset 0 1px 0 color-mix(in srgb,var(--ghi) 60%,transparent)}
 :root[data-ui="apple"] .toast{color:var(--ink);background:var(--glass2);padding:11px 18px;font-size:14px;bottom:calc(90px + env(safe-area-inset-bottom,0px))}
 :root[data-ui="apple"] .toast .linkbtn{color:var(--accent)}
 :root[data-ui="apple"] .sheet-back{background:rgb(0 0 0 / .22)}
@@ -1554,9 +1574,7 @@ button.hn-row:active .hn-ic{transform:scale(.94)}
 :root[data-ui="apple"] .hn-rings .arc.a1{stroke:url(#hgp)}
 :root[data-ui="apple"] .hn-rings .arc.a2{stroke:url(#hgc)}
 :root[data-ui="apple"] .hn-rings .arc.a3{stroke:url(#hgf)}
-:root[data-ui="apple"] .hn-rings .arc.over{stroke:url(#hgo)}
 :root[data-ui="apple"] .hn-m > b.over{color:var(--ink)}
-:root[data-ui="apple"] .rings .arc.over{stroke:url(#hgo)}
 :root[data-ui="apple"] .hn-m > span{color:var(--muted);font-weight:600}
 :root[data-ui="apple"] .hn-m > span i{width:9px;height:9px;border-radius:50%}
 :root[data-ui="apple"] .hn-m .bar{background:color-mix(in srgb,var(--c) 16%,transparent)}
@@ -3371,27 +3389,50 @@ function renderHomeNeu(next) {
   }
   setAnimated($('#hnNow'), nowHtml);
   // Heute erledigen: Creatin, Wasser, Wiegen, Garmin
-  const rows = [];
+  const rows = [], hide = homeHidden(pr), supps = pr.supps || [], taken = S.log.supps || {};
+  if (S.hnEdit) { setAnimated($('#hnList'), hnEditHtml()); return; }
   if (pr.creatine === 'on') {
     const done = !!S.log.creatine, late = !done && now >= 18 * 60, st = creaInfo(), exp = S.homeOpen === 'crea';
     const pop = done && S.hnCrea === false; S.hnCrea = done;
     rows.push(`<div class="hn-row hn-crea ${late ? 'late' : ''}">
       <button class="hn-chk ${done ? 'on' : ''} ${pop ? 'pop' : ''}" data-act="${done ? 'crea-today-reset' : 'crea'}" aria-pressed="${done}" aria-label="Creatin heute genommen">${icon('check')}</button>
       <button class="hn-tx" data-act="home-open" data-k="crea" aria-expanded="${exp}" aria-controls="creaCard"><span class="hn-t"><b>Creatin</b><small>${done ? `Heute genommen${typeof S.log.creatine === 'string' ? ` um ${esc(S.log.creatine)}` : ''}` : late ? 'Heute noch nicht genommen' : `${fmt(+pr.creaDose || 5)} g, irgendwann heute`}</small></span><span class="hn-streak">${fmt(st.n)} ${st.n === 1 ? 'Tag' : 'Tage'}${st.n > 1 ? icon('fire') : ''}</span></button></div>`);
-  } else {
+  }
+  for (const x of supps) {
+    const at = taken[x.id];
+    rows.push(`<div class="hn-row hn-supp"><button class="hn-chk ${at ? 'on' : ''}" data-act="supp" data-id="${esc(x.id)}" aria-pressed="${!!at}" aria-label="${esc(x.n)} heute genommen">${icon('check')}</button><span class="hn-t"><b>${esc(x.n)}</b><small>${at ? `Heute genommen um ${esc(at)}` : 'Heute noch offen'}</small></span></div>`);
+  }
+  if (!hide.has('streak')) {
     const t = trackStreak();
     rows.push(`<button class="hn-row streak" data-act="tab" data-tab="fort"><span class="hn-ic">${icon('target')}</span><span class="hn-t"><b>Nährwerte-Serie</b><small>${t.doneToday ? 'Heute schon eingetragen' : 'Heute noch nichts eingetragen'}</small></span><span class="hn-streak">${fmt(t.n)} ${t.n === 1 ? 'Tag' : 'Tage'}${t.n >= 3 ? icon('fire') : ''}</span></button>`);
   }
   const w = S.log.waterMl || 0;
-  rows.push(`<div class="hn-row water"><span class="hn-ic">${icon('drop')}</span><span class="hn-t"><b>Wasser</b><small>${litre(w)} von ${litre(T.water)} l</small><span class="bar" aria-hidden="true"><i data-bar="w" data-w="${pctW(w, T.water)}"></i></span></span>
+  if (!hide.has('water')) rows.push(`<div class="hn-row water"><span class="hn-ic">${icon('drop')}</span><span class="hn-t"><b>Wasser</b><small>${litre(w)} von ${litre(T.water)} l</small><span class="bar" aria-hidden="true"><i data-bar="w" data-w="${pctW(w, T.water)}"></i></span></span>
     <span class="hn-w"><button data-act="water" data-v="-250" aria-label="250 ml Wasser abziehen" ${w ? '' : 'disabled'}>${icon('minus')}</button><button class="plus" data-act="water" data-v="250" aria-label="250 ml Wasser dazu">${icon('plus')}250</button><button class="plus" data-act="water" data-v="500" aria-label="500 ml Wasser dazu">${icon('plus')}500</button></span></div>`);
   const ws = weighStatus();
-  if (!pr.example && ws.due) rows.push(`<button class="hn-row weigh" data-act="fort-seg" data-s="weight"><span class="hn-ic">${icon('scales')}</span><span class="hn-t"><b>Wiegen der Woche</b><small>Körpergewicht eintragen</small></span>${icon('caret-down', 'rot hn-car')}</button>`);
-  if (pr.garmin === 'on') {
+  if (!pr.example && ws.due && !hide.has('weigh')) rows.push(`<button class="hn-row weigh" data-act="fort-seg" data-s="weight"><span class="hn-ic">${icon('scales')}</span><span class="hn-t"><b>Wiegen der Woche</b><small>Körpergewicht eintragen</small></span>${icon('caret-down', 'rot hn-car')}</button>`);
+  if (pr.garmin === 'on' && !hide.has('garmin')) {
     const burned = S.log.burned, gx = S.homeOpen === 'garmin';
     rows.push(`<button class="hn-row garmin" data-act="home-open" data-k="garmin" aria-expanded="${gx}" aria-controls="garminCard"><span class="hn-ic">${icon('watch')}</span><span class="hn-t"><b>Verbrauch laut Garmin</b><small>${burned ? `${fmt(burned)} kcal eingetragen` : now < 18 * 60 ? 'Ab 18:00 Uhr eintragen' : 'Jetzt eintragen'}</small></span>${icon('caret-down', (gx ? '' : 'rot ') + 'hn-car')}</button>`);
   }
-  setAnimated($('#hnList'), `<h2 class="hn-h">Heute</h2>${rows.join('')}`);
+  setAnimated($('#hnList'), `<div class="hn-hh"><h2 class="hn-h">Heute</h2><button class="hn-edit" data-act="hn-edit">Bearbeiten</button></div>${rows.length ? rows.join('') : `<p class="hn-empty">Hier ist gerade nichts ausgewählt. Tipp auf Bearbeiten und such dir aus, was du abhaken willst.</p>`}`);
+}
+/* "Heute" anpassen: Supplements hinzufügen, Zeilen ein- und ausblenden */
+/* Ohne eigene Auswahl wie bisher: Nährwerte-Serie nur, wenn kein Creatin angezeigt wird */
+const homeHidden = pr => new Set(Array.isArray(pr.homeHide) ? pr.homeHide : pr.creatine === 'on' ? ['streak'] : []);
+const SUPP_SUG = ['Vitamin D3', 'Omega-3', 'Magnesium', 'Zink', 'Multivitamin', 'Vitamin B12', 'Elektrolyte', 'Ashwagandha'];
+function hnEditHtml() {
+  const pr = S.profile, hide = homeHidden(pr), supps = pr.supps || [], have = new Set(supps.map(x => x.n.toLowerCase()));
+  const sw = (on, act, k, lbl) => `<button class="tg" role="switch" aria-checked="${on}" data-act="${act}"${k ? ` data-k="${k}"` : ''} aria-label="${lbl}"></button>`;
+  const shows = [['water', 'Wasser'], ['weigh', 'Wiegen der Woche'], ...(pr.garmin === 'on' ? [['garmin', 'Verbrauch laut Garmin']] : []), ['streak', 'Nährwerte-Serie']];
+  return `<div class="hn-hh"><h2 class="hn-h">Heute anpassen</h2><button class="hn-edit" data-act="hn-edit">Fertig</button></div>
+    <p class="hn-sub">Supplements zum Abhaken</p>
+    <div class="hn-erow"><span>Creatin<small>Mit Serie und Erinnerung</small></span>${sw(pr.creatine === 'on', 'hn-crea-tg', '', 'Creatin anzeigen')}</div>
+    ${supps.map(x => `<div class="hn-erow"><span>${esc(x.n)}</span><button class="hn-x" data-act="supp-del" data-id="${esc(x.id)}" aria-label="${esc(x.n)} entfernen">${icon('x')}</button></div>`).join('')}
+    <div class="hn-sugg">${SUPP_SUG.filter(n => !have.has(n.toLowerCase())).map(n => `<button class="pchip" data-act="supp-add" data-n="${esc(n)}">${icon('plus')}${esc(n)}</button>`).join('')}</div>
+    <div class="hn-addf"><input id="supp-new" autocomplete="off" maxlength="30" placeholder="Eigenes, z. B. Kollagen" aria-label="Eigenes Supplement"><button class="btn sm" data-act="supp-add">${icon('plus')}Dazu</button></div>
+    <p class="hn-sub">Außerdem anzeigen</p>
+    ${shows.map(([k, n]) => `<div class="hn-erow"><span>${n}</span>${sw(!hide.has(k), 'hn-show', k, n + ' anzeigen')}</div>`).join('')}`;
 }
 /* Mahlzeiten von heute, deren Zeit vorbei ist und die noch nicht abgehakt sind (ohne "Unterwegs kaufen") */
 function pastOpen() {
@@ -5165,9 +5206,7 @@ function setTab(tab, dir) {
   }
   const tabOn = PARENT[tab] || tab;
   document.querySelectorAll('.tab').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === tabOn));
-  { const pill = $('#tabpill'), tf = `translateX(${Math.max(0, TABS.indexOf(tabOn)) * 100}%)`;
-    if (pill.style.transform && pill.style.transform !== tf && !reduce) { pill.classList.remove('morph'); void pill.offsetWidth; pill.classList.add('morph'); }
-    pill.style.transform = tf; }
+  movePill(Math.max(0, TABS.indexOf(tabOn)));
   { const et = $('#edgeT'); if (et) et.textContent = TAB_TITLE[tab] || ''; }
   if (tab === 'info') renderInfo();
   if (tab === 'plan') { if (prev !== 'plan' && prev !== 'track') S.planDow = dow(new Date()); renderPlan(); }
@@ -5183,6 +5222,44 @@ function setTab(tab, dir) {
   if (tab === 'track') { if (prev !== 'track') { S.dishCat = null; if (!S.bld) { S.dishOpen = null; const q = $('#dishQ'); if (q) q.value = ''; } } renderTrack(); }
   if (prev !== tab) window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
   try { history.replaceState(null, '', '#' + tab); } catch (e) {}
+}
+
+/* Tab-Pille: gefederte Bewegung mit fester, kleiner Überschwingweite (ca. 4 px statt eines Anteils der Strecke).
+   Weite Wege (z. B. Home bis Body Lab) dauern etwas länger, damit sie nicht schneller wirken als kurze.
+   Die Pille bleibt immer in der Leiste: am Rand staucht sie sich weich, statt hinauszuschießen. */
+const PILL = { anim: null, sp: null };
+function pillSpring(x0, v0, to, D, w) {
+  const ta = Math.min(460, 190 * Math.pow(Math.max(.35, D / w), .6));        // Ankunftszeit in ms
+  const o = Math.min(.08, Math.max(.004, 4 / Math.max(D, 1))), lo = Math.log(o);
+  const z = -lo / Math.sqrt(Math.PI * Math.PI + lo * lo), q = Math.sqrt(1 - z * z);
+  const om = (Math.PI - Math.atan(q / z)) / (ta * q), wd = om * q, a = z * om, A = x0 - to, B = (v0 + a * A) / wd;
+  return { t0: performance.now(), at(t) { const e = Math.exp(-a * t), c = Math.cos(wd * t), s = Math.sin(wd * t);
+    return [to + e * (A * c + B * s), e * ((B * wd - a * A) * c - (A * wd + a * B) * s)]; } };
+}
+function movePill(idx) {
+  const pill = $('#tabpill'); if (!pill) return;
+  const tf = `translateX(${idx * 100}%)`, had = pill.style.transform;
+  if (had === tf && !PILL.anim) return;
+  const w = pill.offsetWidth, R = TABS.length * w, to = idx * w;
+  let x0, v0 = 0;
+  if (PILL.anim && PILL.sp) { [x0, v0] = PILL.sp.at(performance.now() - PILL.sp.t0); PILL.anim.cancel(); }
+  else x0 = had ? new DOMMatrixReadOnly(getComputedStyle(pill).transform).m41 : to;
+  PILL.anim = PILL.sp = null;
+  pill.style.transform = tf;
+  if (reduce || !had || !w || (Math.abs(x0 - to) < .5 && Math.abs(v0) < .01)) return;
+  const sp = pillSpring(x0, v0, to, Math.abs(to - x0), w), fr = [], dt = 1000 / 60;
+  let T = 0;
+  for (let t = 0; ; t += dt) {
+    const [x, v] = sp.at(t), st = .13 * (1 - Math.exp(-Math.abs(v) / .6));
+    let sy = 1 - st * .45, l = x + w / 2 - w * (1 + st) / 2, r = x + w / 2 + w * (1 + st) / 2;
+    if (r > R) r = R; if (l < 0) l = 0;
+    const sx = (r - l) / w; if (sx < 1) sy = 1 + Math.min(.06, (1 - sx) * .6);
+    fr.push({ transform: `translateX(${((l + r - w) / 2).toFixed(2)}px) scale(${sx.toFixed(4)},${sy.toFixed(4)})` });
+    T = t; if ((t > 120 && Math.abs(x - to) < .4 && Math.abs(v) < .02) || t > 1100) break;
+  }
+  fr[fr.length - 1] = { transform: `translateX(${to}px) scale(1,1)` };
+  PILL.sp = sp; PILL.anim = pill.animate(fr, { duration: T, easing: 'linear' });
+  PILL.anim.onfinish = () => { PILL.anim = PILL.sp = null; };
 }
 
 /* ================= Aktionen ================= */
@@ -5604,6 +5681,23 @@ document.addEventListener('click', e => {
     renderFort(); toast(`Lauf gespeichert · ${mmss(sec / km)} min/km`); return;
   }
   if (a === 'hn-more') { S.hnMore = !S.hnMore; renderToday(); return; }
+  if (a === 'hn-edit') { S.hnEdit = !S.hnEdit; renderToday(); if (S.hnEdit) setTimeout(() => { const el = $('#hnList'); if (el) el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'nearest' }); }, 30); return; }
+  if (a === 'hn-show') { const k = b.dataset.k, h = homeHidden(S.profile); if (h.has(k)) h.delete(k); else h.add(k); S.profile.homeHide = [...h]; Store.saveProfileSoon(); renderToday(); return; }
+  if (a === 'hn-crea-tg') { S.profile.creatine = S.profile.creatine === 'on' ? 'off' : 'on'; profileChanged(true); return; }
+  if (a === 'supp-add') {
+    const inp = $('#supp-new'), n = String(b.dataset.n || (inp && inp.value) || '').trim().replace(/\s+/g, ' ').slice(0, 30);
+    if (!n) { if (inp) inp.focus(); return; }
+    const list = S.profile.supps || [];
+    if (list.some(x => x.n.toLowerCase() === n.toLowerCase())) { toast(`${n} ist schon dabei`); return; }
+    S.profile.supps = list.concat({ id: 's' + Date.now().toString(36), n }); Store.saveProfileSoon(); renderToday();
+    toast(`${n} kommt auf deine Liste`); return;
+  }
+  if (a === 'supp-del') { const x = (S.profile.supps || []).find(y => y.id === b.dataset.id); S.profile.supps = (S.profile.supps || []).filter(y => y.id !== b.dataset.id); Store.saveProfileSoon(); renderToday(); if (x) toast(`${x.n} entfernt`); return; }
+  if (a === 'supp') {
+    const id = b.dataset.id, x = (S.profile.supps || []).find(y => y.id === id); if (!x) return;
+    const on = !(S.log.supps && S.log.supps[id]);
+    return mutateLog(l => { l.supps = { ...(l.supps || {}) }; if (on) l.supps[id] = toHHMM(nowMin()); else delete l.supps[id]; }, on ? `${x.n} abgehakt` : `${x.n} wieder offen`);
+  }
   if (a === 'ui-set') {
     const v = UI_MODES.includes(b.dataset.v) ? b.dataset.v : 'apple';
     try { localStorage.setItem(UI_KEY, v); } catch (e) {}
@@ -5814,6 +5908,7 @@ for (const evName of ['input', 'change']) document.addEventListener(evName, e =>
   }
 });
 document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.id === 'supp-new') { e.preventDefault(); const bt = document.querySelector('.hn-addf [data-act="supp-add"]'); if (bt) bt.click(); }
   if (e.key === 'Enter' && e.target.id === 'ren-in') { e.preventDefault(); const sv = document.querySelector('[data-act="dish-rename-save"]'); if (sv) sv.click(); }
   if (e.key === 'Escape' && e.target.id === 'ren-in') { e.preventDefault(); renderDishes(); }
   if (e.key === 'Enter' && e.target.id === 'b-q') { e.preventDefault(); const first = document.querySelector('#bRes [data-act="bld-add"]'); if (first) first.click(); }
