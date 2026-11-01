@@ -1421,38 +1421,23 @@ button.hn-row:active .hn-ic{transform:scale(.94)}
 .gx-q:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 /* ================= Apple-Design (data-ui="apple"): iOS-Systemfarben, SF Pro, Liquid Glass =================
    Inhalte liegen auf ruhigen, festen Flächen; Glas nur für die schwebende Ebene darüber (Tableiste, Kopf-Knöpfe, Meldungen, Sheets). */
-:root[data-ui="apple"]{--font-body:-apple-system,BlinkMacSystemFont,"SF Pro Text","Geist",system-ui,"Segoe UI",Roboto,sans-serif;--font-display:-apple-system,BlinkMacSystemFont,"SF Pro Display","Geist",system-ui,"Segoe UI",Roboto,sans-serif;--r-card:24px;--r-input:12px;--tc:#007AFF}
-:root[data-ui="apple"][data-tint="indigo"]{--tc:#5856D6}
-:root[data-ui="apple"][data-tint="purple"]{--tc:#AF52DE}
-:root[data-ui="apple"][data-tint="pink"]{--tc:#FF2D55}
-:root[data-ui="apple"][data-tint="red"]{--tc:#FF3B30}
-:root[data-ui="apple"][data-tint="orange"]{--tc:#FF9500}
-:root[data-ui="apple"][data-tint="green"]{--tc:#34C759}
-:root[data-ui="apple"][data-tint="teal"]{--tc:#30B0C7}
-:root[data-ui="apple"][data-tint="graphite"]{--tc:#636366}
-:root[data-ui="apple"]:is([data-pal],:not([data-pal])){--bg:#F2F2F7;--surface:#FFFFFF;--tint:rgba(120,120,128,.12);--line:#E5E5EA;--ink:#000000;--muted:rgba(60,60,67,.6);--on:#FFFFFF;--warn:#FF9500;--bad:#FF3B30;--up:#34C759;--shadow:0 0 0;--fill:rgba(120,120,128,.12);--fill2:rgba(120,120,128,.08);--sep:rgba(60,60,67,.2);--thumb:#FFFFFF;--elev:#FFFFFF;--mp:#007AFF;--mc:#5AC8FA;--mf:#A7ADB7;--mp1:#0062E0;--mp2:#3D95FF;--mc1:#2FAEE8;--mc2:#8AD9FC;--mf1:#8C939E;--mf2:#CDD2D9;--glass:rgba(255,255,255,.58);--glass2:rgba(255,255,255,.84);--gline:rgba(255,255,255,.7);--ghi:rgba(255,255,255,.95);--gsh:0 10px 30px rgba(0,0,0,.10),0 2px 6px rgba(0,0,0,.05);--lens:rgba(120,120,128,.16);--rim1:rgba(255,255,255,.95);--rim2:rgba(255,255,255,.45);--cardsh:0 1px 2px rgba(0,0,0,.03),0 8px 24px -14px rgba(0,0,0,.12);--ic-water:#32ADE6;--ic-weigh:#5856D6;--ic-garmin:#8E8E93;--ic-streak:#FF9500;--ic-body:#FF2D55;--ic-work:#007AFF;--ic-misc:#8E8E93;--ic-ch:#FF9500;--accent:var(--tc);--accent2:color-mix(in srgb,var(--tc) 58%,#fff);--ring3:var(--mf)}
+:root[data-ui="apple"]{--font-body:-apple-system,BlinkMacSystemFont,"SF Pro Text","Geist",system-ui,"Segoe UI",Roboto,sans-serif;--font-display:-apple-system,BlinkMacSystemFont,"SF Pro Display","Geist",system-ui,"Segoe UI",Roboto,sans-serif;--r-card:24px;--r-input:12px;--tc:#007AFF;--tc-on:#FCFDFF}
+:root[data-ui="apple"][data-tint="sky"]{--tc:#1A9BDC;--tc-on:#FCFDFF}
+:root[data-ui="apple"][data-tint="silver"]{--tc:#7D8591;--tc-on:#FCFDFF}
+:root[data-ui="apple"][data-tint="snow"]{--tc:#007AFF;--tc-on:#FCFDFF}
+:root[data-ui="apple"]:is([data-pal],:not([data-pal])){--bg:#F1F4F8;--surface:#FCFDFF;--tint:rgba(120,130,145,.12);--line:#E3E8EF;--ink:#0A0F1A;--muted:rgba(60,68,82,.62);--on:#FCFDFF;--warn:#1A9BDC;--bad:#5B6B7E;--up:#007AFF;--shadow:0 0 0;--snow:#FCFDFF;--fill:rgba(120,130,145,.12);--fill2:rgba(120,130,145,.08);--sep:rgba(60,70,85,.18);--thumb:#FCFDFF;--elev:#FCFDFF;--mo1:#0B3D91;--mo2:#2F6BD6;--mp:#007AFF;--mc:#5AC8FA;--mf:#A7ADB7;--mp1:#0062E0;--mp2:#3D95FF;--mc1:#2FAEE8;--mc2:#8AD9FC;--mf1:#8C939E;--mf2:#CDD2D9;--glass:rgba(255,255,255,.58);--glass2:rgba(255,255,255,.84);--gline:rgba(255,255,255,.7);--ghi:rgba(255,255,255,.95);--gsh:0 10px 30px rgba(0,0,0,.10),0 2px 6px rgba(0,0,0,.05);--lens:rgba(120,120,128,.16);--rim1:rgba(255,255,255,.95);--rim2:rgba(255,255,255,.45);--cardsh:0 1px 2px rgba(0,0,0,.03),0 8px 24px -14px rgba(0,0,0,.12);--ic-blue:linear-gradient(180deg,#4DA3FF,#0066E8);--ic-sky:linear-gradient(180deg,#8ADBFF,#2FA8E6);--ic-silver:linear-gradient(180deg,#D3D8DF,#979EA9);--ic-snow:linear-gradient(180deg,#FFFFFF,#E4EAF2);--ic-snowc:#0A84FF;--accent:var(--tc);--accent2:color-mix(in srgb,var(--tc) 58%,#fff);--ring3:var(--mf)}
 @media (prefers-color-scheme: dark){
-  :root[data-ui="apple"]:not([data-theme="light"]){--tc:#0A84FF}
-  :root[data-ui="apple"]:not([data-theme="light"])[data-tint="indigo"]{--tc:#5E5CE6}
-  :root[data-ui="apple"]:not([data-theme="light"])[data-tint="purple"]{--tc:#BF5AF2}
-  :root[data-ui="apple"]:not([data-theme="light"])[data-tint="pink"]{--tc:#FF375F}
-  :root[data-ui="apple"]:not([data-theme="light"])[data-tint="red"]{--tc:#FF453A}
-  :root[data-ui="apple"]:not([data-theme="light"])[data-tint="orange"]{--tc:#FF9F0A}
-  :root[data-ui="apple"]:not([data-theme="light"])[data-tint="green"]{--tc:#30D158}
-  :root[data-ui="apple"]:not([data-theme="light"])[data-tint="teal"]{--tc:#40C8E0}
-  :root[data-ui="apple"]:not([data-theme="light"])[data-tint="graphite"]{--tc:#98989D}
-  :root[data-ui="apple"]:not([data-theme="light"]):is([data-pal],:not([data-pal])){--bg:#000000;--surface:#1C1C1E;--tint:rgba(118,118,128,.24);--line:#38383A;--ink:#FFFFFF;--muted:rgba(235,235,245,.6);--on:#FFFFFF;--warn:#FF9F0A;--bad:#FF453A;--up:#30D158;--shadow:0 0 0;--fill:rgba(118,118,128,.24);--fill2:rgba(118,118,128,.16);--sep:rgba(84,84,88,.65);--thumb:#636366;--elev:#2C2C2E;--mp:#0A84FF;--mc:#64D2FF;--mf:#C7C7CC;--mp1:#0A6CFF;--mp2:#5AA9FF;--mc1:#3DBAF2;--mc2:#9FE3FF;--mf1:#A0A4AB;--mf2:#E8EAED;--glass:rgba(40,40,44,.5);--glass2:rgba(44,44,48,.84);--gline:rgba(255,255,255,.12);--ghi:rgba(255,255,255,.2);--gsh:0 12px 34px rgba(0,0,0,.55),0 2px 6px rgba(0,0,0,.3);--lens:rgba(255,255,255,.14);--rim1:rgba(255,255,255,.38);--rim2:rgba(255,255,255,.12);--cardsh:none;--ic-water:#64D2FF;--ic-weigh:#5E5CE6;--ic-garmin:#8E8E93;--ic-streak:#FF9F0A;--ic-body:#FF375F;--ic-work:#0A84FF;--ic-misc:#8E8E93;--ic-ch:#FF9F0A;--accent:var(--tc);--accent2:color-mix(in srgb,var(--tc) 58%,#fff);--ring3:var(--mf);color-scheme:dark}
+  :root[data-ui="apple"]:not([data-theme="light"]){--tc:#0A84FF;--tc-on:#F5F8FC}
+  :root[data-ui="apple"]:not([data-theme="light"])[data-tint="sky"]{--tc:#64D2FF;--tc-on:#04121F}
+  :root[data-ui="apple"]:not([data-theme="light"])[data-tint="silver"]{--tc:#AEB4BE;--tc-on:#0B0F16}
+  :root[data-ui="apple"]:not([data-theme="light"])[data-tint="snow"]{--tc:#F5F8FC;--tc-on:#0B0F16}
+  :root[data-ui="apple"]:not([data-theme="light"]):is([data-pal],:not([data-pal])){--bg:#000000;--surface:#1C1C1E;--tint:rgba(118,124,135,.24);--line:#38383A;--ink:#F5F8FC;--muted:rgba(235,240,248,.6);--on:#F5F8FC;--warn:#7FD0FA;--bad:#A9B4C2;--up:#0A84FF;--shadow:0 0 0;--snow:#F5F8FC;--fill:rgba(118,124,135,.24);--fill2:rgba(118,124,135,.16);--sep:rgba(84,88,96,.65);--thumb:#636366;--elev:#2C2C2E;--mo1:#D6E1EE;--mo2:#FFFFFF;--mp:#0A84FF;--mc:#64D2FF;--mf:#C7C7CC;--mp1:#0A6CFF;--mp2:#5AA9FF;--mc1:#3DBAF2;--mc2:#9FE3FF;--mf1:#A0A4AB;--mf2:#E8EAED;--glass:rgba(40,40,44,.5);--glass2:rgba(44,44,48,.84);--gline:rgba(255,255,255,.12);--ghi:rgba(255,255,255,.2);--gsh:0 12px 34px rgba(0,0,0,.55),0 2px 6px rgba(0,0,0,.3);--lens:rgba(255,255,255,.14);--rim1:rgba(255,255,255,.38);--rim2:rgba(255,255,255,.12);--cardsh:none;--ic-blue:linear-gradient(180deg,#3D97FF,#0A63E0);--ic-sky:linear-gradient(180deg,#7DD6FF,#2C9FD9);--ic-silver:linear-gradient(180deg,#C5CBD3,#858C97);--ic-snow:linear-gradient(180deg,#FFFFFF,#DCE4EE);--ic-snowc:#0A84FF;--accent:var(--tc);--accent2:color-mix(in srgb,var(--tc) 58%,#fff);--ring3:var(--mf);color-scheme:dark}
 }
-:root[data-ui="apple"][data-theme="dark"]{--tc:#0A84FF}
-:root[data-ui="apple"][data-theme="dark"][data-tint="indigo"]{--tc:#5E5CE6}
-:root[data-ui="apple"][data-theme="dark"][data-tint="purple"]{--tc:#BF5AF2}
-:root[data-ui="apple"][data-theme="dark"][data-tint="pink"]{--tc:#FF375F}
-:root[data-ui="apple"][data-theme="dark"][data-tint="red"]{--tc:#FF453A}
-:root[data-ui="apple"][data-theme="dark"][data-tint="orange"]{--tc:#FF9F0A}
-:root[data-ui="apple"][data-theme="dark"][data-tint="green"]{--tc:#30D158}
-:root[data-ui="apple"][data-theme="dark"][data-tint="teal"]{--tc:#40C8E0}
-:root[data-ui="apple"][data-theme="dark"][data-tint="graphite"]{--tc:#98989D}
-:root[data-ui="apple"][data-theme="dark"]:is([data-pal],:not([data-pal])){--bg:#000000;--surface:#1C1C1E;--tint:rgba(118,118,128,.24);--line:#38383A;--ink:#FFFFFF;--muted:rgba(235,235,245,.6);--on:#FFFFFF;--warn:#FF9F0A;--bad:#FF453A;--up:#30D158;--shadow:0 0 0;--fill:rgba(118,118,128,.24);--fill2:rgba(118,118,128,.16);--sep:rgba(84,84,88,.65);--thumb:#636366;--elev:#2C2C2E;--mp:#0A84FF;--mc:#64D2FF;--mf:#C7C7CC;--mp1:#0A6CFF;--mp2:#5AA9FF;--mc1:#3DBAF2;--mc2:#9FE3FF;--mf1:#A0A4AB;--mf2:#E8EAED;--glass:rgba(40,40,44,.5);--glass2:rgba(44,44,48,.84);--gline:rgba(255,255,255,.12);--ghi:rgba(255,255,255,.2);--gsh:0 12px 34px rgba(0,0,0,.55),0 2px 6px rgba(0,0,0,.3);--lens:rgba(255,255,255,.14);--rim1:rgba(255,255,255,.38);--rim2:rgba(255,255,255,.12);--cardsh:none;--ic-water:#64D2FF;--ic-weigh:#5E5CE6;--ic-garmin:#8E8E93;--ic-streak:#FF9F0A;--ic-body:#FF375F;--ic-work:#0A84FF;--ic-misc:#8E8E93;--ic-ch:#FF9F0A;--accent:var(--tc);--accent2:color-mix(in srgb,var(--tc) 58%,#fff);--ring3:var(--mf);color-scheme:dark}
+:root[data-ui="apple"][data-theme="dark"]{--tc:#0A84FF;--tc-on:#F5F8FC}
+:root[data-ui="apple"][data-theme="dark"][data-tint="sky"]{--tc:#64D2FF;--tc-on:#04121F}
+:root[data-ui="apple"][data-theme="dark"][data-tint="silver"]{--tc:#AEB4BE;--tc-on:#0B0F16}
+:root[data-ui="apple"][data-theme="dark"][data-tint="snow"]{--tc:#F5F8FC;--tc-on:#0B0F16}
+:root[data-ui="apple"][data-theme="dark"]:is([data-pal],:not([data-pal])){--bg:#000000;--surface:#1C1C1E;--tint:rgba(118,124,135,.24);--line:#38383A;--ink:#F5F8FC;--muted:rgba(235,240,248,.6);--on:#F5F8FC;--warn:#7FD0FA;--bad:#A9B4C2;--up:#0A84FF;--shadow:0 0 0;--snow:#F5F8FC;--fill:rgba(118,124,135,.24);--fill2:rgba(118,124,135,.16);--sep:rgba(84,88,96,.65);--thumb:#636366;--elev:#2C2C2E;--mo1:#D6E1EE;--mo2:#FFFFFF;--mp:#0A84FF;--mc:#64D2FF;--mf:#C7C7CC;--mp1:#0A6CFF;--mp2:#5AA9FF;--mc1:#3DBAF2;--mc2:#9FE3FF;--mf1:#A0A4AB;--mf2:#E8EAED;--glass:rgba(40,40,44,.5);--glass2:rgba(44,44,48,.84);--gline:rgba(255,255,255,.12);--ghi:rgba(255,255,255,.2);--gsh:0 12px 34px rgba(0,0,0,.55),0 2px 6px rgba(0,0,0,.3);--lens:rgba(255,255,255,.14);--rim1:rgba(255,255,255,.38);--rim2:rgba(255,255,255,.12);--cardsh:none;--ic-blue:linear-gradient(180deg,#3D97FF,#0A63E0);--ic-sky:linear-gradient(180deg,#7DD6FF,#2C9FD9);--ic-silver:linear-gradient(180deg,#C5CBD3,#858C97);--ic-snow:linear-gradient(180deg,#FFFFFF,#DCE4EE);--ic-snowc:#0A84FF;--accent:var(--tc);--accent2:color-mix(in srgb,var(--tc) 58%,#fff);--ring3:var(--mf);color-scheme:dark}
 :root[data-ui="apple"] body{background:radial-gradient(120% 32% at 50% -6%,color-mix(in srgb,var(--accent) 7%,transparent) 0%,transparent 72%),var(--bg);background-attachment:fixed;font-feature-settings:normal}
 /* Schrift: SF Pro bringt die richtige Laufweite selbst mit */
 :root[data-ui="apple"] :is(.hello,h2.sec,h3,.big,.crea-n b,.gap-chip b,.acc-t b,.stk-v b,.schip-t b,.ft-v,.ftile b,.fsum .fbig,.tcard b,.itile b,.dsum .k,.btot .k,.gm-big,.ht-v,.ht-chips b,.ppc-t b,.cd b,.hn-m > b,.hn-time b,.hn-meal,.wd-name,.gp-v){letter-spacing:normal}
@@ -1502,7 +1487,7 @@ button.hn-row:active .hn-ic{transform:scale(.94)}
 :root[data-ui="apple"] .linkbtn{text-decoration:none}
 :root[data-ui="apple"] .linkbtn:hover{text-decoration:underline}
 /* Knöpfe wie in iOS: gefüllt, getönt oder grau */
-:root[data-ui="apple"] .btn{border-radius:999px;font-weight:600;background:var(--accent);color:#fff;box-shadow:inset 0 1px 0 rgb(255 255 255 / .22)}
+:root[data-ui="apple"] .btn{border-radius:999px;font-weight:600;background:var(--accent);color:var(--tc-on);box-shadow:inset 0 1px 0 rgb(255 255 255 / .22)}
 :root[data-ui="apple"] .btn.soft{background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent);box-shadow:none}
 :root[data-ui="apple"] .btn.ghost{background:var(--fill);border:0;color:var(--accent);box-shadow:none}
 :root[data-ui="apple"] .btn.danger{box-shadow:none}
@@ -1521,7 +1506,8 @@ button.hn-row:active .hn-ic{transform:scale(.94)}
 :root[data-ui="apple"] .field label{font-weight:500}
 /* Pillen und Tags */
 :root[data-ui="apple"] :is(.pchip,.gtabs button,.frange button,.gchips button,.dchip){border-color:transparent;background:var(--fill);color:var(--ink)}
-:root[data-ui="apple"] :is(.pchip,.gchips button)[aria-pressed="true"],:root[data-ui="apple"] .gtabs button[aria-selected="true"],:root[data-ui="apple"] .dchip[aria-pressed="true"]{background:var(--accent);color:#fff}
+:root[data-ui="apple"] :is(.pchip,.gchips button)[aria-pressed="true"],:root[data-ui="apple"] .gtabs button[aria-selected="true"],:root[data-ui="apple"] .dchip[aria-pressed="true"]{background:var(--accent);color:var(--tc-on)}
+:root[data-ui="apple"] .dchip[aria-pressed="true"] :is(.ico,small){color:var(--tc-on)}
 :root[data-ui="apple"] .dchip{background:var(--surface)}
 :root[data-ui="apple"] .dchip.today{box-shadow:inset 0 0 0 1.5px var(--accent)}
 /* Listen: feine Trennlinien statt gestrichelter Linien */
@@ -1533,12 +1519,15 @@ button.hn-row:active .hn-ic{transform:scale(.94)}
 :root[data-ui="apple"] .shop .done .box{background:var(--accent);border-color:var(--accent)}
 /* Body Lab wie die Einstellungen: farbige Symbol-Kacheln */
 :root[data-ui="apple"] .acc-h{grid-template-columns:32px minmax(0,1fr) 18px;padding:14px 16px}
-:root[data-ui="apple"] .acc-ico,:root[data-ui="apple"] .acc.open .acc-ico{width:32px;height:32px;border-radius:9px;background:var(--ic,var(--accent));color:#fff}
+:root[data-ui="apple"] .acc-ico,:root[data-ui="apple"] .acc.open .acc-ico{width:32px;height:32px;border-radius:9px;background:var(--ic,var(--accent));color:var(--icc,#fff);box-shadow:inset 0 0 0 .5px rgb(0 0 0 / .06)}
 :root[data-ui="apple"] .acc-ico .ico{width:18px;height:18px}
-:root[data-ui="apple"] .acc[data-acc="body"]{--ic:var(--ic-body)}
-:root[data-ui="apple"] .acc[data-acc="work"]{--ic:var(--ic-work)}
-:root[data-ui="apple"] .acc[data-acc="misc"]{--ic:var(--ic-misc)}
-:root[data-ui="apple"] .acc[data-acc="challenge"]{--ic:var(--ic-ch)}
+:root[data-ui="apple"] .acc{--ic:var(--ic-blue)}
+:root[data-ui="apple"] .acc[data-acc="work"]{--ic:var(--ic-sky)}
+:root[data-ui="apple"] .acc[data-acc="misc"]{--ic:var(--ic-silver)}
+:root[data-ui="apple"] .acc[data-acc="challenge"]{--ic:var(--ic-snow);--icc:var(--ic-snowc)}
+:root[data-ui="apple"] #v-info .acc:nth-of-type(4n+2){--ic:var(--ic-sky)}
+:root[data-ui="apple"] #v-info .acc:nth-of-type(4n+3){--ic:var(--ic-silver)}
+:root[data-ui="apple"] #v-info .acc:nth-of-type(4n){--ic:var(--ic-snow);--icc:var(--ic-snowc)}
 :root[data-ui="apple"] .acc-chev{color:color-mix(in srgb,var(--ink) 30%,transparent)}
 /* Home */
 :root[data-ui="apple"] .hn-rings .trk,:root[data-ui="apple"] .hn-rings .arc{stroke-width:12}
@@ -1548,7 +1537,9 @@ button.hn-row:active .hn-ic{transform:scale(.94)}
 :root[data-ui="apple"] .hn-rings .arc.a1{stroke:url(#hgp)}
 :root[data-ui="apple"] .hn-rings .arc.a2{stroke:url(#hgc)}
 :root[data-ui="apple"] .hn-rings .arc.a3{stroke:url(#hgf)}
-:root[data-ui="apple"] .hn-rings .arc.over{stroke:var(--warn)}
+:root[data-ui="apple"] .hn-rings .arc.over{stroke:url(#hgo)}
+:root[data-ui="apple"] .hn-m > b.over{color:var(--ink)}
+:root[data-ui="apple"] .rings .arc.over{stroke:url(#hgo)}
 :root[data-ui="apple"] .hn-m > span{color:var(--muted);font-weight:600}
 :root[data-ui="apple"] .hn-m > span i{width:9px;height:9px;border-radius:50%}
 :root[data-ui="apple"] .hn-m .bar{background:color-mix(in srgb,var(--c) 16%,transparent)}
@@ -1558,12 +1549,15 @@ button.hn-row:active .hn-ic{transform:scale(.94)}
 :root[data-ui="apple"] .hn-chip{background:var(--fill)}
 :root[data-ui="apple"] .hn-now{background:var(--surface)}
 :root[data-ui="apple"] .hn-now::after{display:none}
-:root[data-ui="apple"] .hn-ic{width:36px;height:36px;border-radius:10px;background:var(--ic,var(--accent));color:#fff}
+:root[data-ui="apple"] .hn-ic{width:36px;height:36px;border-radius:10px;background:var(--ic,var(--accent));color:var(--icc,#fff);box-shadow:inset 0 0 0 .5px rgb(0 0 0 / .06)}
 :root[data-ui="apple"] .hn-ic .ico{width:19px;height:19px}
-:root[data-ui="apple"] .hn-row.water{--ic:var(--ic-water)}
-:root[data-ui="apple"] .hn-row.weigh{--ic:var(--ic-weigh)}
-:root[data-ui="apple"] .hn-row.garmin{--ic:var(--ic-garmin)}
-:root[data-ui="apple"] .hn-row.streak{--ic:var(--ic-streak)}
+:root[data-ui="apple"] .hn-row.water{--ic:var(--ic-sky)}
+:root[data-ui="apple"] .hn-row.weigh{--ic:var(--ic-blue)}
+:root[data-ui="apple"] .hn-row.garmin{--ic:var(--ic-silver)}
+:root[data-ui="apple"] .hn-row.streak{--ic:var(--ic-snow);--icc:var(--ic-snowc)}
+:root[data-ui="apple"] .hn-row.water .bar > i{background:linear-gradient(90deg,var(--mc1),var(--mc2))}
+:root[data-ui="apple"] .hn-streak .ico{color:var(--mc)}
+:root[data-ui="apple"] .hn-chk.on{color:var(--tc-on)}
 :root[data-ui="apple"] .hn-row{position:relative}
 :root[data-ui="apple"] .hn-row + .hn-row{border-top:0}
 :root[data-ui="apple"] .hn-row + .hn-row::before{content:"";position:absolute;top:0;left:52px;right:0;border-top:.5px solid var(--sep)}
@@ -1600,6 +1594,14 @@ button.hn-row:active .hn-ic{transform:scale(.94)}
 :root[data-ui="apple"] .gin input,:root[data-ui="apple"] .field .gin input{background:transparent !important;box-shadow:none !important}
 :root[data-ui="apple"] .gin:focus-within{outline:0;background:var(--surface);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 32%,transparent)}
 :root[data-ui="apple"] .gstep button{border:0;background:var(--fill);border-radius:999px}
+:root[data-ui="apple"] .bar > i{background:linear-gradient(90deg,var(--mp1),var(--mp2))}
+:root[data-ui="apple"] .gx-q.on{background:var(--up);border-color:var(--up);color:#fff}
+:root[data-ui="apple"] .tsw.snow{box-shadow:inset 0 0 0 1px rgb(0 0 0 / .12)}
+:root[data-ui="apple"] .tsw.snow[aria-pressed="true"]{box-shadow:inset 0 0 0 1px rgb(0 0 0 / .12),0 0 0 2px var(--surface),0 0 0 4px var(--mf)}
+:root[data-ui="apple"] .tsw.snow::after{background:var(--ic-snowc)}
+/* Rang: Abzeichen bleiben aus ihrem Material, die Karte drumherum in Blau und Silber */
+:root[data-ui="apple"] :is(.rk,.rkc){--rk1:#0A3D91 !important;--rk2:#1F4E8C !important;--rk3:#C9D2DE !important;--rkg:#64D2FF !important}
+:root[data-ui="apple"] .rk-bar i{background:linear-gradient(90deg,#0A84FF,#64D2FF)}
 /* Akzentfarbe wählen */
 .tints{display:flex;flex-wrap:wrap;gap:12px;margin:12px 0 4px}
 .tsw{all:unset;box-sizing:border-box;width:36px;height:36px;border-radius:50%;background:var(--sw);cursor:pointer;display:grid;place-items:center;transition:transform .15s var(--ease),box-shadow .2s;-webkit-tap-highlight-color:transparent}
@@ -1644,6 +1646,7 @@ button.hn-row:active .hn-ic{transform:scale(.94)}
                 <linearGradient id="hgp" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--mp1,var(--mp))"/><stop offset="1" style="stop-color:var(--mp2,var(--mp))"/></linearGradient>
                 <linearGradient id="hgc" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--mc1,var(--mc))"/><stop offset="1" style="stop-color:var(--mc2,var(--mc))"/></linearGradient>
                 <linearGradient id="hgf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--mf1,var(--mf))"/><stop offset="1" style="stop-color:var(--mf2,var(--mf))"/></linearGradient>
+                <linearGradient id="hgo" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--mo1,var(--warn))"/><stop offset="1" style="stop-color:var(--mo2,var(--warn))"/></linearGradient>
               </defs>
               <circle class="trk t1" cx="84" cy="84" r="77"/><circle class="arc a1" id="hra1" cx="84" cy="84" r="77" style="stroke-dasharray:483.8;stroke-dashoffset:483.8"/>
               <circle class="trk t2" cx="84" cy="84" r="64"/><circle class="arc a2" id="hra2" cx="84" cy="84" r="64" style="stroke-dasharray:402.1;stroke-dashoffset:402.1"/>
@@ -3224,7 +3227,8 @@ function syncThemeMeta() {
   ms.forEach(m => { const dark = fixed ? fixed === 'dark' : /dark/.test(m.getAttribute('media') || ''); m.setAttribute('content', a ? (dark ? '#000000' : '#F2F2F7') : (dark ? '#09161F' : '#F7F9FB')); });
 }
 /* Akzentfarben wie bei Apple */
-const TINTS = [['blue', 'Blau', '#007AFF'], ['indigo', 'Indigo', '#5856D6'], ['purple', 'Lila', '#AF52DE'], ['pink', 'Pink', '#FF2D55'], ['red', 'Rot', '#FF3B30'], ['orange', 'Orange', '#FF9500'], ['green', 'Grün', '#34C759'], ['teal', 'Türkis', '#30B0C7'], ['graphite', 'Graphit', '#636366']];
+/* Akzentfarben: nur Blau- und Silbertöne, Schneeweiß im dunklen Design */
+const TINTS = [['blue', 'Blau', '#0A84FF'], ['sky', 'Himmelblau', '#5AC8FA'], ['silver', 'Silber', '#AEB4BE'], ['snow', 'Schneeweiß', '#F5F8FC']];
 const TAB_TITLE = { heute: 'Heute', plan: 'Plan', fort: 'Fortschritt', einkauf: 'Einkauf', ziele: 'Body Lab', geschmack: 'Geschmack', info: 'Gym Wiki', track: 'Essen tracken', phasen: 'Phasen-Plan' };
 /* HTML nur tauschen, wenn sich etwas geändert hat. Balken (data-bar) wachsen vom alten Wert zum neuen. */
 function setAnimated(el, html) {
@@ -4070,7 +4074,7 @@ function goalsHtml() {
 }
 function renderColors() {
   const tabsN = { heute:'Home', plan:'Plan', fort:'Fortschritt', einkauf:'Einkauf', ziele:'Body Lab', geschmack:'Geschmack', info:'Gym Wiki' };
-  const m = document.documentElement.dataset.ui, tc = S.profile.tint || 'blue';
+  const m = document.documentElement.dataset.ui, tc = TINTS.some(t => t[0] === S.profile.tint) ? S.profile.tint : 'blue';
   const th = themeCur(), isNew = m === 'apple';
   const hint = isNew ? (th === 'dark' ? 'Dunkle Flächen, klare Farben und Glas für die Leisten. Angenehm am Abend.' : 'Helle Flächen, klare Farben und Glas für die Leisten.')
     : m === 'neu' ? 'Gerade aktiv: das ruhige Design mit deinen Farbpaletten pro Reiter.' : 'Gerade aktiv: das klassische Design mit allen Kacheln auf Home.';
@@ -4079,8 +4083,9 @@ function renderColors() {
     <p class="fhint" style="margin-top:6px">Frühere Designs: ${[['neu', 'Ruhig'], ['klassisch', 'Klassisch']].map(([v, n]) => `<button class="linkbtn" data-act="ui-set" data-v="${v}" aria-pressed="${m === v}">${n}</button>`).join(' · ')}</p></div>`;
   if (m === 'apple') {
     $('#zColors').innerHTML = design + `<div class="sub-h">Akzentfarbe</div>
-      <p class="muted" style="margin:8px 0 0;font-size:13.5px">Eine Farbe für Knöpfe, Links und Hervorhebungen in der ganzen App. Eiweiß, KH und Fett behalten ihre eigenen Farben.</p>
-      <div class="tints" role="group" aria-label="Akzentfarbe">${TINTS.map(([id, n, hex]) => `<button class="tsw" data-act="tint" data-v="${id}" aria-pressed="${tc === id}" aria-label="${n}" title="${n}" style="--sw:${hex}"></button>`).join('')}</div>`;
+      <p class="muted" style="margin:8px 0 0;font-size:13.5px">Für Knöpfe, Links und Hervorhebungen. Die Ringe bleiben Blau, Himmelblau und Silber.${th !== 'dark' ? ' Schneeweiß gibt es im dunklen Design.' : ''}</p>
+      <div class="tints" role="group" aria-label="Akzentfarbe">${TINTS.filter(t => t[0] !== 'snow' || th === 'dark').map(([id, n, hex]) => `<button class="tsw ${id === 'snow' ? 'snow' : ''}" data-act="tint" data-v="${id}" aria-pressed="${tc === id}" aria-label="${n}" title="${n}" style="--sw:${hex}"></button>`).join('')}</div>
+      <p class="fhint" style="margin:2px 0 0">${(TINTS.find(t => t[0] === tc) || TINTS[0])[1]}${tc === 'snow' && th !== 'dark' ? ', im hellen Design als Blau' : ''}</p>`;
     return;
   }
   $('#zColors').innerHTML = design + `<div class="sub-h">Farben</div>
