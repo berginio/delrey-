@@ -1286,16 +1286,27 @@ div.htile{cursor:default}
 :root:not([data-ui="klassisch"]) #creaCard{order:6}
 :root:not([data-ui="klassisch"]) #garminCard{order:7}
 :root:not([data-ui="klassisch"]) #uiSwitch{order:9}
-/* Challenge als ruhige Zeile unter der Begrüßung */
-.hn-goal{display:grid;gap:8px;padding:0 4px 2px}
-.hn-goal-row{display:flex;align-items:center;gap:8px;min-width:0;font-size:13.5px}
-.hn-goal-row > .ico{width:17px;height:17px;color:var(--accent);flex:none}
-.hn-goal-row > span{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
-.hn-goal-row > b{font-family:var(--font-display);font-size:15px;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
-.hn-goal-row > small{min-width:56px;text-align:right;font-size:12px;font-weight:550;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
-.hn-goal .bar{height:4px;margin:0;background:color-mix(in srgb,var(--accent) 14%,transparent)}
-.hn-goal .bar > i{background:linear-gradient(90deg,var(--accent),var(--accent2))}
-.hn-goal-more{font-size:12px;color:var(--muted)}
+/* Challenge als große Karte mit Countdown */
+.hn-goal{display:block}
+.hn-ch{position:relative;overflow:hidden;isolation:isolate;padding:16px 18px 14px}
+.hn-ch::after{content:"";position:absolute;z-index:-1;width:240px;height:240px;right:-90px;top:-120px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--accent) 16%,transparent),transparent 68%);pointer-events:none}
+.hn-ch-top{display:flex;align-items:center;gap:12px;min-width:0}
+.hn-ch-ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--tint);color:var(--accent);flex:none}
+.hn-ch-ic .ico{width:21px;height:21px}
+.hn-ch-t{min-width:0;display:grid}
+.hn-ch-t small{font-size:12.5px;font-weight:600;color:var(--muted)}
+.hn-ch-t b{font-family:var(--font-display);font-size:18px;font-weight:700;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hn-cd{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:8px;align-items:end;margin:16px 0 12px}
+.hn-cd > div{display:grid;justify-items:start;gap:2px;min-width:0}
+.hn-cd b{font-family:var(--font-display);font-size:30px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.hn-cd .hn-cd-d b{font-size:46px;color:var(--accent)}
+.hn-cd small{font-size:12px;font-weight:600;color:var(--muted)}
+.hn-ch .bar{height:6px;margin:0}
+.hn-ch-meta{display:flex;justify-content:space-between;gap:10px;margin-top:8px;font-size:12px;font-weight:550;color:var(--muted);font-variant-numeric:tabular-nums}
+.hn-ch-meta span:last-child{text-align:right}
+.hn-ch-p{margin:10px 0 0;font-size:13.5px;color:var(--muted);line-height:1.45}
+.hn-goal-more{margin:8px 0 0;font-size:12px;color:var(--muted)}
+@media (max-width:370px){ .hn-cd b{font-size:24px} .hn-cd .hn-cd-d b{font-size:38px} }
 /* Nährwerte */
 .hn-hero{padding:14px 18px 2px}
 .hn-top{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:28px;margin-bottom:12px}
@@ -1603,6 +1614,20 @@ button.hn-row:active .hn-ic{transform:scale(.94)}
 /* Rang: Abzeichen bleiben aus ihrem Material, die Karte drumherum in Blau und Silber */
 :root[data-ui="apple"] :is(.rk,.rkc){--rk1:#0A3D91 !important;--rk2:#1F4E8C !important;--rk3:#C9D2DE !important;--rkg:#64D2FF !important}
 :root[data-ui="apple"] .rk-bar i{background:linear-gradient(90deg,#0A84FF,#64D2FF)}
+/* Rang-Abzeichen: gleiche Formen, Farben in Silber, Blau und Schneeweiß */
+:root[data-ui="apple"] [data-rt="wood"] svg,:root[data-ui="apple"] [data-rt="bronze"] svg{filter:grayscale(1) sepia(.35) hue-rotate(178deg) saturate(1.4) brightness(1.06) contrast(1.06)}
+:root[data-ui="apple"] [data-rt="silver"] svg{filter:grayscale(1) sepia(.2) hue-rotate(180deg) saturate(1.3) brightness(1.16) contrast(1.08)}
+:root[data-ui="apple"] [data-rt="gold"] svg{filter:grayscale(1) sepia(1) hue-rotate(160deg) saturate(2.2) brightness(1.12)}
+:root[data-ui="apple"] [data-rt="platinum"] svg{filter:grayscale(1) sepia(1) hue-rotate(168deg) saturate(3) brightness(1.04)}
+:root[data-ui="apple"] [data-rt="diamond"] svg{filter:grayscale(1) sepia(1) hue-rotate(182deg) saturate(4.2) brightness(.96)}
+:root[data-ui="apple"] [data-rt="champion"] svg{filter:grayscale(1) sepia(1) hue-rotate(192deg) saturate(5) brightness(.86)}
+:root[data-ui="apple"] [data-rt="titan"] svg{filter:grayscale(1) sepia(1) hue-rotate(198deg) saturate(3.4) brightness(.74) contrast(1.15)}
+:root[data-ui="apple"] [data-rt="olymp"] svg{filter:grayscale(1) brightness(1.32) contrast(.96)}
+:root[data-ui="apple"] .hn-ch .bar > i{background:linear-gradient(90deg,var(--mp1),var(--mc2))}
+:root[data-ui="apple"] .hn-ch-ic{background:var(--ic-blue);color:#fff}
+:root[data-ui="apple"] .rk .up{color:#8FD8FF}
+:root[data-ui="apple"] .rk .down{color:#C9D2DE}
+:root[data-ui="apple"] .rk-hint{color:#DCEBFA}
 /* Akzentfarbe wählen */
 .tints{display:flex;flex-wrap:wrap;gap:12px;margin:12px 0 4px}
 .tsw{all:unset;box-sizing:border-box;width:36px;height:36px;border-radius:50%;background:var(--sw);cursor:pointer;display:grid;place-items:center;transition:transform .15s var(--ease),box-shadow .2s;-webkit-tap-highlight-color:transparent}
@@ -3246,24 +3271,33 @@ const litre = ml => LITRE_FMT.format((+ml || 0) / 1000);
 const hmsLeft = ms => [Math.floor(ms / 36e5) % 24, Math.floor(ms / 6e4) % 60, Math.floor(ms / 1e3) % 60].map(n => String(Math.max(0, n)).padStart(2, '0')).join(':');
 function tickHnGoal() {
   const el = document.querySelector('#hnGoal [data-hcd]'); if (!el) return;
-  const ms = new Date(el.dataset.hcd + 'T00:00:00') - new Date();
-  const t = ms > 0 ? hmsLeft(ms) : '';
-  if (el.textContent !== t) el.textContent = t;
+  const ms = new Date(el.dataset.hcd + 'T00:00:00') - new Date(); if (ms <= 0) return;
+  const v = { h: Math.floor(ms / 36e5) % 24, m: Math.floor(ms / 6e4) % 60, s: Math.floor(ms / 1e3) % 60 };
+  for (const k in v) { const b = el.querySelector(`[data-hc="${k}"]`), t = String(v[k]).padStart(2, '0'); if (b && b.textContent !== t) b.textContent = t; }
 }
 function renderHomeNeu(next) {
   if (!uiNeu() || !$('#hnHero')) return;
   const P = todayPlan, R = todayRem, T = P.target, E = R.eaten, pr = S.profile, now = nowMin();
-  // Challenge: nur die nächste, als ruhige Zeile
+  // Challenge: die nächste als große Karte mit Countdown
   const parts = chList().map(challengeParts).filter(x => x && x.ms > -7 * 864e5), run = parts.filter(x => x.ms > 0);
   let gh = '';
   if (parts.length) {
-    const C = run[0] || parts[0], c = C.c, ic = (CH_KINDS[c.kind] || CH_KINDS.andere)[0];
+    const C = run[0] || parts[0], c = C.c, [ic, kn] = CH_KINDS[c.kind] || CH_KINDS.andere;
     const goal = esc(c.goal || (c.kind === 'foto' ? 'Fortschrittsfoto' : 'Ziel')) + (c.with ? ` mit ${esc(c.with)}` : '');
+    const dateTxt = `${DAYNAMES[dow(C.end)]}, ${C.end.getDate()}. ${MONTHS[C.end.getMonth()]} ${C.end.getFullYear()}`;
     if (C.ms > 0) {
-      const d = Math.floor(C.ms / 864e5);
-      gh = `<div class="hn-goal-row" role="timer" aria-label="Noch ${d} Tage: ${goal}">${icon(ic)}<span>${goal}</span><b>${fmt(d)} ${d === 1 ? 'Tag' : 'Tage'}</b><small data-hcd="${esc(c.date)}" aria-hidden="true"></small></div>
-        <div class="bar" aria-hidden="true"><i data-bar="ch" data-w="${pctW(C.passed, C.totalDays)}"></i></div>${run.length > 1 ? `<span class="hn-goal-more">und ${run.length - 1} weitere Challenge${run.length > 2 ? 's' : ''}</span>` : ''}`;
-    } else gh = `<div class="hn-goal-row">${icon('flag-checkered')}<span>${isoDate(C.end) === S.today ? 'Heute ist der große Tag' : 'Challenge geschafft'}</span><b>${goal}</b></div>`;
+      const d = Math.floor(C.ms / 864e5), weeks = Math.ceil(C.totalDays / 7), wk = Math.min(weeks, Math.floor(C.passed / 7) + 1), pct = Math.floor(Math.min(100, C.passed / C.totalDays * 100));
+      gh = `<article class="card hn-ch" role="timer" aria-label="Noch ${d} Tage bis ${dateTxt}: ${goal}">
+        <div class="hn-ch-top"><span class="hn-ch-ic">${icon(ic)}</span><span class="hn-ch-t"><small>${esc(c.title || 'Challenge')}</small><b>${goal}</b></span></div>
+        <div class="hn-cd" data-hcd="${esc(c.date)}" aria-hidden="true">
+          <div class="hn-cd-d"><b>${fmt(d)}</b><small>${d === 1 ? 'Tag' : 'Tage'}</small></div>
+          <div><b data-hc="h">00</b><small>Std</small></div><div><b data-hc="m">00</b><small>Min</small></div><div><b data-hc="s">00</b><small>Sek</small></div>
+        </div>
+        <div class="bar" aria-hidden="true"><i data-bar="ch" data-w="${pctW(C.passed, C.totalDays)}"></i></div>
+        <div class="hn-ch-meta"><span>Woche ${wk} von ${weeks} · ${pct} %</span><span>${esc(dateTxt)}</span></div>
+        ${run.length > 1 ? `<p class="hn-goal-more">und ${run.length - 1} weitere Challenge${run.length > 2 ? 's' : ''}</p>` : ''}</article>`;
+    } else gh = `<article class="card hn-ch done"><div class="hn-ch-top"><span class="hn-ch-ic">${icon('flag-checkered')}</span><span class="hn-ch-t"><small>${esc(c.title || 'Challenge')}</small><b>${isoDate(C.end) === S.today ? 'Heute ist der große Tag' : 'Challenge geschafft'}</b></span></div>
+        <p class="hn-ch-p">${goal}${isoDate(C.end) === S.today ? '. Du hast es durchgezogen.' : ` war am ${esc(dateTxt)}. Im Body Lab kannst du eine neue anlegen.`}</p></article>`;
   }
   setAnimated($('#hnGoal'), gh); tickHnGoal();
   // Ring und Makros
@@ -6884,14 +6918,14 @@ function rankCard() {
   const vars = `--rk1:${T.c[0]};--rk2:${T.c[1]};--rk3:${T.c[2]};--rkg:${T.glow};--rkr:${T.ray}`;
   if (!open) return `<section class="card rk rk-${T.id}" style="${vars}" aria-label="Dein Rang">
     <button class="rk-row" data-act="rank-more" aria-expanded="false" aria-label="Dein Rang: ${esc(name)}. Details öffnen">
-      <span class="rk-stage sm"><span class="rk-glow" aria-hidden="true"></span><span class="rk-float">${rankBadge(k.t, k.div, 'main', 1)}</span></span>
+      <span class="rk-stage sm"><span class="rk-glow" aria-hidden="true"></span><span class="rk-float" data-rt="${RANKS[k.t].id}">${rankBadge(k.t, k.div, 'main', 1)}</span></span>
       <span class="rk-info"><span class="rk-eb">Dein Rang</span><span class="rk-name">${esc(name)}</span>${k.top ? '' : `<span class="rk-bar" aria-hidden="true"><i style="width:${Math.max(3, pctv)}%"></i></span>`}</span>
       <span class="rk-car" aria-hidden="true">${icon('caret-down')}</span>
     </button></section>`;
   const stats = [[`${w.done}/${w.plan}`, 'Trainings'], [`${w.nutHit}/${w.days}`, 'Nährwerte'], R.cOn ? [`${w.crea}/${w.days}`, 'Creatin'] : null, [String(w.prs), w.prs === 1 ? 'Rekord' : 'Rekorde']].filter(Boolean);
   return `<section class="card rk open rk-${T.id}" style="${vars}" aria-label="Dein Rang">
     <button class="rk-hero" data-act="rank-more" aria-expanded="true" aria-label="Dein Rang: ${esc(name)}. Details schließen">
-      <span class="rk-stage lg"><span class="rk-rays" aria-hidden="true"></span><span class="rk-glow" aria-hidden="true"></span><span class="rk-float">${rankBadge(k.t, k.div, 'main', 2)}</span></span>
+      <span class="rk-stage lg"><span class="rk-rays" aria-hidden="true"></span><span class="rk-glow" aria-hidden="true"></span><span class="rk-float" data-rt="${RANKS[k.t].id}">${rankBadge(k.t, k.div, 'main', 2)}</span></span>
       <span class="rk-eb">Dein Rang</span><span class="rk-name">${esc(name)}</span>
     </button>
     ${k.top ? `<p class="rk-next">${fmt(k.inDiv)} LP im Olymp</p>` : `<div class="rk-bar lg" role="progressbar" aria-valuemin="0" aria-valuemax="${k.size}" aria-valuenow="${k.inDiv}" aria-label="Fortschritt bis ${esc(nextName(k))}"><i style="width:${Math.max(3, pctv)}%"></i></div>
@@ -6909,7 +6943,7 @@ function rankMore(R) {
   const ladder = RANKS.map((T, t) => {
     const from = base; base += T.d * 3;
     const reached = k.top || t < k.t ? 'done' : t === k.t ? 'now' : 'lock';
-    return `<div class="rk-step ${reached}"><span class="rk-mini">${rankBadge(t, t === k.t && !k.top ? k.div : reached === 'done' ? 2 : 0, 'l' + t, false)}</span><b>${T.n}</b><small>${t === 0 ? 'Start' : `ab ${fmt(from)} LP`}</small></div>`;
+    return `<div class="rk-step ${reached}"><span class="rk-mini" data-rt="${RANKS[t].id}">${rankBadge(t, t === k.t && !k.top ? k.div : reached === 'done' ? 2 : 0, 'l' + t, false)}</span><b>${T.n}</b><small>${t === 0 ? 'Start' : `ab ${fmt(from)} LP`}</small></div>`;
   }).join('');
   const rules = [['Training wie geplant', LP_RULE.done], ['Training verpasst (zählt am Sonntag)', LP_RULE.miss], ['Extra-Training, bis 2 pro Woche', LP_RULE.extra], ['Neuer Rekord im Gym oder beim Laufen', LP_RULE.pr], ['Kalorien und Eiweiß getroffen', LP_RULE.nutHit], ['Nur Kalorien oder nur Eiweiß getroffen', LP_RULE.nutHalf], ['Tag nicht eingetragen', LP_RULE.nutMiss]].concat(R.cOn ? [['Creatin genommen', LP_RULE.crea], ['Creatin vergessen', LP_RULE.creaMiss]] : []);
   const dl = d => { const x = new Date(d + 'T12:00'); return d === S.today ? 'Heute' : `${DAYSHORT[dow(x)]}, ${x.getDate()}. ${MONTHS[x.getMonth()].slice(0, 3)}.`; };
@@ -6943,7 +6977,7 @@ function rankCelebrate(k) {
   el.id = 'rkCeleb'; el.className = 'rkc'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-labelledby', 'rkc-t');
   el.style.cssText = `--rk1:${T.c[0]};--rk2:${T.c[1]};--rk3:${T.c[2]};--rkg:${T.glow};--rkr:${T.ray}`;
   el.innerHTML = `<div class="rkc-conf" aria-hidden="true">${conf}</div><div class="rkc-in">
-    <div class="rkc-stage"><span class="rk-rays" aria-hidden="true"></span><span class="rk-glow" aria-hidden="true"></span><span class="rkc-pop">${rankBadge(k.t, k.div, 'celeb', true)}</span></div>
+    <div class="rkc-stage"><span class="rk-rays" aria-hidden="true"></span><span class="rk-glow" aria-hidden="true"></span><span class="rkc-pop" data-rt="${RANKS[k.t].id}">${rankBadge(k.t, k.div, 'celeb', true)}</span></div>
     <p class="rkc-eb">Aufgestiegen</p><h2 id="rkc-t">${esc(rankName(k))}</h2>
     <p class="rkc-p">${k.top ? 'Ganz oben angekommen. Jetzt heißt es: halten.' : `Weiter so. Als Nächstes wartet ${esc(nextName(k))}.`}</p>
     <button class="btn rkc-btn" data-act="rank-celeb-close">Weiter</button></div>`;
