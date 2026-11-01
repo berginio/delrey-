@@ -90,6 +90,7 @@
 :root{transition:--bg .7s var(--ease),--surface .7s var(--ease),--tint .7s var(--ease),--line .7s var(--ease),--ink .7s var(--ease),--muted .7s var(--ease),--accent .7s var(--ease),--accent2 .7s var(--ease),--ring3 .7s var(--ease),--on .7s var(--ease)}
 
 html,body{min-height:100%}
+html{scroll-padding-bottom:calc(112px + env(safe-area-inset-bottom,0px))}
 body{
   background:
     radial-gradient(130% 55% at 85% -8%, var(--tint) 0%, transparent 62%),
@@ -1270,6 +1271,131 @@ div.htile{cursor:default}
   .grid-num{grid-template-columns:repeat(3,minmax(0,1fr))}
   .targets{grid-template-columns:1fr}
 }
+/* ---------- Home neu: ruhiger Aufbau, eine Sache nach der anderen (data-ui="neu") ---------- */
+:root[data-ui="neu"] #v-heute > .hero.hc,:root[data-ui="neu"] #homeTiles,:root[data-ui="neu"] #phaseCard,:root[data-ui="neu"] #challengeCard,:root[data-ui="neu"] #garminRow{display:none !important}
+:root:not([data-ui="neu"]) .hn{display:none !important}
+:root[data-ui="neu"] #v-heute > div:empty{display:none}
+:root[data-ui="neu"] #hnGoal{order:0}
+:root[data-ui="neu"] #exampleNote{order:1}
+:root[data-ui="neu"] #hnHero{order:2}
+:root[data-ui="neu"] #gapCard{order:3}
+:root[data-ui="neu"] #hnNow{order:4}
+:root[data-ui="neu"] #hnList{order:5}
+:root[data-ui="neu"] #creaCard{order:6}
+:root[data-ui="neu"] #garminCard{order:7}
+:root[data-ui="neu"] #uiSwitch{order:9}
+/* Challenge als ruhige Zeile unter der Begrüßung */
+.hn-goal{display:grid;gap:8px;padding:0 4px 2px}
+.hn-goal-row{display:flex;align-items:center;gap:8px;min-width:0;font-size:13.5px}
+.hn-goal-row > .ico{width:17px;height:17px;color:var(--accent);flex:none}
+.hn-goal-row > span{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.hn-goal-row > b{font-family:var(--font-display);font-size:15px;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+.hn-goal-row > small{min-width:56px;text-align:right;font-size:12px;font-weight:550;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.hn-goal .bar{height:4px;margin:0;background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.hn-goal .bar > i{background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.hn-goal-more{font-size:12px;color:var(--muted)}
+/* Nährwerte */
+.hn-hero{padding:14px 18px 2px}
+.hn-top{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:28px;margin-bottom:12px}
+.hn-lbl{font-size:13px;font-weight:550;color:var(--muted);white-space:nowrap}
+.hn-lbl b{color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
+#hnPhase{display:flex;justify-content:flex-end;min-width:0}
+.hn-chip{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;gap:6px;min-width:0;max-width:100%;min-height:30px;padding:5px 11px 5px 9px;border-radius:999px;background:var(--tint);color:var(--ink);font-size:12.5px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .15s var(--ease)}
+.hn-chip .ico{width:14px;height:14px;color:var(--accent)}
+.hn-chip:active{transform:scale(.97)}
+.hn-chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hn-grid{display:grid;grid-template-columns:136px minmax(0,1fr);gap:20px;align-items:center}
+.hn-rings{width:136px;height:136px}
+.hn-rings .trk,.hn-rings .arc{stroke-width:11}
+.hn-rings .rings-c .big{font-size:23px}
+.hn-rings .rings-c small{font-size:11.5px;margin-top:3px}
+.hn-macros{display:grid;gap:13px;min-width:0}
+.hn-m{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;column-gap:8px;min-width:0}
+.hn-m > span{display:flex;align-items:center;gap:7px;min-width:0;font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hn-m > span i{width:8px;height:8px;border-radius:3px;flex:none}
+.hn-m > b{font-family:var(--font-display);font-size:17px;font-weight:700;letter-spacing:-.01em;white-space:nowrap;font-variant-numeric:tabular-nums}
+.hn-m > b small{margin-left:4px;font-family:var(--font-body);font-size:11.5px;font-weight:550;letter-spacing:0;color:var(--muted)}
+.hn-m > b.over{color:var(--warn)}
+.hn-m .bar{grid-column:1/-1;height:6px;margin-top:6px}
+.hn-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;border-top:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
+.hn-gap{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;min-width:0;min-height:44px;padding:8px 0;font-size:13px;line-height:1.3;color:var(--ink);cursor:pointer;-webkit-tap-highlight-color:transparent}
+p.hn-gap{margin:0;cursor:default;color:var(--muted)}
+.hn-gap > .ico:first-child{width:16px;height:16px;color:var(--accent);flex:none}
+.hn-gap.ok > .ico:first-child{color:var(--up)}
+.hn-gap b{font-weight:700;font-variant-numeric:tabular-nums}
+.hn-gap .hn-car{width:14px;height:14px;color:var(--muted);flex:none}
+.hn-more{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:0 0 0 8px;font-size:13px;font-weight:600;color:var(--accent);white-space:nowrap;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.hn-more .ico{width:14px;height:14px;transition:transform .25s var(--ease)}
+.hn-more[aria-expanded="true"] .ico{transform:rotate(180deg)}
+.hn-gap:focus-visible,.hn-more:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
+.hn-more-b{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 18px;padding:4px 0 10px;animation:hnIn .35s var(--ease)}
+.hn-d{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;column-gap:6px;min-width:0}
+.hn-d > span{font-size:12.5px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hn-d > b{font-size:13px;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+.hn-d .bar{grid-column:1/-1;height:5px;margin-top:5px}
+.hn-sig{grid-column:1/-1}
+@keyframes hnIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+/* Als Nächstes */
+.hn-now{position:relative;overflow:hidden;isolation:isolate;padding:16px 18px;background:linear-gradient(155deg,color-mix(in srgb,var(--tint) 90%,var(--surface)) 0%,var(--surface) 62%)}
+.hn-now::after{content:"";position:absolute;z-index:-1;width:210px;height:210px;right:-72px;top:-96px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--accent2) 32%,transparent) 0%,transparent 68%);pointer-events:none}
+.hn-now-top{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
+.hn-now-top .hn-lbl{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.hn-time{display:flex;align-items:baseline;gap:10px;margin-top:8px}
+.hn-time b{font-family:var(--font-display);font-size:34px;font-weight:750;letter-spacing:-.03em;line-height:1}
+.hn-time span{font-size:14px;font-weight:650;color:var(--accent)}
+.hn-meal{margin:8px 0 0;font-family:var(--font-display);font-size:19px;font-weight:650;letter-spacing:-.01em;line-height:1.25;text-wrap:balance}
+.hn-meta{margin:4px 0 0;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.hn-act{display:flex;gap:8px;margin-top:14px}
+.hn-act .btn{flex:1 1 auto;min-width:0;min-height:44px;padding:11px 14px;font-size:14px;white-space:nowrap}
+.hn-act .btn.ghost{flex:0 0 auto;padding-inline:16px;background:color-mix(in srgb,var(--surface) 70%,transparent)}
+.hn-done{display:flex;gap:12px;align-items:center}
+.hn-done > .ico{width:24px;height:24px;color:var(--up);flex:none}
+.hn-done b{display:block;font-family:var(--font-display);font-size:17px;font-weight:650}
+.hn-done small{display:block;margin-top:2px;font-size:13px;color:var(--muted)}
+.hn-done + .hn-act{margin-top:12px}
+/* Heute erledigen */
+.hn-list{padding:4px 18px}
+.hn-h{margin:10px 0 0;font-family:var(--font-body);font-size:13px;font-weight:600;letter-spacing:0;color:var(--muted)}
+.hn-row,button.hn-row{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:12px;align-items:center;min-height:62px;padding:10px 0}
+button.hn-row{all:unset;box-sizing:border-box;display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:12px;align-items:center;width:100%;min-height:62px;padding:10px 0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.hn-row + .hn-row{border-top:1px solid color-mix(in srgb,var(--line) 60%,transparent)}
+button.hn-row:focus-visible,.hn-tx:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:12px}
+button.hn-row:active .hn-ic{transform:scale(.94)}
+.hn-ic{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;background:var(--tint);color:var(--accent);transition:transform .15s var(--ease)}
+.hn-ic .ico{width:20px;height:20px}
+.hn-t{display:grid;gap:1px;min-width:0}
+.hn-t b{font-size:15px;font-weight:650;line-height:1.25}
+.hn-t small{font-size:12.5px;line-height:1.3;color:var(--muted);font-variant-numeric:tabular-nums}
+.hn-t .bar{height:5px;margin-top:6px}
+.hn-car{width:16px;height:16px;color:var(--muted)}
+.hn-streak{display:inline-flex;align-items:center;gap:4px;font-family:var(--font-display);font-size:15px;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+.hn-streak .ico{width:16px;height:16px;color:var(--warn)}
+.hn-row.crea{grid-template-columns:40px minmax(0,1fr)}
+.hn-tx{all:unset;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;min-width:0;min-height:44px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.hn-chk{all:unset;box-sizing:border-box;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;border:2px solid color-mix(in srgb,var(--accent) 55%,transparent);color:color-mix(in srgb,var(--accent) 35%,transparent);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .25s,border-color .25s,color .25s,transform .15s var(--ease)}
+.hn-chk .ico{width:20px;height:20px}
+.hn-chk:active{transform:scale(.92)}
+.hn-chk:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hn-chk.on{background:var(--accent);border-color:var(--accent);color:var(--on)}
+.hn-chk.pop{animation:hnPop .5s var(--ease)}
+@keyframes hnPop{0%{transform:scale(.72)}55%{transform:scale(1.14)}100%{transform:scale(1)}}
+.hn-row.late .hn-chk{border-color:var(--warn);color:color-mix(in srgb,var(--warn) 45%,transparent)}
+.hn-row.late .hn-t small{color:var(--warn)}
+.hn-w{display:flex;align-items:center;gap:6px}
+.hn-w button{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:3px;height:40px;min-width:40px;padding:0 11px;border-radius:999px;border:1px solid var(--line);font-size:13px;font-weight:650;font-variant-numeric:tabular-nums;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .15s var(--ease)}
+.hn-w button .ico{width:14px;height:14px}
+.hn-w button.plus{background:var(--tint);border-color:transparent}
+.hn-w button:active{transform:scale(.94)}
+.hn-w button[disabled]{opacity:.4;pointer-events:none}
+.hn-w button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* Umschalter Neu / Klassisch */
+@media (hover:hover){ .hn-chip:hover,.hn-w button.plus:hover{background:color-mix(in srgb,var(--accent) 16%,var(--tint))} .hn-gap:not(p):hover > span,.hn-more:hover,.ui-sw:hover{color:var(--accent)} button.hn-row:hover .hn-ic,.hn-w button:not(.plus):hover{background:color-mix(in srgb,var(--accent) 12%,var(--tint))} .hn-chk:not(.on):hover{border-color:var(--accent);color:color-mix(in srgb,var(--accent) 60%,transparent)} button.hn-row:hover b,.hn-tx:hover b{color:var(--accent)} }
+.ui-switch{display:flex;justify-content:center}
+.ui-sw{all:unset;box-sizing:border-box;padding:10px 12px;border-radius:8px;font-size:12.5px;font-weight:600;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.ui-sw:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion: no-preference){ .hn-now::after{animation:hnGlow 7s ease-in-out infinite} }
+@keyframes hnGlow{0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.18);opacity:1}}
+@media (max-width:370px){ .hn-grid{grid-template-columns:112px minmax(0,1fr);gap:14px} .hn-rings{width:112px;height:112px} .hn-rings .rings-c .big{font-size:19px} .hn-rings .rings-c small{font-size:10.5px} .hn-hero,.hn-now,.hn-list{padding-inline:14px} .hn-goal-row > small{display:none} }
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
   :root{transition:none}
@@ -1293,6 +1419,25 @@ div.htile{cursor:default}
 
   <main id="views">
     <section class="view" id="v-heute" aria-label="Home">
+      <div class="hn hn-goal" id="hnGoal" style="--i:0"></div>
+      <section class="card hn hn-hero" id="hnHero" style="--i:0" aria-label="Nährwerte heute">
+        <div class="hn-top"><span class="hn-lbl" id="hnTarget"></span><span id="hnPhase"></span></div>
+        <div class="hn-grid">
+          <div class="rings hn-rings" id="hnRings" role="img" aria-label="Kalorien und Makros heute">
+            <svg viewBox="0 0 168 168" aria-hidden="true">
+              <circle class="trk" cx="84" cy="84" r="77"/><circle class="arc a1" id="hra1" cx="84" cy="84" r="77" style="stroke-dasharray:483.8;stroke-dashoffset:483.8"/>
+              <circle class="trk" cx="84" cy="84" r="64"/><circle class="arc a2" id="hra2" cx="84" cy="84" r="64" style="stroke-dasharray:402.1;stroke-dashoffset:402.1"/>
+              <circle class="trk" cx="84" cy="84" r="51"/><circle class="arc a3" id="hra3" cx="84" cy="84" r="51" style="stroke-dasharray:320.4;stroke-dashoffset:320.4"/>
+            </svg>
+            <div class="rings-c"><span class="big num" id="hnKcal">0</span><small id="hnKcalLbl">kcal übrig</small></div>
+          </div>
+          <div class="hn-macros" id="hnMacros"></div>
+        </div>
+        <div class="hn-foot" id="hnFoot"></div>
+        <div class="hn-more-b" id="hnMore" hidden></div>
+      </section>
+      <div class="hn" id="hnNow" style="--i:1"></div>
+      <section class="card hn hn-list" id="hnList" style="--i:2" aria-label="Heute erledigen"></section>
       <div id="phaseCard" style="--i:0"></div>
       <div id="challengeCard" style="--i:0"></div>
       <div class="card hero hc" style="--i:0">
@@ -1330,6 +1475,7 @@ div.htile{cursor:default}
       <div class="card crea" id="creaCard" style="--i:1" hidden></div>
       <div class="card" id="garminCard" style="--i:1"></div>
       <div id="exampleNote" style="--i:1"></div>
+      <div class="ui-switch" id="uiSwitch" style="--i:3"></div>
     </section>
 
     <section class="view" id="v-tag" aria-label="Tagesziel" hidden>
@@ -2737,7 +2883,7 @@ function renderToday() {
   renderGap(R, T);
 
   const wsNow = weighStatus();
-  $('#exampleNote').innerHTML = !S.profile.example && wsNow.due ? `<button class="hrow" data-act="fort-seg" data-s="weight">${icon('scales')}<span><b>Zeit fürs Wiegen der Woche</b><small>Tippen und Körpergewicht eintragen</small></span>${icon('caret-down', 'car rot')}</button>` : S.profile.example ? `<div class="note">${icon('info')}<p>Die Ziele rechnen gerade mit Beispielwerten (80 kg, 180 cm, 25 Jahre). <button class="linkbtn" data-act="tab" data-tab="ziele">Trag deine Daten ein</button>, dann stimmt alles.</p></div>` : '';
+  $('#exampleNote').innerHTML = !S.profile.example && wsNow.due && !uiNeu() ? `<button class="hrow" data-act="fort-seg" data-s="weight">${icon('scales')}<span><b>Zeit fürs Wiegen der Woche</b><small>Tippen und Körpergewicht eintragen</small></span>${icon('caret-down', 'car rot')}</button>` : S.profile.example ? `<div class="note">${icon('info')}<p>Die Ziele rechnen gerade mit Beispielwerten (80 kg, 180 cm, 25 Jahre). <button class="linkbtn" data-act="tab" data-tab="ziele">Trag deine Daten ein</button>, dann stimmt alles.</p></div>` : '';
 
   // Als Nächstes
   const now = nowMin();
@@ -2784,6 +2930,7 @@ function renderToday() {
   renderTimeline();
   renderGarmin(); renderCrea(); renderPhaseCard();
   renderDayCard(next);
+  renderHomeNeu(next); renderUiSwitch();
   Watch.soon();
   if (S.tab === 'track') renderTrack();
   if (S.tab === 'plan') renderPlan();
@@ -2832,6 +2979,133 @@ function renderDayCard(next) {
       <span class="ht-s"><b>${esc(next.buy ? 'Unterwegs kaufen' : next.meal.n)}</b> · ${esc(relTime(next.t - nowMin()))}</span></button>`
     : `<button class="htile" data-act="tab" data-tab="plan"><span class="ht-top"><span class="ht-n">Plan</span>${icon('calendar-dots')}</span>
       <span class="ht-ok">${icon('check')}${openLeft ? 'Noch etwas offen' : 'Alles abgehakt'}</span><span class="ht-s">${openLeft ? 'Hak es im Plan ab oder lass es aus.' : 'Morgen geht es frisch weiter.'}</span></button>`;
+}
+
+/* ================= Home neu: ruhiger Aufbau =================
+   Oben die Challenge als Zeile, dann die Nährwerte, die nächste Mahlzeit und eine kurze Liste für heute.
+   Das alte Home bleibt erhalten ("Klassisch") und lässt sich in Body Lab > Sonstiges oder unten auf Home zurückholen. */
+const UI_KEY = 'np:ui';
+const uiNeu = () => document.documentElement.dataset.ui !== 'klassisch';
+function uiInit() { let v = 'neu'; try { if (localStorage.getItem(UI_KEY) === 'klassisch') v = 'klassisch'; } catch (e) {} document.documentElement.dataset.ui = v; }
+/* HTML nur tauschen, wenn sich etwas geändert hat. Balken (data-bar) wachsen vom alten Wert zum neuen. */
+function setAnimated(el, html) {
+  if (!el || el.dataset.h === html) return;
+  const old = {}; el.querySelectorAll('[data-bar]').forEach(b => { old[b.dataset.bar] = b.style.width; });
+  el.innerHTML = html; el.dataset.h = html;
+  const bars = [...el.querySelectorAll('[data-bar]')];
+  for (const b of bars) b.style.width = old[b.dataset.bar] || '0%';
+  if (bars.length) requestAnimationFrame(() => requestAnimationFrame(() => { for (const b of bars) b.style.width = b.dataset.w; }));
+}
+const pctW = (a, t) => Math.max(0, Math.min(100, (+a || 0) / (t || 1) * 100)).toFixed(1) + '%';
+const LITRE_FMT = new Intl.NumberFormat('de-AT', { maximumFractionDigits: 2 });
+const litre = ml => LITRE_FMT.format((+ml || 0) / 1000);
+const hmsLeft = ms => [Math.floor(ms / 36e5) % 24, Math.floor(ms / 6e4) % 60, Math.floor(ms / 1e3) % 60].map(n => String(Math.max(0, n)).padStart(2, '0')).join(':');
+function tickHnGoal() {
+  const el = document.querySelector('#hnGoal [data-hcd]'); if (!el) return;
+  const ms = new Date(el.dataset.hcd + 'T00:00:00') - new Date();
+  const t = ms > 0 ? hmsLeft(ms) : '';
+  if (el.textContent !== t) el.textContent = t;
+}
+function renderHomeNeu(next) {
+  if (!uiNeu() || !$('#hnHero')) return;
+  const P = todayPlan, R = todayRem, T = P.target, E = R.eaten, pr = S.profile, now = nowMin();
+  // Challenge: nur die nächste, als ruhige Zeile
+  const parts = chList().map(challengeParts).filter(x => x && x.ms > -7 * 864e5), run = parts.filter(x => x.ms > 0);
+  let gh = '';
+  if (parts.length) {
+    const C = run[0] || parts[0], c = C.c, ic = (CH_KINDS[c.kind] || CH_KINDS.andere)[0];
+    const goal = esc(c.goal || (c.kind === 'foto' ? 'Fortschrittsfoto' : 'Ziel')) + (c.with ? ` mit ${esc(c.with)}` : '');
+    if (C.ms > 0) {
+      const d = Math.floor(C.ms / 864e5);
+      gh = `<div class="hn-goal-row" role="timer" aria-label="Noch ${d} Tage: ${goal}">${icon(ic)}<span>${goal}</span><b>${fmt(d)} ${d === 1 ? 'Tag' : 'Tage'}</b><small data-hcd="${esc(c.date)}" aria-hidden="true"></small></div>
+        <div class="bar" aria-hidden="true"><i data-bar="ch" data-w="${pctW(C.passed, C.totalDays)}"></i></div>${run.length > 1 ? `<span class="hn-goal-more">und ${run.length - 1} weitere Challenge${run.length > 2 ? 's' : ''}</span>` : ''}`;
+    } else gh = `<div class="hn-goal-row">${icon('flag-checkered')}<span>${isoDate(C.end) === S.today ? 'Heute ist der große Tag' : 'Challenge geschafft'}</span><b>${goal}</b></div>`;
+  }
+  setAnimated($('#hnGoal'), gh); tickHnGoal();
+  // Ring und Makros
+  const left = T.kcal - E.kcal;
+  countTo($('#hnKcal'), Math.abs(left));
+  $('#hnKcalLbl').textContent = left >= 0 ? 'kcal übrig' : 'kcal drüber';
+  setArc($('#hra1'), E.p / T.p); setArc($('#hra2'), E.c / T.c); setArc($('#hra3'), E.f / T.f);
+  $('#hnRings').setAttribute('aria-label', `${fmt(Math.abs(left))} kcal ${left >= 0 ? 'übrig' : 'drüber'}, Ziel ${fmt(T.kcal)} kcal. Eiweiß ${fmt(E.p)} von ${fmt(T.p)} g, Kohlenhydrate ${fmt(E.c)} von ${fmt(T.c)} g, Fett ${fmt(E.f)} von ${fmt(T.f)} g.`);
+  setAnimated($('#hnTarget'), `Ziel <b>${fmt(T.kcal)} kcal</b>`);
+  let ph = '';
+  const PP = curPlan(), pl = planPhases(PP);
+  if (pl) {
+    const cur = pl.find(x => S.today >= x.start && S.today <= x.end);
+    if (cur) { const dl = dBetween(S.today, cur.end) + 1; ph = `<button class="hn-chip" data-act="tab" data-tab="phasen" aria-label="Phasen-Plan: ${esc(GOALS[cur.goal].n)}, noch ${dl} Tage">${icon(PHASE_IC[cur.goal] || 'target')}${esc(GOALS[cur.goal].n)} · noch ${fmt(dl)} ${dl === 1 ? 'Tag' : 'Tage'}</button>`; }
+    else ph = `<button class="hn-chip" data-act="tab" data-tab="phasen">${icon('flag-checkered')}Phasen-Plan</button>`;
+  } else if (GOALS[pr.goal]) ph = `<button class="hn-chip" data-act="tab" data-tab="ziele" aria-label="Ziel: ${esc(GOALS[pr.goal].n)}. Im Body Lab ändern">${icon('target')}${esc(GOALS[pr.goal].n)}</button>`;
+  setAnimated($('#hnPhase'), ph);
+  const lg = [['p', 'Eiweiß', E.p, T.p, 'var(--accent)'], ['c', 'KH', E.c, T.c, 'var(--accent2)'], ['f', 'Fett', E.f, T.f, 'var(--ring3)']];
+  setAnimated($('#hnMacros'), lg.map(([k, n, a, t, c]) => {
+    const rest = Math.round(t - a);
+    return `<div class="hn-m"><span><i style="background:${c}"></i>${n}</span><b class="${rest < 0 ? 'over' : ''}">${fmt(Math.abs(rest))} g<small>${rest >= 0 ? 'offen' : 'drüber'}</small></b><div class="bar"><i data-bar="${k}" data-w="${pctW(a, t)}" style="background:${c}"></i></div></div>`;
+  }).join(''));
+  // Fußzeile: was nach dem Plan noch fehlt, und Details
+  const gap = R.gap, planLeft = R.open.some(o => !o.skip), open = {};
+  for (const m of ['p', 'c', 'f']) if (gap[m] > GAP_MIN[m]) open[m] = Math.round(gap[m]);
+  const keys = Object.keys(open), kOpen = gap.kcal > 150, over = gap.kcal < -150, gexp = S.homeOpen === 'gap', mexp = !!S.hnMore;
+  const MN = { p: 'Eiweiß', c: 'KH', f: 'Fett' }, car = icon('caret-down', (gexp ? '' : 'rot ') + 'hn-car');
+  const gapHtml = keys.length || kOpen
+    ? `<button class="hn-gap" data-act="home-open" data-k="gap" aria-expanded="${gexp}" aria-controls="gapCard">${icon('lightning')}<span>${planLeft ? 'Trotz Plan fehlen' : 'Es fehlen noch'} ${keys.length ? keys.slice(0, 2).map(m => `<b>${fmt(open[m])}\u00a0g\u00a0${MN[m]}</b>`).join(' · ') : `<b>${fmt(gap.kcal)}\u00a0kcal</b>`}</span>${car}</button>`
+    : over ? `<button class="hn-gap" data-act="home-open" data-k="gap" aria-expanded="${gexp}" aria-controls="gapCard">${icon('info')}<span>Etwa <b>${fmt(-gap.kcal)} kcal</b> über dem Ziel</span>${car}</button>`
+    : `<p class="hn-gap ok">${icon('check')}<span>${planLeft ? 'Dein Plan deckt den Rest des Tages' : 'Alle Ziele für heute erreicht'}</span></p>`;
+  setAnimated($('#hnFoot'), gapHtml + `<button class="hn-more" data-act="hn-more" aria-expanded="${mexp}" aria-controls="hnMore">Details${icon('caret-down')}</button>`);
+  const more = $('#hnMore'); more.hidden = !mexp;
+  if (mexp) {
+    const g = muscleSignals();
+    setAnimated(more, `<div class="hn-d"><span>Ballaststoffe</span><b>${fmt(E.fib)} / ${fmt(T.fib)} g</b><div class="bar"><i data-bar="fib" data-w="${pctW(E.fib, T.fib)}"></i></div></div>
+      <div class="hn-d"><span>Leucin</span><b>${dec(E.leu)} / ${dec(T.leu)} g</b><div class="bar"><i data-bar="leu" data-w="${pctW(E.leu, T.leu)}"></i></div></div>
+      <button class="hn-gap hn-sig" data-act="info" data-open="g-muscle" data-tab="i-aa">${icon('dna')}<span><b>${g.done} von ${g.n}</b> Muskel-Signalen heute</span>${icon('caret-down', 'rot hn-car')}</button>`);
+  }
+  // Als Nächstes
+  let nowHtml;
+  if (next) {
+    const adj = R.open.find(o => o.id === next.id), tot = (adj && adj.tot) || next.tot || { kcal: 0, p: 0 };
+    const chip = next.buy ? `<span class="chip warn">${icon('storefront')}Kaufen</span>` : next.away ? `<span class="chip warn">${icon('package')}Mitnehmen</span>` : next.atWork ? `<span class="chip">${icon('briefcase')}Auf Arbeit</span>` : '';
+    const acts = next.buy ? `<button class="btn ghost" data-act="tab" data-tab="plan">${icon('calendar-dots')}Im Plan ansehen</button>`
+      : next.key === 'kantine' ? `<button class="btn" data-act="log-kantine" data-slot="${next.id}">Eintragen, was es gab</button><button class="btn ghost" data-act="eat" data-slot="${next.id}">Wie geplant</button>`
+      : `<button class="btn" data-act="eat" data-slot="${next.id}">${icon('check')}Gegessen</button><button class="btn ghost" data-act="tab" data-tab="plan">${next.meal.how ? 'Rezept' : 'Im Plan'}</button>`;
+    nowHtml = `<article class="card hn-now" aria-label="Als Nächstes">
+      <div class="hn-now-top"><span class="hn-lbl">Als Nächstes · ${esc(next.label)}</span>${chip}</div>
+      <div class="hn-time"><b class="num">${next.time}</b><span>${esc(relTime(next.t - now))}</span></div>
+      <h2 class="hn-meal">${next.buy ? 'Unterwegs kaufen' : esc(next.meal.n)}</h2>
+      ${next.buy ? '' : `<p class="hn-meta">${fmt(tot.kcal)} kcal · Eiweiß ${fmt(tot.p)} g</p>`}
+      <div class="hn-act">${acts}</div></article>`;
+  } else {
+    const openLeft = R.open.filter(o => !o.skip).length;
+    nowHtml = `<article class="card hn-now"><div class="hn-done">${icon(openLeft ? 'clock' : 'check')}<div><b>${openLeft ? 'Noch etwas von vorhin offen' : 'Für heute erledigt'}</b><small>${openLeft ? 'Hak es im Plan ab oder lass es aus.' : 'Alle Mahlzeiten sind abgehakt. Morgen geht es frisch weiter.'}</small></div></div>
+      ${openLeft ? `<div class="hn-act"><button class="btn ghost" data-act="tab" data-tab="plan">${icon('calendar-dots')}Zum Plan</button></div>` : ''}</article>`;
+  }
+  setAnimated($('#hnNow'), nowHtml);
+  // Heute erledigen: Creatin, Wasser, Wiegen, Garmin
+  const rows = [];
+  if (pr.creatine === 'on') {
+    const done = !!S.log.creatine, late = !done && now >= 18 * 60, st = creaInfo(), exp = S.homeOpen === 'crea';
+    const pop = done && S.hnCrea === false; S.hnCrea = done;
+    rows.push(`<div class="hn-row crea ${late ? 'late' : ''}">
+      <button class="hn-chk ${done ? 'on' : ''} ${pop ? 'pop' : ''}" data-act="${done ? 'crea-today-reset' : 'crea'}" aria-pressed="${done}" aria-label="Creatin heute genommen">${icon('check')}</button>
+      <button class="hn-tx" data-act="home-open" data-k="crea" aria-expanded="${exp}" aria-controls="creaCard"><span class="hn-t"><b>Creatin</b><small>${done ? `Heute genommen${typeof S.log.creatine === 'string' ? ` um ${esc(S.log.creatine)}` : ''}` : late ? 'Heute noch nicht genommen' : `${fmt(+pr.creaDose || 5)} g, irgendwann heute`}</small></span><span class="hn-streak">${fmt(st.n)} ${st.n === 1 ? 'Tag' : 'Tage'}${st.n > 1 ? icon('fire') : ''}</span></button></div>`);
+  } else {
+    const t = trackStreak();
+    rows.push(`<button class="hn-row" data-act="tab" data-tab="fort"><span class="hn-ic">${icon('target')}</span><span class="hn-t"><b>Nährwerte-Serie</b><small>${t.doneToday ? 'Heute schon eingetragen' : 'Heute noch nichts eingetragen'}</small></span><span class="hn-streak">${fmt(t.n)} ${t.n === 1 ? 'Tag' : 'Tage'}${t.n >= 3 ? icon('fire') : ''}</span></button>`);
+  }
+  const w = S.log.waterMl || 0;
+  rows.push(`<div class="hn-row"><span class="hn-ic">${icon('drop')}</span><span class="hn-t"><b>Wasser</b><small>${litre(w)} von ${litre(T.water)} l</small><span class="bar" aria-hidden="true"><i data-bar="w" data-w="${pctW(w, T.water)}"></i></span></span>
+    <span class="hn-w"><button data-act="water" data-v="-250" aria-label="250 ml Wasser abziehen" ${w ? '' : 'disabled'}>${icon('minus')}</button><button class="plus" data-act="water" data-v="250" aria-label="250 ml Wasser dazu">${icon('plus')}250</button></span></div>`);
+  const ws = weighStatus();
+  if (!pr.example && ws.due) rows.push(`<button class="hn-row" data-act="fort-seg" data-s="weight"><span class="hn-ic">${icon('scales')}</span><span class="hn-t"><b>Wiegen der Woche</b><small>Körpergewicht eintragen</small></span>${icon('caret-down', 'rot hn-car')}</button>`);
+  if (pr.garmin === 'on') {
+    const burned = S.log.burned, gx = S.homeOpen === 'garmin';
+    rows.push(`<button class="hn-row" data-act="home-open" data-k="garmin" aria-expanded="${gx}" aria-controls="garminCard"><span class="hn-ic">${icon('watch')}</span><span class="hn-t"><b>Verbrauch laut Garmin</b><small>${burned ? `${fmt(burned)} kcal eingetragen` : now < 18 * 60 ? 'Ab 18:00 Uhr eintragen' : 'Jetzt eintragen'}</small></span>${icon('caret-down', (gx ? '' : 'rot ') + 'hn-car')}</button>`);
+  }
+  setAnimated($('#hnList'), `<h2 class="hn-h">Heute</h2>${rows.join('')}`);
+}
+function renderUiSwitch() {
+  const el = $('#uiSwitch'); if (!el) return;
+  const neu = uiNeu();
+  setAnimated(el, `<button class="ui-sw" data-act="ui-set" data-v="${neu ? 'klassisch' : 'neu'}">${neu ? 'Zurück zum alten Design' : 'Neues Design ausprobieren'}</button>`);
 }
 
 /* Creatin-Serie: zählt die Tage am Stück. Vor creaTrackFrom gelten Tage als genommen (selbst eingetragen),
@@ -3539,7 +3813,9 @@ function goalsHtml() {
 }
 function renderColors() {
   const tabsN = { heute:'Home', plan:'Plan', fort:'Fortschritt', einkauf:'Einkauf', ziele:'Body Lab', geschmack:'Geschmack', info:'Gym Wiki' };
-  $('#zColors').innerHTML = `<div class="sub-h">Farben</div>
+  $('#zColors').innerHTML = `<div class="sub-h">Design</div>
+    <div class="field" style="margin:10px 0 18px"><label>Startseite</label><div class="seg" role="group" aria-label="Design der Startseite"><button data-act="ui-set" data-v="neu" aria-pressed="${uiNeu()}">Neu, ruhiger</button><button data-act="ui-set" data-v="klassisch" aria-pressed="${!uiNeu()}">Klassisch</button></div><p class="fhint">Neu zeigt auf Home nur das Wichtigste. Klassisch ist die bisherige Ansicht mit allen Kacheln.</p></div>
+    <div class="sub-h">Farben</div>
     <p class="muted" style="margin:10px 0 4px;font-size:13.5px">Jeder Reiter hat seine eigene Palette. Tipp eine an, um sie zu wechseln.</p>
     ${VIEWS.filter(t => t !== 'track' && t !== 'phasen').map(t => `<div class="palrow"><span class="palname">${tabsN[t]}</span><div class="swatches" role="group" aria-label="Palette für ${tabsN[t]}">${PALETTES.map(p => `<button class="sw" data-act="pal" data-tab="${t}" data-p="${p.id}" aria-pressed="${palFor(t) === p.id}" aria-label="${esc(p.n)}" title="${esc(p.n)}" style="background:conic-gradient(${p.sw[0]} 0 25%, ${p.sw[1]} 0 50%, ${p.sw[2]} 0 75%, ${p.sw[3]} 0)"></button>`).join('')}</div></div>`).join('')}`;
 }
@@ -4985,6 +5261,15 @@ document.addEventListener('click', e => {
     const run = { id: 'r-' + Date.now().toString(36), date, km: Math.round(km * 100) / 100, sec };
     S.train = { ...S.train, runs: (S.train.runs || []).concat(run) }; Store.saveTrain();
     renderFort(); toast(`Lauf gespeichert · ${mmss(sec / km)} min/km`); return;
+  }
+  if (a === 'hn-more') { S.hnMore = !S.hnMore; renderToday(); return; }
+  if (a === 'ui-set') {
+    const v = b.dataset.v === 'klassisch' ? 'klassisch' : 'neu';
+    try { localStorage.setItem(UI_KEY, v); } catch (e) {}
+    document.documentElement.dataset.ui = v; S.homeOpen = null;
+    renderToday(); renderColors();
+    if (S.tab === 'heute') { const vw = $('#v-heute'); vw.classList.remove('enter'); void vw.offsetWidth; vw.classList.add('enter'); window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }); }
+    toast(v === 'neu' ? 'Neues Design an' : 'Altes Design an'); return;
   }
   if (a === 'home-open') {
     S.homeOpen = S.homeOpen === b.dataset.k ? null : b.dataset.k;
@@ -6710,11 +6995,12 @@ function tick() {
 }
 const start = location.hash.replace('#', '');
 document.documentElement.dataset.pal = DEFAULT_PAL.heute;
+uiInit();
 renderAll(true);
 setTab(TABS.includes(start) ? start : 'heute');
 $('#v-' + S.tab).classList.add('enter');
 setInterval(tick, 60000);
-setInterval(() => { if (S.tab === 'heute' && !document.hidden) renderChallenge(false); }, 1000);
+setInterval(() => { if (S.tab === 'heute' && !document.hidden) { renderChallenge(false); tickHnGoal(); } }, 1000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
 Store.init();
 (async () => {
