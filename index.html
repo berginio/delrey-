@@ -1385,7 +1385,11 @@ button.hn-row:active .hn-ic{transform:scale(.94)}
 .hn-car{width:16px;height:16px;color:var(--muted)}
 .hn-streak{display:inline-flex;align-items:center;gap:4px;font-family:var(--font-display);font-size:15px;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
 .hn-streak .ico{width:16px;height:16px;color:var(--warn)}
-.hn-row.crea{grid-template-columns:40px minmax(0,1fr)}
+.hn-row.hn-crea{grid-template-columns:40px minmax(0,1fr)}
+/* Creatin am Abend noch offen: sanft hervorgehoben, runde Ecken, mit Luft zum Rand */
+.hn-row.late{margin:6px -10px;padding:10px 12px 10px 10px;border-radius:18px;background:color-mix(in srgb,var(--warn) 11%,transparent);border-top-color:transparent}
+.hn-row.late + .hn-row{border-top-color:transparent}
+.hn-row.late::before,.hn-row.late + .hn-row::before{display:none}
 .hn-tx{all:unset;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;min-width:0;min-height:44px;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .hn-chk{all:unset;box-sizing:border-box;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;border:2px solid color-mix(in srgb,var(--accent) 55%,transparent);color:color-mix(in srgb,var(--accent) 35%,transparent);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .25s,border-color .25s,color .25s,transform .15s var(--ease)}
 .hn-chk .ico{width:20px;height:20px}
@@ -3371,7 +3375,7 @@ function renderHomeNeu(next) {
   if (pr.creatine === 'on') {
     const done = !!S.log.creatine, late = !done && now >= 18 * 60, st = creaInfo(), exp = S.homeOpen === 'crea';
     const pop = done && S.hnCrea === false; S.hnCrea = done;
-    rows.push(`<div class="hn-row crea ${late ? 'late' : ''}">
+    rows.push(`<div class="hn-row hn-crea ${late ? 'late' : ''}">
       <button class="hn-chk ${done ? 'on' : ''} ${pop ? 'pop' : ''}" data-act="${done ? 'crea-today-reset' : 'crea'}" aria-pressed="${done}" aria-label="Creatin heute genommen">${icon('check')}</button>
       <button class="hn-tx" data-act="home-open" data-k="crea" aria-expanded="${exp}" aria-controls="creaCard"><span class="hn-t"><b>Creatin</b><small>${done ? `Heute genommen${typeof S.log.creatine === 'string' ? ` um ${esc(S.log.creatine)}` : ''}` : late ? 'Heute noch nicht genommen' : `${fmt(+pr.creaDose || 5)} g, irgendwann heute`}</small></span><span class="hn-streak">${fmt(st.n)} ${st.n === 1 ? 'Tag' : 'Tage'}${st.n > 1 ? icon('fire') : ''}</span></button></div>`);
   } else {
