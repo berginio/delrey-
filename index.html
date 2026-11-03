@@ -6850,7 +6850,14 @@ function fillOptions(m, G, gap, n = 2) {
     }
     if (!out.some(x => x.parts.map(p => p[0]).sort().join() === best.parts.map(p => p[0]).sort().join())) out.push(best);
   }
-  return out.sort((a, b) => a.score - b.score).slice(0, n).map(o => ({ ...o, name: o.parts.map(([id, g]) => amtLabel(id, g)).join(' + ') }));
+  let res = out.sort((a, b) => a.score - b.score);
+  // Fehlt Fett, stehen immer Nüsse an erster Stelle: Erdnüsse, sonst die passendste andere Nuss
+  if (m === 'f') {
+    const NUTS = ['peanuts', 'almonds', 'walnuts', 'cashews', 'pb'], isNut = o => o.parts.length === 1 && NUTS.includes(o.parts[0][0]);
+    const nut = singles.filter(isNut).sort((a, b) => NUTS.indexOf(a.parts[0][0]) - NUTS.indexOf(b.parts[0][0]))[0];
+    if (nut) res = [nut].concat(res.filter(o => o.parts.map(p => p[0]).join() !== nut.parts[0][0]));
+  }
+  return res.slice(0, n).map(o => ({ ...o, name: o.parts.map(([id, g]) => amtLabel(id, g)).join(' + ') }));
 }
 function gapWhy(open, gap) {
   const goal = S.profile.goal || 'recomp', kg = +S.profile.weight || 80, out = [];
