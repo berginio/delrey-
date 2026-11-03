@@ -2023,6 +2023,7 @@ const FOODS = {
   whey:     {n:'Whey-Protein', nom:'Whey', dat:'Whey', kcal:380, p:75, c:8, f:6, fib:0, cat:'vorrat', grp:'powder', pack:1000, packLabel:'1-kg-Dose', stock:true},
   vegprot:  {n:'Veganes Proteinpulver', nom:'Proteinpulver', dat:'Proteinpulver', kcal:375, p:72, c:7, f:7, fib:2, cat:'vorrat', grp:'powder', pack:750, packLabel:'750-g-Dose', stock:true},
   pb:       {n:'Erdnussmus', nom:'Erdnussmus', dat:'Erdnussmus', kcal:610, p:26, c:12, f:50, fib:7, cat:'vorrat', grp:'nuts', pack:350, packLabel:'350-g-Glas', stock:true, spoon:15},
+  peanuts:  {n:'Erdnüsse (geröstet, ungesalzen)', nom:'Erdnüsse', dat:'Erdnüssen', kcal:590, p:25, c:11, f:49, fib:8, cat:'vorrat', grp:'nuts', pack:500, packLabel:'500-g-Packung', stock:true},
   almonds:  {n:'Mandeln', nom:'Mandeln', dat:'Mandeln', kcal:600, p:21, c:7, f:50, fib:12.5, cat:'vorrat', grp:'nuts', pack:200, packLabel:'200-g-Packung', stock:true},
   walnuts:  {n:'Walnüsse', nom:'Walnüsse', dat:'Walnüssen', kcal:670, p:15, c:11, f:63, fib:6, cat:'vorrat', grp:'nuts', pack:200, packLabel:'200-g-Packung', stock:true},
   cashews:  {n:'Cashewkerne', nom:'Cashews', dat:'Cashews', kcal:580, p:18, c:30, f:44, fib:3, cat:'vorrat', grp:'nuts', pack:200, packLabel:'200-g-Packung', stock:true},
@@ -2064,7 +2065,7 @@ const MAXG = { potato:500, rice:150, pasta:150, couscous:150, oats:120, bread:20
   chicken:250, turkey:250, pork:250, beef:250, steak:200, salmon:250,
   fries:300, roesti:250, wedges:300, kroketten:250, gnocchi:400, spaetzle:150, raclette:80, ketchup:40, mayo:20, sriracha:15, srirachamayo:30,
   tomsauce5:250, arrabbiata:250, passata:300, pesto:40, coconut:150, kidney:200, corn:150, shrimp:250, tofu:250, skyr:350, topfen:350, greekyog:350, cottage:300,
-  eggs:300, whey:45, isoclear:45, vegprot:45, pb:40, almonds:40, walnuts:40, cashews:40, oil:20, butter:20, cheese:50, mozza:125, creamch:80, honey:30, kantine:130 };
+  eggs:300, whey:45, isoclear:45, vegprot:45, pb:40, peanuts:40, almonds:40, walnuts:40, cashews:40, oil:20, butter:20, cheese:50, mozza:125, creamch:80, honey:30, kantine:130 };
 
 /* Tauschgruppen: by = welcher Nährwert beim Tausch gleich bleiben soll (g = gleiche Menge) */
 const GROUPS = {
@@ -2082,7 +2083,7 @@ const GROUPS = {
   crisp:  {n:'Knabbern', by:'c', order:['ricecake','zwieback']},
   powder: {n:'Proteinpulver', by:'p', order:['whey','isoclear','vegprot']},
   veg:    {n:'Gemüse', by:'g', order:['broccoli','beans','zucchini','paprika','carrots','peas','spinach','mushrooms','tomato','cucumber','salad']},
-  nuts:   {n:'Nüsse', by:'f', order:['almonds','pb','walnuts','cashews']},
+  nuts:   {n:'Nüsse', by:'f', order:['peanuts','almonds','pb','walnuts','cashews']},
   fat:    {n:'Öl & Butter', by:'f', order:['oil','butter']},
   seeds:  {n:'Samen', by:'f', order:['chia','linseed']},
   sweet:  {n:'Süßes', by:'c', order:['honey']},
@@ -2108,15 +2109,15 @@ const MEALS = {
                how:'Eier verquirlen und in der Pfanne stocken lassen. {1n} dazu. {2n} drauf. {3n} als Obst dazu. {4n} halbiert daneben.'},
   pancakes:   {n:'Protein-Pancakes', cook:true, icon:'egg', items:[['oats',60,'C','core'],['eggs',120,'F','core'],['skyr',150,'P'],['banana',120,0],['berries',100,0],['honey',10,0]],
                how:'Haferflocken und Eier mixen. {2n} einrühren. Kleine Pancakes braten. {3n} drauf. {4n} drüber. {5n} zum Schluss.'},
-  muesli:     {n:'{0p}-Müsli', icon:'bowl-food', items:[['skyr',200,'P','main'],['oats',60,'C','core'],['banana',120,0],['almonds',15,'F']],
+  muesli:     {n:'{0p}-Müsli', icon:'bowl-food', items:[['skyr',200,'P','main'],['oats',60,'C','core'],['banana',120,0],['peanuts',15,'F']],
                how:'Haferflocken in {0d} rühren. {2n} in Scheiben drauf. {3n} drüber.'},
   rollbf:     {n:'Semmeln mit {1d}', icon:'bread', items:[['roll',120,'C','core'],['ham',60,'P','main'],['creamch',30,'F'],['orange',180,0],['cucumber',60,0]],
                how:'Semmeln aufschneiden. Mit {2d} bestreichen. Mit {1d} belegen. {4n} in Scheiben drauf. {3n} dazu.'},
-  skyrbowl:   {n:'{0p}-Bowl', icon:'bowl-food', items:[['skyr',200,'P','main'],['berries',125,0],['oats',20,'C'],['almonds',15,'F']],
+  skyrbowl:   {n:'{0p}-Bowl', icon:'bowl-food', items:[['skyr',200,'P','main'],['berries',125,0],['oats',20,'C'],['peanuts',15,'F']],
                how:'Am Vorabend {0n} in eine Box. {1n} drauf. {2n} extra einpacken. {3n} dazu.'},
-  cottagebread:{n:'{1p}-Brote', icon:'bread', items:[['bread',100,'C','main'],['cottage',150,'P','main'],['apple',160,0],['almonds',10,'F'],['cucumber',80,0]],
+  cottagebread:{n:'{1p}-Brote', icon:'bread', items:[['bread',100,'C','main'],['cottage',150,'P','main'],['apple',160,0],['peanuts',10,'F'],['cucumber',80,0]],
                how:'{0n} dick mit {1d} bestreichen, Salz und Pfeffer drauf. {4n} in Scheiben drauf. {2n} dazu. {3n} als Snack.'},
-  shake:      {n:'Protein-Shake', icon:'drop', items:[['whey',30,0,'main'],['milk',300,0],['almonds',15,'F']],
+  shake:      {n:'Protein-Shake', icon:'drop', items:[['whey',30,0,'main'],['milk',300,0],['peanuts',15,'F']],
                how:'{0n} mit {1d} shaken. {2n} dazu, das hält satt.'},
   chickenbox: {n:'{2p}-{0n} mit {1d}', cook:true, icon:'bowl-food', items:[['chicken',180,'P','main'],['rice',85,'C','main'],['teriyaki',25,0,'main'],['oil',8,'F'],['broccoli',150,0]],
                how:'{1n} kochen. {4n} kurz mitdünsten. {0n} in Streifen anbraten. Mit {2d} ablöschen.'},
@@ -2170,7 +2171,7 @@ const MEALS = {
                how:'Wraps mit {2d} bestreichen. {1n} drauf. {3n} rein. {4n} in Streifen dazu. Einrollen, fertig.'},
   lachsbrot:  {n:'{1p}-Brote', icon:'fish', items:[['bread',150,'C','main'],['smokedsalmon',100,'P','main'],['creamch',40,'F'],['cucumber',60,0]],
                how:'{0n} mit {2d} bestreichen. {1n} drauf. {3n} in Scheiben dazu.'},
-  skyrbig:    {n:'Großes {0p}-Müsli', icon:'bowl-food', items:[['skyr',300,'P','main'],['oats',70,'C','core'],['banana',120,0],['berries',100,0],['almonds',20,'F']],
+  skyrbig:    {n:'Großes {0p}-Müsli', icon:'bowl-food', items:[['skyr',300,'P','main'],['oats',70,'C','core'],['banana',120,0],['berries',100,0],['peanuts',20,'F']],
                how:'Alles in eine große Schüssel. Fertig.'},
   kantine:    {n:'Tagesangebot der Kantine', icon:'storefront', items:[['kantine',100,'C','core']],
                how:'Nimm das Gericht mit dem meisten Fleisch oder Fisch. Dazu Reis, Erdäpfel oder Nudeln. Panade und Rahmsaucen eher selten. Danach eintragen, was es war, dann passt die App den Rest des Tages an.'},
@@ -2428,7 +2429,7 @@ function calcTargets(pr) {
    Leucin ist die Aminosäure, die den Muskelaufbau nach einer Mahlzeit anstößt. */
 const LEU = { whey:.105, isoclear:.105, milk:.098, skyr:.098, topfen:.098, greekyog:.098, cottage:.100, cheese:.096, mozza:.096, parmesan:.096, creamch:.095, butter:.095,
   eggs:.086, chicken:.075, chickencut:.075, turkey:.077, ham:.077, pork:.079, beef:.080, steak:.080, salmon:.081, smokedsalmon:.081, tuna:.081, shrimp:.080,
-  tofu:.076, soydrink:.078, vegprot:.082, oats:.076, oatdrink:.076, rice:.083, ricecake:.083, potato:.060, pb:.065, almonds:.070, walnuts:.077, cashews:.081,
+  tofu:.076, soydrink:.078, vegprot:.082, oats:.076, oatdrink:.076, rice:.083, ricecake:.083, potato:.060, pb:.065, peanuts:.065, almonds:.070, walnuts:.077, cashews:.081,
   chia:.083, linseed:.069, kantine:.078, honey:0, oil:0 };
 function leuFrac(food) { if (LEU[food] != null) return LEU[food]; const F = FOODS[food] || {}; return F.cat === 'obst' ? .055 : F.grp === 'veg' || F.cat === 'gemuese' ? .06 : .068; }
 for (const k in FOODS) FOODS[k].leu = FOODS[k].p * leuFrac(k);
@@ -2860,7 +2861,7 @@ function fillerFor(gap) {
   const opts = [];
   if (gap.p > 15) opts.push({ need: gap.p / 25, text: gap.p > 35 ? '250 g Skyr plus 1 Protein-Shake' : (gap.p > 22 ? '1 Protein-Shake (30 g Whey)' : '250 g Magertopfen'), macro: 'Eiweiß', g: Math.round(gap.p) });
   if (gap.c > 30) opts.push({ need: gap.c / 45, text: gap.c > 60 ? '1 Banane und 4 Reiswaffeln' : '1 Banane und 2 Reiswaffeln', macro: 'Kohlenhydrate', g: Math.round(gap.c) });
-  if (gap.f > 10) opts.push({ need: gap.f / 15, text: gap.f > 18 ? '30 g Mandeln' : '15 g Mandeln', macro: 'Fett', g: Math.round(gap.f) });
+  if (gap.f > 10) opts.push({ need: gap.f / 15, text: gap.f > 18 ? '30 g Erdnüsse' : '15 g Erdnüsse', macro: 'Fett', g: Math.round(gap.f) });
   opts.sort((a, b) => b.need - a.need);
   return opts[0] || null;
 }
@@ -2874,7 +2875,7 @@ const SNACKS = [
   { n:'Protein-Shake mit Milch', items:[['whey',30],['milk',300]] },
   { n:'Banane', items:[['banana',120]] },
   { n:'2 Reiswaffeln mit Erdnussmus', items:[['ricecake',16],['pb',15]] },
-  { n:'Eine Handvoll Mandeln', items:[['almonds',20]] },
+  { n:'Eine Handvoll Erdnüsse', items:[['peanuts',20]] },
   { n:'Vollkornbrot mit Putenschinken', items:[['bread',50],['ham',50]] },
   { n:'Apfel', items:[['apple',160]] },
   { n:'3 Reiswaffeln mit Honig', items:[['ricecake',24],['honey',15]] },
@@ -4269,7 +4270,7 @@ const SRC = {
   p:   [['chicken',150],['turkey',150],['beef',150],['steak',150],['pork',150],['salmon',150],['tuna',110],['shrimp',150],['tofu',200],
         ['topfen',250],['skyr',250],['greekyog',250],['cottage',200],['eggs',180],['ham',100],['isoclear',30],['whey',30],['vegprot',30]],
   c:   [['oats',80],['rice',100],['pasta',100],['couscous',100],['potato',300],['bread',100],['roll',120],['wrap',124],['banana',120],['ricecake',32],['honey',20],['apple',160],['pear',170]],
-  f:   [['almonds',30],['walnuts',30],['cashews',30],['pb',20],['oil',10],['butter',10],['salmon',150],['eggs',120],['cheese',30],['mozza',125],['chia',15],['linseed',15]],
+  f:   [['peanuts',30],['almonds',30],['walnuts',30],['cashews',30],['pb',20],['oil',10],['butter',10],['salmon',150],['eggs',120],['cheese',30],['mozza',125],['chia',15],['linseed',15]],
   leu: [['whey',30],['isoclear',30],['skyr',250],['topfen',250],['cottage',200],['greekyog',250],['chicken',150],['turkey',150],['steak',150],['beef',150],['salmon',150],['tuna',110],['eggs',180],['milk',300],['tofu',200],['oats',80]],
   fib: [['chia',15],['linseed',15],['oats',80],['bread',100],['pasta',100],['berries',150],['pear',170],['kiwi',150],['apple',160],['almonds',30],['potato',300],['peas',100],['broccoli',150],['beans',150],['carrots',150]],
 };
@@ -5598,7 +5599,7 @@ function kantinePick(slot, i) {
 const HH = {
   oats: [['Tasse', 'Tassen'], 90, 40, ' à 250 ml'], rice: [['Tasse', 'Tassen'], 200, 50, ' à 250 ml'],
   whey: [['Messlöffel', 'Messlöffel'], 30, 10, ' à 30 g'], isoclear: [['Messlöffel', 'Messlöffel'], 30, 10, ' à 30 g'],
-  almonds: [['Handvoll', 'Handvoll'], 25, 8, ''], walnuts: [['Handvoll', 'Handvoll'], 25, 8, ''], cashews: [['Handvoll', 'Handvoll'], 25, 8, ''],
+  peanuts: [['Handvoll', 'Handvoll'], 25, 8, ''], almonds: [['Handvoll', 'Handvoll'], 25, 8, ''], walnuts: [['Handvoll', 'Handvoll'], 25, 8, ''], cashews: [['Handvoll', 'Handvoll'], 25, 8, ''],
   creamch: [['EL', 'EL'], 15, 8, ''], chia: [['EL', 'EL'], 10, 5, ''],
 };
 const FRAC = [[0, ''], [.25, '¼'], [1 / 3, '⅓'], [.5, '½'], [2 / 3, '⅔'], [.75, '¾'], [1, '']];
@@ -6810,7 +6811,7 @@ function saveBuilder(eat) {
 /* ================= Noch offen heute: was fehlt, womit auffüllen, was passiert sonst ================= */
 // [Zutat, Schritt, min, max] in g; Reihenfolge = Vorliebe bei Gleichstand
 const FILL = {
-  f: [['almonds', 10, 10, 40], ['pb', 15, 15, 45], ['walnuts', 10, 10, 40], ['cashews', 10, 10, 40], ['x-avocado', 75, 75, 150], ['eggs', 60, 60, 180], ['x-gouda', 10, 20, 60], ['oil', 5, 5, 20]],
+  f: [['peanuts', 10, 10, 40], ['almonds', 10, 10, 40], ['pb', 15, 15, 45], ['walnuts', 10, 10, 40], ['cashews', 10, 10, 40], ['x-avocado', 75, 75, 150], ['eggs', 60, 60, 180], ['x-gouda', 10, 20, 60], ['oil', 5, 5, 20]],
   p: [['skyr', 50, 150, 500], ['topfen', 50, 125, 500], ['whey', 5, 20, 40], ['isoclear', 5, 20, 40], ['cottage', 50, 100, 400], ['greekyog', 50, 150, 500], ['ham', 25, 50, 150], ['x-chicken-cooked', 25, 100, 250]],
   c: [['banana', 60, 120, 240], ['ricecake', 8, 16, 48], ['oats', 10, 30, 100], ['bread', 50, 50, 150], ['honey', 5, 10, 30], ['apple', 80, 160, 320], ['x-rice-cooked', 50, 100, 300]],
 };
