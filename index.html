@@ -1466,6 +1466,23 @@ button.hn-row:active .hn-ic{transform:scale(.94)}
 .kdish:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .tl-body .kmenu{margin:10px 0 2px}
 .hn-row.bk{--ic:var(--warn)}
+/* Mengen anpassen im Tagesablauf */
+.sedit{display:grid;gap:12px}
+.sedit-h{margin:0;font-weight:650;font-size:14.5px}
+.sedit-l{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.sedit-l li{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:6px 8px;padding:8px 0 10px;border-bottom:1px solid var(--line)}
+.sedit-n{grid-column:1/-1;font-size:14.5px;font-weight:600;min-width:0}
+.sedit-q{display:inline-flex;align-items:center;gap:6px}
+.sedit-q button,.sedit-x{width:34px;height:34px;border-radius:999px;border:0;display:grid;place-items:center;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);cursor:pointer;padding:0}
+.sedit-x{background:transparent;color:var(--muted)}
+.sedit-q label{display:inline-flex;align-items:baseline;gap:4px}
+.sedit-q input{width:58px;text-align:right;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:7px 8px;font:inherit;font-size:15px;font-variant-numeric:tabular-nums}
+.sedit-q small{font-size:12.5px;color:var(--muted);min-width:34px}
+:root[data-ui="apple"] .sedit-q input{background:var(--fill);border-color:transparent}
+.sedit-sum{margin:0;font-size:13.5px;color:var(--muted)}
+.sedit-sum b{color:var(--ink)}
+.hn-act:has(.hn-adj){flex-wrap:wrap}
+.hn-adj{flex-basis:100%;justify-self:start;display:inline-flex;align-items:center;gap:6px;border:0;background:none;padding:4px 2px;color:var(--accent);font:inherit;font-size:13.5px;font-weight:600;cursor:pointer}
 /* Umschalter Neu / Klassisch */
 @media (hover:hover){ .hn-chip:hover,.hn-w button.plus:hover{background:color-mix(in srgb,var(--accent) 16%,var(--tint))} .hn-gap:not(p):hover > span,.hn-more:hover,.ui-sw:hover{color:var(--accent)} button.hn-row:hover .hn-ic,.hn-w button:not(.plus):hover{background:color-mix(in srgb,var(--accent) 12%,var(--tint))} .hn-chk:not(.on):hover{border-color:var(--accent);color:color-mix(in srgb,var(--accent) 60%,transparent)} button.hn-row:hover b,.hn-tx:hover b{color:var(--accent)} }
 .ui-switch{display:flex;justify-content:center}
@@ -2807,7 +2824,7 @@ function planRemaining(plan, log) {
   const open = plan.slots.filter(sl => !meals[sl.id]);
   const ST = plan.solveTarget || plan.target;
   const left = { p: ST.p - eaten.p, c: ST.c - eaten.c, f: ST.f - eaten.f };
-  const changed = extras.length > 0 || !!plan.target.burned || plan.slots.some(sl => meals[sl.id] && meals[sl.id].state === 'skipped');
+  const changed = extras.length > 0 || !!plan.target.burned || plan.slots.some(sl => meals[sl.id] && (meals[sl.id].state === 'skipped' || meals[sl.id].edited));
   let adjusted = [];
   const SHAKES = ['isoshake','wheyshake','shake'];
   const build = (minMain, skipShakes) => {
@@ -3429,7 +3446,7 @@ function renderHomeNeu(next) {
     const chip = next.buy ? `<span class="chip warn">${icon('storefront')}Kaufen</span>` : next.away ? `<span class="chip warn">${icon('package')}Mitnehmen</span>` : next.atWork ? `<span class="chip">${icon('briefcase')}Auf Arbeit</span>` : '';
     const acts = next.buy ? `<button class="btn ghost" data-act="tab" data-tab="plan">${icon('calendar-dots')}Im Plan ansehen</button>`
       : next.key === 'kantine' ? `<button class="btn" data-act="log-kantine" data-slot="${next.id}">Eintragen, was es gab</button><button class="btn ghost" data-act="eat" data-slot="${next.id}">Wie geplant</button>`
-      : `<button class="btn" data-act="eat" data-slot="${next.id}">${icon('check')}Gegessen</button><button class="btn ghost" data-act="tab" data-tab="plan">${next.meal.how ? 'Rezept' : 'Im Plan'}</button>`;
+      : `<button class="btn" data-act="eat" data-slot="${next.id}">${icon('check')}Gegessen</button><button class="btn ghost" data-act="tab" data-tab="plan">${next.meal.how ? 'Rezept' : 'Im Plan'}</button><button class="hn-adj" data-act="slot-edit" data-slot="${next.id}">${icon('pencil-simple')}Andere Menge gegessen?</button>`;
     nowHtml = `<article class="card hn-now" aria-label="Als Nächstes">
       <div class="hn-now-top"><span class="hn-lbl">Als Nächstes · ${esc(next.label)}</span>${chip}</div>
       <div class="hn-time"><b class="num">${next.time}</b><span>${esc(relTime(next.t - now))}</span></div>
@@ -3857,20 +3874,24 @@ function planDayList(p, R, isToday) {
     const tot = st && st.tot ? st.tot : (adj ? adj.tot : s.tot);
     const items = st && st.items ? st.items : (adj ? adj.items : s.items);
     const key = p.date + ':' + s.id, isNext = s.id === nextId;
-    const open = S.rowOpen[key] != null ? S.rowOpen[key] : isNext;
+    const open = S.slotEdit && S.slotEdit.id === s.id && isToday ? true : S.rowOpen[key] != null ? S.rowOpen[key] : isNext;
     const chips = [isNext ? `<span class="chip nxc">${icon('lightning')}Als Nächstes</span>` : '', `<span>${esc(s.label)}</span>`,
       adj && adj.skip ? `<span class="chip">${icon('check')}Heute nicht nötig</span>` : '',
       s.atWork ? `<span class="chip">${icon('briefcase')}Arbeit</span>` : '', s.away ? `<span class="chip warn">${icon('package')}Unterwegs</span>` : '',
       s.buy ? `<span class="chip warn">${icon('storefront')}Kaufen</span>` : '', s.moved ? `<span class="chip warn">${icon('clock')}verschoben</span>` : '',
       s.breakEnd ? `<span class="chip">${icon('clock')}Pause bis ${s.breakEnd}</span>` : '', s.meal.lazy && !s.buy ? `<span class="chip">${icon('clock')}Ohne Kochen</span>` : ''].join('');
+    const editing = isToday && S.slotEdit && S.slotEdit.id === s.id;
     const body = state === 'skipped' ? '' : s.buy ? buyBlock(s, tot, isToday && state === 'open')
+      : editing ? slotEditHtml()
       : `${ingList(items, adj && adj.changed ? s.items : null, s.key)}${macroLine(tot)}
         ${s.meal.how ? `<div class="howt"><span class="label">So geht's</span><p>${esc(s.meal.how)}</p>${spiceLine(s.key)}</div>` : ''}
         <div class="row">${cookBtn(s.meal, p.date, s.id)}${tasteBtn(s.key)}</div>`;
-    const acts = !isToday ? '' : state !== 'open' ? `<button data-act="undo" data-slot="${s.id}">${icon('arrow-clockwise')}Rückgängig</button>`
+    const canEdit = !s.buy && s.key !== 'kantine' && !(S.slotEdit && S.slotEdit.id === s.id);
+    const acts = !isToday ? '' : state !== 'open' ? `<button data-act="undo" data-slot="${s.id}">${icon('arrow-clockwise')}Rückgängig</button>${state === 'eaten' && canEdit ? `<button data-act="slot-edit" data-slot="${s.id}">${icon('pencil-simple')}Menge ändern</button>` : ''}`
       : s.buy ? `<button data-act="skip" data-slot="${s.id}">${icon('x')}Nichts gekauft</button>`
       : s.key === 'kantine' ? (kantineToday().length ? '' : `<button data-act="log-kantine" data-slot="${s.id}">${icon('storefront')}Eintragen, was es gab</button><button data-act="eat" data-slot="${s.id}">${icon('check')}Wie geplant</button>`)
-      : `<button data-act="eat" data-slot="${s.id}">${icon('check')}Gegessen</button><button data-act="skip" data-slot="${s.id}">${icon('x')}Auslassen</button>`;
+      : S.slotEdit && S.slotEdit.id === s.id ? ''
+      : `<button data-act="eat" data-slot="${s.id}">${icon('check')}Gegessen</button>${canEdit ? `<button data-act="slot-edit" data-slot="${s.id}">${icon('pencil-simple')}Andere Menge</button>` : ''}<button data-act="skip" data-slot="${s.id}">${icon('x')}Auslassen</button>`;
     html += `<li class="tl-item ${state} ${isNext ? 'nx' : ''}"><span class="tl-time">${s.time}</span><span class="tl-dot"></span>
       <div class="tl-body"><details class="prow" data-row="${key}" ${open ? 'open' : ''}><summary>
         <div class="tl-head"><span class="tl-name">${s.buy ? 'Unterwegs kaufen' : esc(s.meal.n)}</span><span class="tl-kcal">${state === 'skipped' ? 'ausgelassen' : fmt(tot.kcal) + ' kcal'}${state === 'skipped' ? '' : icon('caret-down', 'pcar')}</span></div>
@@ -5657,6 +5678,47 @@ function renderCal() {
     <div class="row" style="margin:0"><button class="btn ghost sm" data-act="cal-file">${icon('download-simple')}Als Datei laden</button></div>`;
 }
 
+
+/* ================= Mengen anpassen ================= */
+/* Im Tagesablauf: Mengen und Zutaten einer Mahlzeit so eintragen, wie man sie wirklich gegessen hat
+   (z. B. die ganze 274-g-Packung Fleisch). Danach rechnet die App den Rest des Tages neu. */
+const seUnit = food => { const F = FOODS[food]; return F.portion ? { k: 'por', per: 100, step: .5, u: n => n === 1 ? 'Portion' : 'Portionen' } : F.piece ? { k: 'pc', per: F.piece, step: .5, u: n => n === 1 ? F.pn[0] : F.pn[1] } : { k: 'g', per: 1, step: 0, u: () => F.unit || 'g' }; };
+const seVal = it => { const U = seUnit(it.food); return U.k === 'g' ? Math.round(it.g) : Math.round(it.g / U.per * 2) / 2; };
+const seStep = it => { const U = seUnit(it.food); return U.k === 'g' ? (it.g < 60 ? 5 : 10) : U.step; };
+function slotEditStart(id) {
+  const st = (S.log.meals || {})[id], adj = todayRem.open.find(o => o.id === id), s = todayPlan.slots.find(x => x.id === id);
+  if (!s) return;
+  const items = st && st.items ? st.items : adj ? adj.items : s.items;
+  S.slotEdit = { id, was: st && st.state === 'eaten' ? st.at || toHHMM(nowMin()) : null, items: items.map(i => ({ food: i.food, g: i.g })) };
+  S.rowOpen[todayPlan.date + ':' + id] = true;
+}
+function slotEditTot() { return sumItems(S.slotEdit.items.filter(i => i.g > 0)); }
+function slotEditSum() { const t = slotEditTot(); return `<b>${fmt(t.kcal)} kcal</b> · Eiweiß ${fmt(t.p)} g · KH ${fmt(t.c)} g · Fett ${fmt(t.f)} g`; }
+function slotEditHtml() {
+  const E = S.slotEdit, have = new Set(E.items.map(i => i.food));
+  const foods = Object.keys(FOODS).filter(k => !have.has(k) && !FOODS[k].portion).sort((a, b) => FOODS[a].n.localeCompare(FOODS[b].n, 'de'));
+  return `<div class="sedit" aria-label="Mengen anpassen">
+    <p class="sedit-h">So viel hast du gegessen</p>
+    <ul class="sedit-l">${E.items.map((it, i) => { const U = seUnit(it.food), v = seVal(it); return `<li>
+      <span class="sedit-n">${esc(FOODS[it.food].n)}</span>
+      <span class="sedit-q"><button data-act="se-step" data-i="${i}" data-d="-1" aria-label="${esc(FOODS[it.food].n)} weniger">${icon('minus')}</button><label><input id="se-${i}" data-se="${i}" inputmode="decimal" autocomplete="off" value="${String(v).replace('.', ',')}" aria-label="${esc(FOODS[it.food].n)} Menge"><small>${esc(U.u(v))}</small></label><button data-act="se-step" data-i="${i}" data-d="1" aria-label="${esc(FOODS[it.food].n)} mehr">${icon('plus')}</button></span>
+      <button class="sedit-x" data-act="se-del" data-i="${i}" aria-label="${esc(FOODS[it.food].n)} entfernen">${icon('x')}</button></li>`; }).join('')}</ul>
+    <div class="field" style="margin:0"><label for="se-add">Etwas anderes dazu</label><select id="se-add"><option value="">Zutat auswählen …</option>${foods.map(k => `<option value="${k}">${esc(FOODS[k].n)}</option>`).join('')}</select></div>
+    <p class="sedit-sum" id="seSum">${slotEditSum()}</p>
+    <div class="row" style="margin:0"><button class="btn sm" data-act="se-save">${icon('check')}${E.was ? 'Speichern' : 'So gegessen'}</button><button class="btn ghost sm" data-act="se-cancel">Abbrechen</button></div>
+  </div>`;
+}
+function slotEditSave() {
+  const E = S.slotEdit; if (!E) return;
+  const items = E.items.filter(i => i.g > 0).map(i => ({ food: i.food, g: Math.round(i.g * 10) / 10 }));
+  if (!items.length) { toast('Mindestens eine Zutat eintragen oder die Mahlzeit auslassen'); return; }
+  const r = o => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, Math.round(v * 10) / 10]));
+  const tot = r(sumItems(items)), id = E.id, at = E.was || toHHMM(nowMin());
+  S.slotEdit = null;
+  mutateLog(l => { l.meals[id] = { state: 'eaten', at, items, tot, edited: true }; }, `Eingetragen mit ${fmt(tot.kcal)} kcal, Rest neu berechnet`);
+  if (S.tab === 'plan') renderPlan();
+}
+
 /* ================= Aktionen ================= */
 function snapshotSlot(id) {
   const adj = todayRem.open.find(o => o.id === id);
@@ -5690,6 +5752,14 @@ document.addEventListener('click', e => {
     const snaps = list.map(sl => [sl.id, sl.time, snapshotSlot(sl.id)]);
     return mutateLog(l => { for (const [id, at, snap] of snaps) l.meals[id] = { state: 'eaten', at, ...snap }; }, list.length === 1 ? 'Abgehakt' : `${list.length} Mahlzeiten abgehakt`);
   }
+  if (a === 'slot-edit') { slotEditStart(b.dataset.slot); if (S.tab !== 'plan') setTab('plan'); else renderPlan(); setTimeout(() => { const el = $('.sedit'); if (el) el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' }); }, 120); return; }
+  if (a === 'se-step') { const E = S.slotEdit, it = E && E.items[+b.dataset.i]; if (!it) return; const U = seUnit(it.food), st = seStep(it) * (+b.dataset.d);
+    it.g = Math.max(0, U.k === 'g' ? Math.round((it.g + st) / Math.abs(st)) * Math.abs(st) : (seVal(it) + st) * U.per);
+    const inp = $('#se-' + b.dataset.i); if (inp) { const v = seVal(it); inp.value = String(v).replace('.', ','); inp.nextElementSibling.textContent = U.u(v); }
+    $('#seSum').innerHTML = slotEditSum(); return; }
+  if (a === 'se-del') { S.slotEdit.items.splice(+b.dataset.i, 1); renderPlan(); return; }
+  if (a === 'se-save') { slotEditSave(); return; }
+  if (a === 'se-cancel') { S.slotEdit = null; renderPlan(); return; }
   if (a === 'eat') { const id = b.dataset.slot; const snap = snapshotSlot(id); return mutateLog(l => { l.meals[id] = { state: 'eaten', at: toHHMM(nowMin()), ...snap }; }, 'Abgehakt'); }
   if (a === 'skip') { const id = b.dataset.slot; return mutateLog(l => { l.meals[id] = { state: 'skipped' }; }, 'Ausgelassen, Rest angepasst'); }
   if (a === 'undo') { const id = b.dataset.slot; return mutateLog(l => { delete l.meals[id]; }); }
@@ -7920,6 +7990,19 @@ $('#v-' + S.tab).classList.add('enter');
 setInterval(tick, 60000);
 { let sc = false; const onSc = () => { const v = window.scrollY > 52; if (v !== sc) { sc = v; document.documentElement.classList.toggle('scrolled', v); } }; window.addEventListener('scroll', onSc, { passive: true }); onSc(); }
 setInterval(() => { if (S.tab === 'heute' && !document.hidden) { renderChallenge(false); tickHnGoal(); } }, 1000);
+document.addEventListener('input', e => {
+  const i = e.target && e.target.dataset ? e.target.dataset.se : undefined; if (i === undefined || !S.slotEdit) return;
+  const it = S.slotEdit.items[+i]; if (!it) return;
+  const v = parseFloat(String(e.target.value).replace(',', '.')), U = seUnit(it.food);
+  it.g = v >= 0 ? v * U.per : 0;
+  e.target.nextElementSibling.textContent = U.u(v || 0); $('#seSum').innerHTML = slotEditSum();
+});
+document.addEventListener('change', e => {
+  if (!e.target || e.target.id !== 'se-add' || !S.slotEdit || !e.target.value) return;
+  const k = e.target.value, F = FOODS[k];
+  S.slotEdit.items.push({ food: k, g: F.piece ? F.piece : F.spoon ? F.spoon : 100 });
+  renderPlan(); setTimeout(() => { const inp = $('#se-' + (S.slotEdit.items.length - 1)); if (inp) { inp.focus(); inp.select(); } }, 60);
+});
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { tick(); Backup.auto(); Cal.push(); } });
 document.addEventListener('change', async e => {
   if (!e.target || e.target.id !== 'bkFile') return;
