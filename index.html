@@ -3955,7 +3955,7 @@ function spiceCard(cyc) {
   return `<div class="card"><div class="spread"><h3>Gewürze</h3>${icon('package')}</div>
     <p class="muted" style="margin:6px 0 4px;font-size:13.5px">Tipp an, was dir zuhause fehlt. Es kommt auf den Großeinkauf, sobald ein Gericht es braucht, und bleibt gemerkt, bis du es dort abhakst.</p>
     ${need.size ? [...need.keys()].map(row).join('') : '<p class="muted" style="margin:6px 0 0;font-size:13px">Im Moment braucht kein geplantes Gericht Gewürze.</p>'}
-    ${other.length ? `<details class="how" style="margin-top:6px"><summary>Andere Gewürze aus den Rezepten (${other.length}) ${icon('caret-down')}</summary>${other.map(row).join('')}</details>` : ''}</div>`;
+    ${other.length ? `<details class="how" data-dk="spice-other" ${S.shopOpen.has('spice-other') ? 'open' : ''} style="margin-top:6px"><summary>Andere Gewürze aus den Rezepten (${other.length}) ${icon('caret-down')}</summary>${other.map(row).join('')}</details>` : ''}</div>`;
 }
 function tripCard(trip, key, title, open, extraStock, sub, spices) {
   const st = S.shop[key] || {}, checked = st.checked || {};
@@ -3969,7 +3969,7 @@ function tripCard(trip, key, title, open, extraStock, sub, spices) {
   const carried = trip.carried && trip.carried.length ? `<div class="note" style="margin-top:12px">${icon('package')}<p>Vom letzten Einkauf reicht noch: ${trip.carried.map(c => esc(FOODS[c.food].n)).join(', ')}.</p></div>` : '';
   const body = shopList(trip.items, key, extraStock) + spiceList(spices, key) + carried;
   if (open) return `<div class="card">${head}${body}</div>`;
-  return `<details class="card trip"><summary><div class="trip-hero"><div><span class="label">${esc(title)}</span><h3 style="margin-top:4px">${dateLabel(trip.date)}</h3><p class="muted" style="margin:4px 0 0;font-size:13px">${sub || `Für ${days[0]} bis ${days[days.length - 1]}`}</p></div>${icon('caret-down', 'car')}</div></summary>${body}</details>`;
+  return `<details class="card trip" data-dk="${esc(key)}" ${S.shopOpen.has(key) ? 'open' : ''}><summary><div class="trip-hero"><div><span class="label">${esc(title)}</span><h3 style="margin-top:4px">${dateLabel(trip.date)}</h3><p class="muted" style="margin:4px 0 0;font-size:13px">${sub || `Für ${days[0]} bis ${days[days.length - 1]}`}</p></div>${icon('caret-down', 'car')}</div></summary>${body}</details>`;
 }
 function stockRows(list, stFlags, kMain) {
   return list.map(s => { const F = FOODS[s.food], on = !!stFlags[s.food];
@@ -3977,6 +3977,9 @@ function stockRows(list, stFlags, kMain) {
     return `<div class="stock-row"><div class="nm">${esc(F.n)}<small>${fmt(s.g)} ${F.unit || 'g'} pro Woche. ${reach}.</small></div><button class="toggle" data-act="stock" data-key="${kMain}" data-food="${s.food}" aria-pressed="${on}">${on ? 'Auf der Liste' : 'Fehlt'}</button></div>`; }).join('');
 }
 let shopCache = null;
+/* Aufgeklappte Teile der Einkaufsliste merken, damit sie beim Abhaken offen bleiben */
+S.shopOpen = new Set();
+document.addEventListener('toggle', e => { const d = e.target, k = d && d.dataset && d.dataset.dk; if (!k) return; if (d.open) S.shopOpen.add(k); else S.shopOpen.delete(k); }, true);
 function renderShop() {
   const cyc = shopCache = shoppingCycle(new Date(), planPr());
   const kMain = isoDate(cyc.main.date), kSec = isoDate(cyc.second.date);
@@ -3990,7 +3993,7 @@ function renderShop() {
   $('#shopStock').innerHTML = `<div class="card"><div class="spread"><h3>Vorrat</h3>${icon('package')}</div>
     <p class="muted" style="margin:6px 0 4px;font-size:13.5px">Hält lange. Tipp an, was fehlt, dann landet es auf dem Großeinkauf.</p>
     ${stockRows(cyc.stock.filter(s => s.weeks < 2.5), stFlags, kMain)}
-    <details class="how" style="margin-top:6px"><summary>Hält länger als 2 Wochen (${cyc.stock.filter(s => s.weeks >= 2.5).length}) ${icon('caret-down')}</summary>${stockRows(cyc.stock.filter(s => s.weeks >= 2.5), stFlags, kMain)}</details></div>`;
+    <details class="how" data-dk="stock-long" ${S.shopOpen.has('stock-long') ? 'open' : ''} style="margin-top:6px"><summary>Hält länger als 2 Wochen (${cyc.stock.filter(s => s.weeks >= 2.5).length}) ${icon('caret-down')}</summary>${stockRows(cyc.stock.filter(s => s.weeks >= 2.5), stFlags, kMain)}</details></div>`;
   $('#shopBridge').innerHTML = cyc.bridge ? tripCard(cyc.bridge, 'bridge-' + S.today, 'Falls du jetzt startest', false, null, `Alles für heute bis ${DAYNAMES[(cyc.main.date.getDay() + 5) % 7]}, inklusive Vorrat`) : '';
 }
 
