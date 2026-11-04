@@ -733,7 +733,7 @@ details.trip[open] > summary .ico.car{transform:rotate(180deg)}
 .rk-step{display:grid;justify-items:center;gap:2px;padding:8px 4px 9px;border-radius:14px;background:rgb(255 255 255 / .04);text-align:center}
 .rk-step.now{background:rgb(255 255 255 / .1);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--rkg) 85%,transparent)}
 .rk-mini{width:56px;height:56px;display:block}
-.rk-step.lock .rk-mini{filter:grayscale(1) brightness(.55);opacity:.6}
+.rk-step.lock .rk-mini{filter:saturate(.8) brightness(.9);opacity:.72}
 .rk-step b{font-size:12.5px;color:#fff}
 .rk-step.lock b{color:rgb(255 255 255 / .55)}
 .rk-step small{font-size:10.5px;color:rgb(255 255 255 / .52)}
@@ -1469,49 +1469,84 @@ button.hn-row:active .hn-ic{transform:scale(.94)}
 .tl-item.train.skipped .tl-name{text-decoration:none!important;opacity:1}
 .prep .bag{list-style:none;margin:6px 0 8px;padding:0;display:grid;gap:4px;font-size:15px}
 .prep .bag b{display:inline-block;min-width:52px;font-variant-numeric:tabular-nums}
-/* Training: Fokus auf eine Übung */
-.gf{display:grid;gap:12px;padding:4px 0 2px}
-.gf-top{display:flex;justify-content:space-between;font-size:13px;font-weight:600;color:var(--muted)}
-.gf-bar{height:5px;border-radius:3px;background:var(--line);overflow:hidden}
-.gf-bar i{display:block;height:100%;background:var(--accent);border-radius:3px;transition:width .4s var(--ease)}
-.gf-grp{margin:2px 0 -8px;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--accent)}
-.gf-name{margin:0;font-size:24px;font-weight:750;letter-spacing:-.02em;line-height:1.15}
-.gf-last{margin:-6px 0 0;font-size:13.5px;color:var(--muted)}
-.gf-w{display:grid;justify-items:center;gap:6px;padding:12px;border-radius:18px;background:color-mix(in srgb,var(--accent) 7%,transparent)}
-.gf-l{font-size:12.5px;font-weight:600;color:var(--muted)}
-.gf-ws{display:flex;align-items:center;gap:14px}
-.gf-ws button{width:42px;height:42px;border-radius:999px;border:0;display:grid;place-items:center;background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent);cursor:pointer;padding:0}
-.gf-ws label{display:inline-flex;align-items:baseline;gap:4px}
-.gf-ws input{width:92px;border:0;background:transparent;color:var(--ink);font:inherit;font-size:34px;font-weight:750;text-align:center;font-variant-numeric:tabular-nums;padding:0}
-.gf-ws em{font-style:normal;font-size:16px;font-weight:600;color:var(--muted)}
-.gf-sets{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
-.gf-sets span{min-width:44px;height:30px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;gap:4px;font-size:14px;font-weight:650;font-variant-numeric:tabular-nums;background:color-mix(in srgb,var(--ink) 6%,transparent);color:var(--muted)}
+/* Rang: ruhige Karte und eigene Rang-Seite */
+.rkq{padding:12px 14px}
+.rkq-row{all:unset;box-sizing:border-box;display:grid;grid-template-columns:58px minmax(0,1fr) 18px;gap:12px;align-items:center;width:100%;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.rkq-row:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:12px}
+.rkq-b{width:58px;height:58px;display:grid;place-items:center}
+.rkq-b .rk-float{width:58px;height:58px;filter:drop-shadow(0 4px 8px color-mix(in srgb,var(--rk1) 30%,transparent))}
+.rkq-row:active .rk-float{transform:scale(.94)}
+.rkq-i{display:grid;gap:1px;min-width:0}
+.rkq-i small{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rkq-n{font-size:19px;font-weight:750;letter-spacing:-.01em;line-height:1.2;color:color-mix(in srgb,var(--rk2) 68%,var(--ink))}
+.rkq-bar{display:block;height:5px;border-radius:999px;background:color-mix(in srgb,var(--ink) 8%,transparent);overflow:hidden;margin:5px 0 3px}
+.rkq-bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--rk1),var(--rk2))}
+.rkq-car{display:grid;place-items:center;color:var(--muted);transform:rotate(-90deg)}
+.rkq-car .ico{width:16px;height:16px}
+.rkp{position:fixed;inset:0;z-index:90;overflow-y:auto;overscroll-behavior:contain;color:#fff;padding:env(safe-area-inset-top) 16px calc(env(safe-area-inset-bottom) + 28px);
+  background:radial-gradient(130% 55% at 50% 0%,color-mix(in srgb,var(--rk2) 58%,#05070c) 0%,color-mix(in srgb,var(--rk1) 62%,#04060a) 48%,color-mix(in srgb,var(--rk1) 22%,#03040a) 100%);
+  opacity:0;transform:translateY(18px);transition:opacity .26s ease,transform .34s cubic-bezier(.2,.9,.3,1)}
+.rkp.on{opacity:1;transform:none}
+html.rkp-lock,html.rkp-lock body{overflow:hidden}
+.rkp-top{position:sticky;top:0;z-index:3;display:grid;grid-template-columns:40px 1fr 40px;align-items:center;margin:0 -16px;padding:12px 16px 8px;font-size:15px;font-weight:650;text-align:center;background:color-mix(in srgb,var(--rk1) 30%,rgb(4 6 10 / .72));-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4)}
+.rkp-x{width:36px;height:36px;border-radius:999px;border:0;display:grid;place-items:center;background:rgb(255 255 255 / .13);color:#fff;cursor:pointer;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.rkp-x:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.rkp-body{max-width:520px;margin:0 auto;background:none!important;border:0!important;box-shadow:none!important;padding:0 0 10px!important}
+.rkp-body::after{display:none!important}
+.rkp .rk-hero{cursor:default}
+.rkp .rk-name{font-size:30px!important}
+.rkp .rk-more{border-top-color:rgb(255 255 255 / .12)}
+.rkp .rk-step{background:rgb(255 255 255 / .05)}
+.rkp .rk-hint{color:color-mix(in srgb,var(--rk3) 70%,#fff)}
+.rkp .rk-eb{letter-spacing:.06em;text-transform:none;font-size:13px;color:color-mix(in srgb,var(--rk3) 70%,#fff)}
+.rkp .rk-step.now{background:rgb(255 255 255 / .1);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--rkg) 80%,transparent)}
+/* Training: Fokus auf eine Übung (kompakt, alles auf einem Bildschirm) */
+.gf{display:grid;gap:10px}
+.gf-top{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.gf-bar{height:4px;border-radius:2px;background:var(--line);overflow:hidden;margin-top:-4px}
+.gf-bar i{display:block;height:100%;background:var(--accent);border-radius:2px;transition:width .4s var(--ease)}
+.gf-grp{margin:2px 0 -10px;font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--accent)}
+.gf-name{margin:0;font-size:21px;font-weight:750;letter-spacing:-.02em;line-height:1.15}
+.gf-last{margin:-6px 0 0;font-size:13px;color:var(--muted)}
+.gf .gtip{margin:0;padding:8px 10px}
+.gf .gtip p{font-size:13px;margin:0 0 6px}
+.gf-w{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 6px 6px 14px;border-radius:16px;background:color-mix(in srgb,var(--accent) 7%,transparent)}
+.gf-l{font-size:13px;font-weight:600;color:var(--muted)}
+.gf-ws{display:flex;align-items:center;gap:6px}
+.gf-ws button{width:36px;height:36px;border-radius:999px;border:0;display:grid;place-items:center;background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent);cursor:pointer;padding:0}
+.gf-ws label{display:inline-flex;align-items:baseline;gap:3px}
+.gf-ws input{width:62px;border:0;background:transparent;color:var(--ink);font:inherit;font-size:24px;font-weight:750;text-align:center;font-variant-numeric:tabular-nums;padding:0}
+.gf-ws em{font-style:normal;font-size:13px;font-weight:600;color:var(--muted)}
+.gf-sets{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap}
+.gf-sets span{min-width:38px;height:26px;padding:0 9px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;gap:3px;font-size:13px;font-weight:650;font-variant-numeric:tabular-nums;background:color-mix(in srgb,var(--ink) 6%,transparent);color:var(--muted)}
+.gf-sets span.gf-sl{background:none;min-width:0;padding:0 4px 0 0;font-weight:600}
 .gf-sets span.ok{background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent)}
 .gf-sets span.now{background:var(--accent);color:#fff}
-.gf-sets .ico{width:14px;height:14px}
-.gf-sl{margin:0;text-align:center;font-size:13px;font-weight:600;color:var(--muted)}
-.gf-big{display:grid;grid-template-columns:72px minmax(0,1fr) 72px;height:92px;border-radius:26px;background:var(--accent);overflow:hidden;box-shadow:0 10px 26px -12px color-mix(in srgb,var(--accent) 70%,transparent)}
+.gf-sets .ico{width:12px;height:12px}
+.gf-big{display:grid;grid-template-columns:60px minmax(0,1fr) 60px;height:64px;border-radius:20px;background:var(--accent);overflow:hidden;box-shadow:0 8px 20px -12px color-mix(in srgb,var(--accent) 70%,transparent)}
 .gf-big button{border:0;background:transparent;color:#fff;font:inherit;cursor:pointer;display:grid;place-items:center;padding:0}
-.gf-pm .ico{width:26px;height:26px}
+.gf-pm .ico{width:22px;height:22px}
 .gf-pm:active{background:rgba(255,255,255,.14)}
-.gf-ok{background:rgba(255,255,255,.14)!important;border-left:1px solid rgba(255,255,255,.18)!important;border-right:1px solid rgba(255,255,255,.18)!important;align-content:center;gap:2px}
-.gf-ok b{font-size:38px;line-height:1;font-weight:800;font-variant-numeric:tabular-nums}
+.gf-ok{background:rgba(255,255,255,.14)!important;border-left:1px solid rgba(255,255,255,.18)!important;border-right:1px solid rgba(255,255,255,.18)!important;grid-auto-flow:column;align-items:center;gap:8px!important}
+.gf-ok b{font-size:28px;line-height:1;font-weight:800;font-variant-numeric:tabular-nums}
 .gf-ok small{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;font-weight:650;opacity:.92}
 .gf-ok small .ico{width:13px;height:13px}
 .gf-ok:active{background:rgba(255,255,255,.24)!important}
 .gf-big.fin{grid-template-columns:1fr}
 .gf-big.fin .gf-ok{border:0!important}
-.gf-big.fin .gf-ok b .ico{width:30px;height:30px}
+.gf-big.fin .gf-ok b .ico{width:24px;height:24px}
 .gf-big button:focus-visible{outline:3px solid #fff;outline-offset:-4px}
-.gf-links{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px}
-.gf-links button{border:0;background:none;color:var(--accent);font:inherit;font-size:13.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;padding:6px 2px}
+.gf-links{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px;margin-top:-4px}
+.gf-links button{border:0;background:none;color:var(--accent);font:inherit;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;padding:4px 2px}
 .gf-links button:first-child{justify-self:start}
 .gf-links button:last-child{justify-self:end}
 .gf-end{justify-items:center;text-align:center}
-.gf-endic{width:52px;height:52px;border-radius:999px;display:grid;place-items:center;background:var(--accent);color:#fff}
+.gf-endic{width:44px;height:44px;border-radius:999px;display:grid;place-items:center;background:var(--accent);color:#fff}
 .gf-list{list-style:none;margin:0;padding:0;width:100%;display:grid;gap:6px;text-align:left}
-.gf-list button{width:100%;display:grid;gap:2px;text-align:left;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:14px;padding:10px 12px;font:inherit;cursor:pointer}
+.gf-list button{width:100%;display:grid;gap:2px;text-align:left;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:14px;padding:9px 12px;font:inherit;cursor:pointer}
 .gf-list small{color:var(--muted);font-size:12.5px}
+.gf-foot{display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px}
+.gf-foot .linkbtn{font-size:13px}
 /* Mengen anpassen im Tagesablauf */
 .sedit{display:grid;gap:12px}
 .sedit-h{margin:0;font-weight:650;font-size:14.5px}
@@ -1766,23 +1801,8 @@ button.hn-row:active .hn-ic{transform:scale(.94)}
 :root[data-ui="apple"] .tsw.snow{box-shadow:inset 0 0 0 1px rgb(0 0 0 / .12)}
 :root[data-ui="apple"] .tsw.snow[aria-pressed="true"]{box-shadow:inset 0 0 0 1px rgb(0 0 0 / .12),0 0 0 2px var(--surface),0 0 0 4px var(--mf)}
 :root[data-ui="apple"] .tsw.snow::after{background:var(--ic-snowc)}
-/* Rang: Abzeichen bleiben aus ihrem Material, die Karte drumherum in Blau und Silber */
-:root[data-ui="apple"] :is(.rk,.rkc){--rk1:#0A3D91 !important;--rk2:#1F4E8C !important;--rk3:#C9D2DE !important;--rkg:#64D2FF !important}
-:root[data-ui="apple"] .rk-bar i{background:linear-gradient(90deg,#0A84FF,#64D2FF)}
-/* Rang-Abzeichen: gleiche Formen, Farben in Silber, Blau und Schneeweiß */
-:root[data-ui="apple"] [data-rt="wood"] svg,:root[data-ui="apple"] [data-rt="bronze"] svg{filter:grayscale(1) sepia(.35) hue-rotate(178deg) saturate(1.4) brightness(1.06) contrast(1.06)}
-:root[data-ui="apple"] [data-rt="silver"] svg{filter:grayscale(1) sepia(.2) hue-rotate(180deg) saturate(1.3) brightness(1.16) contrast(1.08)}
-:root[data-ui="apple"] [data-rt="gold"] svg{filter:grayscale(1) sepia(1) hue-rotate(160deg) saturate(2.2) brightness(1.12)}
-:root[data-ui="apple"] [data-rt="platinum"] svg{filter:grayscale(1) sepia(1) hue-rotate(168deg) saturate(3) brightness(1.04)}
-:root[data-ui="apple"] [data-rt="diamond"] svg{filter:grayscale(1) sepia(1) hue-rotate(182deg) saturate(4.2) brightness(.96)}
-:root[data-ui="apple"] [data-rt="champion"] svg{filter:grayscale(1) sepia(1) hue-rotate(192deg) saturate(5) brightness(.86)}
-:root[data-ui="apple"] [data-rt="titan"] svg{filter:grayscale(1) sepia(1) hue-rotate(198deg) saturate(3.4) brightness(.74) contrast(1.15)}
-:root[data-ui="apple"] [data-rt="olymp"] svg{filter:grayscale(1) brightness(1.32) contrast(.96)}
 :root[data-ui="apple"] .hn-ch .bar > i{background:linear-gradient(90deg,var(--mp1),var(--mc2))}
 :root[data-ui="apple"] .hn-ch-ic{background:var(--ic-blue);color:#fff}
-:root[data-ui="apple"] .rk .up{color:#8FD8FF}
-:root[data-ui="apple"] .rk .down{color:#C9D2DE}
-:root[data-ui="apple"] .rk-hint{color:#DCEBFA}
 /* Felder und Auswahlkarten: keine schwarzen Löcher im dunklen Design */
 :root[data-ui="apple"] :is(.fsel,.dsearch,.crea-edit input){background:var(--fill2);border-color:transparent}
 :root[data-ui="apple"] .dsearch:focus-within{background:var(--surface);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 32%,transparent)}
@@ -6614,7 +6634,8 @@ document.addEventListener('click', e => {
   }
   if (a === 'frange') { S.frange = b.dataset.r; try { localStorage.setItem('np:frange', S.frange); } catch (e) {} renderFort(); return; }
   if (a === 'fw-step') { const i = $('#fw-kg'), v = num(i.value); i.value = dec1(Math.max(30, (isFinite(v) && v > 0 ? v : (+S.profile.weight || 75)) + (+b.dataset.d))); return; }
-  if (a === 'fort-seg') { S.fseg = b.dataset.s; try { localStorage.setItem('np:fseg', S.fseg); } catch (e) {} if (S.tab !== 'fort') setTab('fort'); else { renderFort(); window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }); } return; }
+  if (a === 'gym-stats' || a === 'gym-log') { S.gymStats = a === 'gym-stats'; S.fseg = 'gym'; if (S.tab !== 'fort') setTab('fort'); else { renderFort(); window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }); } return; }
+  if (a === 'fort-seg') { S.gymStats = false; S.fseg = b.dataset.s; try { localStorage.setItem('np:fseg', S.fseg); } catch (e) {} if (S.tab !== 'fort') setTab('fort'); else { renderFort(); window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }); } return; }
   if (a === 'fw-save') {
     const v = num($('#fw-kg').value), date = $('#fw-date').value || S.today;
     if (!(v > 30 && v < 250)) { toast('Bitte ein Gewicht in kg eingeben, z. B. 79,4'); $('#fw-kg').focus(); return; }
@@ -6794,7 +6815,8 @@ document.addEventListener('click', e => {
     setTimeout(() => { const el = document.getElementById('dform-' + id); if (el) { const r = el.getBoundingClientRect(); if (r.bottom > innerHeight - 100) el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' }); } }, 60);
     return;
   }
-  if (a === 'rank-more') { const wasOpen = S.rankMore; S.rankMore = !S.rankMore; renderFort(); setTimeout(() => { const c = document.querySelector('.rk'); if (c && (c.getBoundingClientRect().top < 60 || wasOpen)) c.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' }); }, 40); return; }
+  if (a === 'rank-open') { openRankPage(); return; }
+  if (a === 'rank-close') { closeRankPage(); return; }
   if (a === 'rank-celeb-close') { const el = document.getElementById('rkCeleb'); if (el) el.remove(); return; }
   if (a === 'dish-pcs') { const cur = parseInt(($('#dish-n') || {}).value, 10) || 1; setDishCount(cur + +b.dataset.d); return; }
   if (a === 'dish-cnt') { setDishCount(+b.dataset.n); return; }
@@ -7713,15 +7735,15 @@ function stockSub(key, name, pts, o) {
    LP (Liga-Punkte) sammeln sich Tag für Tag an: Training wie geplant, Steigerungen im Gym und beim Laufen,
    Nährwerte getroffen, Creatin genommen. Verpasstes kostet LP, so kann man auch wieder absteigen. */
 const RANKS = [
-  { id: 'wood', n: 'Holz', d: 50, c: ['#5a3518', '#a8703d', '#e7b880'], glow: '#d0965a', ray: .18 },
-  { id: 'bronze', n: 'Bronze', d: 75, c: ['#6e3414', '#c46f35', '#ffc795'], glow: '#ec9351', ray: .22 },
-  { id: 'silver', n: 'Silber', d: 100, c: ['#4f5a6b', '#a9b4c4', '#f7f9fc'], glow: '#cdd8e8', ray: .26 },
-  { id: 'gold', n: 'Gold', d: 100, c: ['#7d4f05', '#e2a62a', '#fff2b0'], glow: '#ffd04d', ray: .34 },
-  { id: 'platinum', n: 'Platin', d: 125, c: ['#0d5b55', '#37bfae', '#d8fff7'], glow: '#5ff0da', ray: .38 },
-  { id: 'diamond', n: 'Diamant', d: 125, c: ['#26339a', '#6c84ff', '#e2e7ff'], glow: '#90a3ff', ray: .42 },
-  { id: 'champion', n: 'Champion', d: 150, c: ['#4f1486', '#b05cff', '#f5e0ff'], glow: '#cc84ff', ray: .48 },
-  { id: 'titan', n: 'Titan', d: 150, c: ['#4d0812', '#d0243a', '#ffc0c0'], glow: '#ff4f62', ray: .54 },
-  { id: 'olymp', n: 'Olymp', d: 0, c: ['#0b5682', '#56cfff', '#ffffff'], glow: '#9eeaff', ray: .62 },
+  { id: 'iron', n: 'Eisen', d: 50, c: ['#39414e', '#7f8a99', '#d9dfe7'], glow: '#a9b4c3', ray: .16 },
+  { id: 'steel', n: 'Stahl', d: 75, c: ['#24405e', '#6d8fb3', '#e1ecf7'], glow: '#93b8e0', ray: .2 },
+  { id: 'silver', n: 'Silber', d: 100, c: ['#5a6676', '#b7c2cf', '#ffffff'], glow: '#e3ebf6', ray: .26 },
+  { id: 'gold', n: 'Gold', d: 100, c: ['#6f5210', '#d6ad45', '#fff3c6'], glow: '#ffd76a', ray: .32 },
+  { id: 'platinum', n: 'Platin', d: 125, c: ['#155f5a', '#4fc6b9', '#e3fffa'], glow: '#73eddc', ray: .36 },
+  { id: 'sapphire', n: 'Saphir', d: 125, c: ['#132f8f', '#3b78f6', '#d8e6ff'], glow: '#5f9cff', ray: .42 },
+  { id: 'amethyst', n: 'Amethyst', d: 150, c: ['#3c1d86', '#8a5cf2', '#ece3ff'], glow: '#a98bff', ray: .48 },
+  { id: 'ruby', n: 'Rubin', d: 150, c: ['#6e0d2b', '#d92e57', '#ffd5df'], glow: '#ff5f84', ray: .54 },
+  { id: 'olymp', n: 'Olymp', d: 0, c: ['#0b5aa3', '#49bfff', '#ffffff'], glow: '#9fe4ff', ray: .62 },
 ];
 const ROMAN = ['III', 'II', 'I'];
 const LP_RULE = { done: 14, miss: -10, extra: 5, nutHit: 6, nutHalf: 3, nutLog: 1, nutOld: 3, nutMiss: -4, crea: 3, creaMiss: -3, pr: 10 };
@@ -7822,176 +7844,69 @@ function rankCompute() {
   return { lp, k: rankOf(lp), log, series, week, start, cOn };
 }
 
-/* ---------- Abzeichen ----------
-   lvl 0 = still (Rangleiter), 1 = klein (zugeklappt), 2 = groß mit allen Effekten */
-/* Holz: echte Baumscheibe mit Rinde, Jahresringen, Riss, eingebranntem Spross und genageltem Schild */
-function woodBadge(div, u, live, big) {
-  const P = (x, y) => `${x.toFixed(1)} ${y.toFixed(1)}`;
-  const blob = (cx, cy, r, wob, n, seed) => 'M' + Array.from({ length: n }, (_, i) => { const a = i / n * Math.PI * 2, rr = r + Math.sin(i * 2.7 + seed) * wob + Math.cos(i * 1.3 + seed * 2) * wob * .7; return P(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr * .97); }).join(' L') + ' Z';
-  const bark = blob(60, 54, 42, 1.6, 40, 0), wood = blob(60, 54, 35.5, .9, 40, 1);
-  const rings = [30, 25, 20.5, 16, 11.5, 7.5, 4].map((r, i) => `<path d="${blob(61 + i * .15, 55 + i * .1, r, .45 + i * .04, 32, i + 2)}" fill="none" stroke="#7a4a22" stroke-opacity="${.35 + (i % 2) * .2}" stroke-width="${i % 3 ? .8 : 1.3}" stroke-linejoin="round"/>`).join('');
-  const barkLines = Array.from({ length: 30 }, (_, i) => { const a = i / 30 * Math.PI * 2 + (i % 3) * .04, r1 = 36.5, r2 = 41 + (i % 2); return `M${P(60 + Math.cos(a) * r1, 54 + Math.sin(a) * r1)} L${P(60 + Math.cos(a + .05) * r2, 54 + Math.sin(a + .05) * r2)}`; }).join(' ');
-  const sprout = 'M60 70 V54 M60 60 C53 60 48 55 48 48 C55 48 60 52 60 60 M60 56 C67 56 72 51 72 44 C65 44 60 48 60 56';
-  const glints = live ? [[22, 18, 0], [100, 22, 1.2], [104, 88, 2.4]].slice(0, big ? 3 : 2).map(([x, y, dl]) => `<g transform="translate(${x} ${y}) scale(.75)"><path class="rk-sp" style="animation-delay:${dl}s" d="M0 -6 C.8 -1.2 1.2 -.8 6 0 C1.2 .8 .8 1.2 0 6 C-.8 1.2 -1.2 .8 -6 0 C-1.2 -.8 -.8 -1.2 0 -6 Z" fill="#fff3d6"/></g>`).join('') : '';
-  return `<svg class="rk-svg" viewBox="0 0 120 120" aria-hidden="true">
-    <defs>
-      <radialGradient id="wd-${u}" cx=".47" cy=".45" r=".6"><stop offset="0" stop-color="#9a5f2e"/><stop offset=".25" stop-color="#d9a466"/><stop offset=".7" stop-color="#e8bb7c"/><stop offset="1" stop-color="#c48b50"/></radialGradient>
-      <radialGradient id="bk-${u}" cx=".45" cy=".4" r=".62"><stop offset=".8" stop-color="#5a351a"/><stop offset="1" stop-color="#2c180a"/></radialGradient>
-      <linearGradient id="pl-${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d7a167"/><stop offset=".55" stop-color="#b67a42"/><stop offset="1" stop-color="#8e5a2c"/></linearGradient>
-      <linearGradient id="s-${u}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff3d6" stop-opacity=".45"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
-      <clipPath id="c-${u}"><path d="${bark}"/></clipPath>
-    </defs>
-    <path d="${bark}" fill="url(#bk-${u})" stroke="#24130a" stroke-width="1.2"/>
-    <path d="${barkLines}" stroke="#1e0f06" stroke-opacity=".7" stroke-width="1.1" stroke-linecap="round"/>
-    <path d="${wood}" fill="url(#wd-${u})" stroke="#6b3f1c" stroke-width="1"/>
-    <path d="${wood}" fill="none" stroke="#fff1d2" stroke-opacity=".35" stroke-width="1" transform="translate(-.6 -.8)"/>
-    ${rings}
-    <path d="M68 66 L72 71 L75 77 L79 83" fill="none" stroke="#3a210d" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M68.8 65.4 L72.8 70.4 L75.8 76.4" fill="none" stroke="#fff1d2" stroke-opacity=".35" stroke-width=".7"/>
-    <path d="${sprout}" fill="none" stroke="#fff1d2" stroke-opacity=".45" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" transform="translate(.7 .9)"/>
-    <path d="${sprout}" fill="none" stroke="#3b200b" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M60 60 C55 57 51 53 49.5 49 M60 56 C65 53 69 49 70.5 45.5" fill="none" stroke="#3b200b" stroke-width="1" stroke-opacity=".8"/>
-    <g clip-path="url(#c-${u})"><rect class="${live ? 'rk-shine' : ''}" x="-46" y="0" width="30" height="120" fill="url(#s-${u})" transform="skewX(-18)" opacity="${live ? 1 : 0}"/></g>
-    <path d="M45 92 L49 86 M75 92 L71 86" stroke="#d9c08a" stroke-width="1.6" stroke-linecap="round"/>
-    <path d="M45 92 L49 86 M75 92 L71 86" stroke="#7a6038" stroke-width=".6" stroke-dasharray="1.2 1.2"/>
-    <path d="M36 92 L84 91 L85.5 107 L35 108 Z" fill="url(#pl-${u})" stroke="#4a2a12" stroke-width="1.2" stroke-linejoin="round"/>
-    <path d="M38 96 C50 94.5 62 97.5 82 95.5 M38 101 C52 99.5 66 102.5 83 100.5 M38 105 C48 104 60 106 83 104.5" fill="none" stroke="#7a4a22" stroke-opacity=".55" stroke-width=".7"/>
-    <path d="M37 92.6 L83.5 91.6" stroke="#f3d2a0" stroke-opacity=".6" stroke-width=".8"/>
-    <circle cx="40.5" cy="99.5" r="1.7" fill="#3d3d42" stroke="#1d1d20" stroke-width=".6"/><circle cx="40" cy="99" r=".5" fill="#c9c9cf"/>
-    <circle cx="80" cy="99" r="1.7" fill="#3d3d42" stroke="#1d1d20" stroke-width=".6"/><circle cx="79.5" cy="98.5" r=".5" fill="#c9c9cf"/>
-    <text x="60.6" y="104.6" text-anchor="middle" font-size="10" font-weight="800" letter-spacing="1.4" fill="#f3d2a0" fill-opacity=".55">${ROMAN[div]}</text>
-    <text x="60" y="104" text-anchor="middle" font-size="10" font-weight="800" letter-spacing="1.4" fill="#3b200b">${ROMAN[div]}</text>
-    ${glints}
-  </svg>`;
-}
-/* ---------- Abzeichen ----------
-   Jeder Rang sieht aus wie sein Material: Holz, Bronze, Silber, Gold, Platin, Diamant, Champion (Pokal), Titan (Metall), Olymp (Marmor und Gold).
-   lvl 0 = still (Rangleiter), 1 = klein (zugeklappt), 2 = groß mit allen Effekten */
+/* ---------- Abzeichen: Kristall-Wappen ----------
+   Alle Ränge teilen dieselbe facettierte Wappenform, damit sie wie eine Familie wirken.
+   Mit jedem Rang kommt etwas dazu: Rahmen, Glanz, Klingen, Lorbeer, Flügel, Krone, Stern, Heiligenschein.
+   Die Winkel (1 bis 3) zeigen die Stufe III, II, I. lvl 0 = still (Rangleiter), 1 = klein, 2 = groß mit allen Effekten */
 function rankBadge(t, div, uid, lvl) {
   lvl = lvl === true ? 2 : lvl || 0;
-  const R = RANKS[t], [c1, c2, c3] = R.c, u = 'rk' + uid, id = R.id, live = lvl > 0, big = lvl > 1;
-  if (id === 'wood') return woodBadge(div, u, live, big);
-  const P = (x, y) => `${x.toFixed(1)} ${y.toFixed(1)}`;
-  const hexV = [[60, 16], [96.4, 37], [96.4, 79], [60, 100], [23.6, 79], [23.6, 37]];
-  const hex = 'M' + hexV.map(([x, y]) => P(x, y)).join(' L') + ' Z';
-  const shield = 'M60 14 C73 21 85 23 97 23 V58 C97 81 81 97 60 106 C39 97 23 81 23 58 V23 C35 23 47 21 60 14 Z';
-  const plate = t < 2 ? hex : shield;
-  const sc = (f) => `transform="translate(60 59) scale(${f}) translate(-60 -59)"`;
-  const gold = ['gold', 'champion', 'olymp'].includes(id);
-  // Federn: hintere Lage dunkler und länger, vordere heller
-  const feather = (bx, by, ang, len, w) => {
-    const a = ang * Math.PI / 180, tx = bx + Math.cos(a) * len, ty = by + Math.sin(a) * len, mx = (bx + tx) / 2, my = (by + ty) / 2, px = -Math.sin(a) * w, py = Math.cos(a) * w;
-    return `M${P(bx, by)} Q${P(mx + px, my + py)} ${P(tx, ty)} Q${P(mx - px, my - py)} ${P(bx, by)}Z`;
-  };
-  const wingSpec = { platinum: [3, 22, 5], diamond: [4, 26, 5.5], champion: [5, 31, 6], titan: [5, 30, 3.2], olymp: [6, 36, 6.5] }[id];
+  const R = RANKS[t], [c1, c2, c3] = R.c, u = 'rk' + uid, live = lvl > 0, big = lvl > 1, top = R.id === 'olymp';
+  const P = (x, y) => `${(+x).toFixed(1)} ${(+y).toFixed(1)}`;
+  const V = [[60, 12], [95, 31], [95, 75], [60, 106], [25, 75], [25, 31]];
+  const shape = (s, cx = 60, cy = 58) => 'M' + V.map(([x, y]) => P(cx + (x - 60) * s, cy + (y - 59) * s)).join(' L') + ' Z';
+  const facets = (s, cx, cy, ops) => V.map((p, i) => { const q = V[(i + 1) % 6], f = ([x, y]) => P(cx + (x - 60) * s, cy + (y - 59) * s);
+    return `<path d="M${P(cx, cy)} L${f(p)} L${f(q)} Z" fill="${ops[i] > 0 ? '#fff' : c1}" fill-opacity="${Math.abs(ops[i])}"/>`; }).join('');
+  const shine = t >= 2 ? [.34, .14, -.12, -.28, -.08, .22] : [.16, .06, -.1, -.2, -.06, .1];
+  // Flügel ab Saphir: Federn als schlanke Blätter, nach außen gefächert
+  const nW = [0, 0, 0, 0, 0, 3, 4, 5, 6][t];
   let wings = '';
-  if (wingSpec) {
-    const [n, len, w] = wingSpec, ang = i => 210 - i * (56 / Math.max(1, n - 1));
-    const back = Array.from({ length: n }, (_, i) => feather(29, 33 + i * 7, ang(i) + 4, len + 6 - i * 2, w * 1.1)).join('');
-    const front = Array.from({ length: n }, (_, i) => feather(29, 34 + i * 7, ang(i), len - i * 2.2, w)).join('');
-    const veins = Array.from({ length: n }, (_, i) => { const a = ang(i) * Math.PI / 180, L = (len - i * 2.2) * .8; return `M${P(29, 34 + i * 7)} L${P(29 + Math.cos(a) * L, 34 + i * 7 + Math.sin(a) * L)}`; }).join('');
-    const one = `<path d="${back}" fill="${c1}" opacity=".9"/><path d="${front}" fill="url(#m-${u})" stroke="${c1}" stroke-width="1" stroke-linejoin="round"/><path d="${veins}" stroke="#fff" stroke-opacity=".45" stroke-width=".7" fill="none"/>`;
+  if (nW) {
+    const feather = (i) => { const a = (192 - i * (52 / Math.max(1, nW - 1))) * Math.PI / 180, L = 31 - i * 2.2 + (top ? 3 : 0), bx = 32, by = 36 + i * (30 / nW);
+      const tx = bx + Math.cos(a) * L, ty = by + Math.sin(a) * L, mx = (bx + tx) / 2, my = (by + ty) / 2, w = 8.5, px = -Math.sin(a) * w, py = Math.cos(a) * w;
+      return `M${P(bx, by)} Q${P(mx + px, my + py)} ${P(tx, ty)} Q${P(mx - px * .55, my - py * .55)} ${P(bx, by)}Z`; };
+    const one = `<path d="${Array.from({ length: nW }, (_, i) => feather(i)).join('')}" fill="url(#rim-${u})" stroke="${c1}" stroke-width=".9" stroke-linejoin="round"/>`;
     wings = `<g class="${live ? 'rk-wing' : ''}">${one}</g><g transform="translate(120 0) scale(-1 1)"><g class="${live ? 'rk-wing' : ''}">${one}</g></g>`;
   }
-  // Lorbeer ab Gold (außer Titan)
+  // Klingen ab Gold: zwei kurze Spitzen links und rechts
+  const blades = t === 3 ? `<path d="M26 47 L6 53 L26 59 Z M94 47 L114 53 L94 59 Z" fill="url(#rim-${u})" stroke="${c1}" stroke-width=".9" stroke-linejoin="round"/>` : '';
+  // Lorbeer bei Platin
   let laurel = '';
-  if (t >= 3 && id !== 'titan') {
+  if (t === 4) {
     const B = (s, a, b, c) => (1 - s) * (1 - s) * a + 2 * (1 - s) * s * b + s * s * c;
     const leaves = Array.from({ length: 7 }, (_, i) => {
-      const s = .1 + i * .13, x = B(s, 46, 13, 15), y = B(s, 110, 98, 50), x2 = B(s + .01, 46, 13, 15), y2 = B(s + .01, 110, 98, 50);
+      const s = .08 + i * .13, x = B(s, 48, 12, 16), y = B(s, 110, 100, 46), x2 = B(s + .01, 48, 12, 16), y2 = B(s + .01, 110, 100, 46);
       const L = Math.hypot(x2 - x, y2 - y) || 1, side = i % 2 ? 1 : -1, cx = x - (y2 - y) / L * 3 * side, cy = y + (x2 - x) / L * 3 * side;
       const a = Math.atan2(y2 - y, x2 - x) * 180 / Math.PI + side * 35;
-      return `<ellipse cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" rx="5.4" ry="2.3" transform="rotate(${a.toFixed(0)} ${cx.toFixed(1)} ${cy.toFixed(1)})"/>`;
-    }).join('');
-    const one = `<path d="M46 110 Q13 98 15 50" fill="none" stroke="${gold ? '#a06a08' : c1}" stroke-width="1.6"/><g fill="url(#${gold ? 'k' : 'm'}-${u})" stroke="${gold ? '#8a5a05' : c1}" stroke-width=".7">${leaves}</g>`;
+      return `<ellipse cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" rx="5.4" ry="2.3" transform="rotate(${a.toFixed(0)} ${cx.toFixed(1)} ${cy.toFixed(1)})"/>`; }).join('');
+    const one = `<path d="M48 110 Q12 100 16 46" fill="none" stroke="${c1}" stroke-width="1.4"/><g fill="url(#rim-${u})" stroke="${c1}" stroke-width=".7">${leaves}</g>`;
     laurel = one + `<g transform="translate(120 0) scale(-1 1)">${one}</g>`;
   }
-  const horns = id === 'titan' ? `<path d="M33 27 C24 20 21 9 25 1 C30 11 37 17 45 21 Z M87 27 C96 20 99 9 95 1 C90 11 83 17 75 21 Z" fill="url(#m-${u})" stroke="${c1}" stroke-width="1.2"/><path d="M27 6 C29 13 34 18 40 21 M93 6 C91 13 86 18 80 21" stroke="#fff" stroke-opacity=".4" stroke-width=".8" fill="none"/>` : '';
-  const flames = id === 'titan' && live ? `<g class="rk-flames"><path class="rk-fl" d="M48 22 C44 12 50 6 52 -2 C56 8 62 10 60 20 Z" fill="url(#fl-${u})"/><path class="rk-fl b" d="M58 18 C55 6 62 0 62 -8 C68 4 72 8 67 19 Z" fill="url(#fl-${u})"/><path class="rk-fl c" d="M68 22 C66 13 70 8 70 1 C75 9 78 14 73 23 Z" fill="url(#fl-${u})"/></g>` : '';
-  const halo = id === 'olymp' ? `<circle class="${live ? 'rk-halo' : ''}" cx="60" cy="58" r="55" fill="none" stroke="url(#k-${u})" stroke-width="1.6" stroke-dasharray="1.5 6" stroke-linecap="round" opacity=".9"/><circle cx="60" cy="58" r="50" fill="none" stroke="${c3}" stroke-opacity=".35" stroke-width=".8"/>` : '';
-  const crown = id === 'champion' || id === 'olymp' ? `<path d="M43 18 L46 4 L53 11 L60 0 L67 11 L74 4 L77 18 Z" fill="url(#k-${u})" stroke="#8a5a05" stroke-width="1" stroke-linejoin="round"/><path d="M44 18 H76" stroke="#8a5a05" stroke-width="1.4"/><circle cx="60" cy="10" r="2.2" fill="${c2}" stroke="#fff" stroke-width=".7"/><circle cx="50.5" cy="13" r="1.4" fill="${c3}"/><circle cx="69.5" cy="13" r="1.4" fill="${c3}"/>` : '';
-  // Steine mit Facetten
-  const tri = (pts, fill, op) => `<path d="M${pts.map(([x, y]) => P(x, y)).join(' L')}Z" fill="${fill}" fill-opacity="${op}"/>`;
-  const brilliant = (() => {
-    const g = [[38, 52], [49, 52], [60, 52], [71, 52], [82, 52]], tp = [[48, 42], [60, 42], [72, 42]], C = [60, 82];
-    const crownF = [[g[0], tp[0], g[1]], [tp[0], tp[1], g[1]], [tp[1], g[1], g[2]], [tp[1], g[2], g[3]], [tp[1], tp[2], g[3]], [tp[2], g[3], g[4]]];
-    const pav = [[g[0], g[1], C], [g[1], g[2], C], [g[2], g[3], C], [g[3], g[4], C]];
-    return `<path d="M38 52 L48 42 H72 L82 52 L60 82 Z" fill="url(#g-${u})" stroke="${c1}" stroke-width="1.3" stroke-linejoin="round"/>`
-      + crownF.map((f, i) => tri(f, '#fff', [.55, .2, .4, .12, .3, .5][i])).join('')
-      + pav.map((f, i) => tri(f, i % 2 ? '#fff' : c1, [.3, .18, .25, .4][i])).join('')
-      + `<path d="M38 52 H82" stroke="#fff" stroke-opacity=".8" stroke-width=".8"/><path class="${live ? 'rk-gem' : ''}" d="M38 52 L48 42 H72 L82 52 L60 82 Z" fill="#fff" fill-opacity="${live ? .15 : 0}"/>`;
-  })();
-  const hexGem = (r, inner) => {
-    const v = Array.from({ length: 6 }, (_, i) => { const a = -Math.PI / 2 + i * Math.PI / 3; return [60 + Math.cos(a) * r, 58 + Math.sin(a) * r]; });
-    return `<path d="M${v.map(([x, y]) => P(x, y)).join(' L')}Z" fill="url(#g-${u})" stroke="${c1}" stroke-width="1.3"/>`
-      + v.map((p, i) => tri([[60, 58], p, v[(i + 1) % 6]], i < 3 ? '#fff' : c1, [.5, .3, .15, .25, .35, .1][i])).join('')
-      + (inner ? `<circle cx="60" cy="58" r="${inner}" fill="#fff" fill-opacity=".85"/>` : '')
-      + `<path class="${live ? 'rk-gem' : ''}" d="M${v.map(([x, y]) => P(x, y)).join(' L')}Z" fill="#fff" fill-opacity="${live ? .12 : 0}"/>`;
-  };
-  const emeraldGem = () => {
-    const ec = [[50, 39], [70, 39], [78, 47], [78, 69], [70, 77], [50, 77], [42, 69], [42, 47]];
-    const ic = [[53.5, 45.5], [66.5, 45.5], [71.5, 50.5], [71.5, 65.5], [66.5, 70.5], [53.5, 70.5], [48.5, 65.5], [48.5, 50.5]];
-    const pth = v => `M${v.map(([x, y]) => P(x, y)).join(' L')}Z`;
-    let g = `<path d="${pth(ec)}" fill="url(#g-${u})" stroke="${c1}" stroke-width="1.3" stroke-linejoin="round"/>`;
-    for (let i = 0; i < 8; i++) g += `<path d="${pth([ec[i], ec[(i + 1) % 8], ic[(i + 1) % 8], ic[i]])}" fill="${i < 2 || i === 7 ? '#fff' : c1}" fill-opacity="${[.55, .4, .18, .3, .38, .25, .15, .5][i]}"/>`;
-    g += `<path d="${pth(ic)}" fill="#fff" fill-opacity=".32" stroke="#fff" stroke-opacity=".75" stroke-width=".7"/>`;
-    g += `<path d="M53 55 H67 M53 61 H67" stroke="#fff" stroke-opacity=".45" stroke-width=".7"/>`;
-    return g + `<path class="${live ? 'rk-gem' : ''}" d="${pth(ec)}" fill="#fff" fill-opacity="${live ? .12 : 0}"/>`;
-  };
-  const starGem = () => {
-    const pt = i => { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 9 : 22; return [60 + Math.cos(a) * r, 59 + Math.sin(a) * r]; };
-    let out = `<polygon points="${Array.from({ length: 10 }, (_, i) => pt(i).map(n => n.toFixed(1)).join(',')).join(' ')}" fill="url(#g-${u})" stroke="${c1}" stroke-width="1.3" stroke-linejoin="round"/>`;
-    for (let i = 0; i < 10; i += 2) { out += tri([[60, 59], pt(i), pt((i + 1) % 10)], c1, .32) + tri([[60, 59], pt((i + 9) % 10), pt(i)], '#fff', .4); }
-    return out + `<circle cx="60" cy="59" r="3.6" fill="#fff"/><polygon class="${live ? 'rk-gem' : ''}" points="${Array.from({ length: 10 }, (_, i) => pt(i).map(n => n.toFixed(1)).join(',')).join(' ')}" fill="#fff" fill-opacity="${live ? .12 : 0}"/>`;
-  };
-  const emblem = {
-    wood: `<path d="M44 82 Q60 74 76 82 Z" fill="${c1}" opacity=".7"/><path d="M60 80 V56" stroke="${c1}" stroke-width="3" stroke-linecap="round"/>
-      <path d="M60 63 C49 63 42 55 42 45 C54 45 60 52 60 63 Z" fill="url(#g-${u})" stroke="${c1}" stroke-width="1.2"/><path d="M60 58 C71 58 78 50 78 40 C66 40 60 47 60 58 Z" fill="url(#g-${u})" stroke="${c1}" stroke-width="1.2"/>
-      <path d="M59 62 C54 58 49 53 45 47 M61 57 C66 53 71 48 75 42" stroke="${c1}" stroke-width=".9" fill="none" opacity=".8"/>`,
-    bronze: hexGem(15, 0),
-    silver: `<path d="M60 35 L77 58 L60 81 L43 58 Z" fill="url(#g-${u})" stroke="${c1}" stroke-width="1.3"/>${tri([[60, 35], [43, 58], [54, 58]], '#fff', .55)}${tri([[60, 35], [54, 58], [66, 58]], '#fff', .25)}${tri([[60, 35], [66, 58], [77, 58]], '#fff', .1)}${tri([[43, 58], [60, 81], [54, 58]], c1, .2)}${tri([[66, 58], [60, 81], [77, 58]], c1, .4)}<path class="${live ? 'rk-gem' : ''}" d="M60 35 L77 58 L60 81 L43 58 Z" fill="#fff" fill-opacity="${live ? .12 : 0}"/>`,
-    gold: starGem(),
-    platinum: emeraldGem(),
-    diamond: brilliant, champion: brilliant,
-    titan: `<path d="M60 35 C69 45 77 52 77 62 C77 72 69 80 60 80 C51 80 43 72 43 62 C43 52 51 45 60 35 Z" fill="url(#g-${u})" stroke="${c1}" stroke-width="1.3"/>${tri([[60, 35], [50, 58], [60, 62]], '#fff', .4)}${tri([[60, 35], [60, 62], [70, 58]], '#fff', .15)}${tri([[50, 58], [60, 80], [60, 62]], c1, .3)}<path d="M60 47 C64 53 68 56 68 62 C68 68 64 71 60 71 C56 71 52 68 52 62 C52 56 56 53 60 47 Z" fill="#fff" fill-opacity=".28"/><path class="${live ? 'rk-gem' : ''}" d="M60 35 C69 45 77 52 77 62 C77 72 69 80 60 80 C51 80 43 72 43 62 C43 52 51 45 60 35 Z" fill="#fff" fill-opacity="${live ? .1 : 0}"/>`,
-    olymp: `<circle cx="60" cy="58" r="22" fill="url(#g-${u})" stroke="${c1}" stroke-width="1.3"/><circle cx="60" cy="58" r="17" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width=".8" stroke-dasharray="2 3"/><path d="M64 38 L48 61 H58.5 L54 79 L72 53 H61.5 Z" fill="#fff8d6" stroke="#b07a10" stroke-width="1.2" stroke-linejoin="round"/><path class="${live ? 'rk-gem' : ''}" d="M64 38 L48 61 H58.5 L54 79 L72 53 H61.5 Z" fill="#fff" fill-opacity="${live ? .2 : 0}"/>`,
-  }[id];
-  const rivets = (t < 2 ? hexV.map(([x, y]) => [60 + (x - 60) * .87, 59 + (y - 59) * .87]) : [[33, 29], [87, 29], [28.5, 60], [91.5, 60]])
-    .map(([x, y]) => `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.5" fill="url(#m-${u})" stroke="${c1}" stroke-width=".8"/><circle cx="${(x - .7).toFixed(1)}" cy="${(y - .8).toFixed(1)}" r=".8" fill="#fff" fill-opacity=".9"/>`).join('');
-  const rays = Array.from({ length: 18 }, (_, i) => { const a = i * Math.PI / 9; return `M60 59 L${P(60 + Math.cos(a) * 60, 59 + Math.sin(a) * 60)}`; }).join(' ');
-  const ribbon = t < RANKS.length - 1
-    ? `<path d="M42 98 L29 100 L33 106 L29 112 L45 110 Z M78 98 L91 100 L87 106 L91 112 L75 110 Z" fill="${c1}"/><path d="M42 98 L29 100 L33 106 L29 112 L45 110 Z M78 98 L91 100 L87 106 L91 112 L75 110 Z" fill="#000" fill-opacity=".3"/>
-       <path d="M39 95 H81 L85.5 102.5 L81 110 H39 L34.5 102.5 Z" fill="url(#rb-${u})" stroke="url(#m-${u})" stroke-width="1.5"/><path d="M40.5 96.6 H79.5" stroke="#fff" stroke-opacity=".4" stroke-width=".8"/>
-       <text x="60.6" y="107.1" text-anchor="middle" font-size="10" font-weight="800" letter-spacing="1.2" fill="#000" fill-opacity=".35">${ROMAN[div]}</text><text x="60" y="106.4" text-anchor="middle" font-size="10" font-weight="800" letter-spacing="1.2" fill="#fff">${ROMAN[div]}</text>`
-    : `<path d="M36 97 Q60 107 84 97" fill="none" stroke="url(#k-${u})" stroke-width="3.4" stroke-linecap="round"/><path d="M60 99 L62 103 L66.5 103.5 L63 106.5 L64 111 L60 108.7 L56 111 L57 106.5 L53.5 103.5 L58 103 Z" fill="url(#k-${u})" stroke="#8a5a05" stroke-width=".6"/>`;
-  const spots = [[14, 22, 0], [106, 26, .7], [100, 96, 1.4], [18, 92, 2.1], [60, 2, 2.8], [6, 58, 3.3], [114, 62, 1], [36, 4, 1.8], [86, 112, 2.5]];
-  const sparks = live ? spots.slice(0, big ? 4 + Math.ceil(t / 2) : 3).map(([x, y, dl], i) => `<g transform="translate(${x} ${y}) scale(${i % 3 ? .7 : 1})"><path class="rk-sp" style="animation-delay:${dl}s" d="M0 -6 C.8 -1.2 1.2 -.8 6 0 C1.2 .8 .8 1.2 0 6 C-.8 1.2 -1.2 .8 -6 0 C-1.2 -.8 -.8 -1.2 0 -6 Z" fill="#fff"/></g>`).join('') : '';
-  const orbit = big && t >= 2 ? Array.from({ length: t >= 6 ? 3 : 2 }, (_, i) => `<g class="rk-orbit" style="animation-duration:${7 + i * 3}s;animation-delay:-${i * 2.3}s"><circle cx="60" cy="${-1 + i * 5}" r="${1.8 - i * .3}" fill="${i ? R.glow : '#fff'}"/></g>`).join('') : '';
-  const embers = id === 'titan' && big ? Array.from({ length: 7 }, (_, i) => `<circle class="rk-ember" style="animation-delay:${(i * .45).toFixed(2)}s" cx="${30 + i * 10}" cy="${30 + (i % 3) * 6}" r="${1.2 + (i % 2) * .6}" fill="${i % 2 ? '#ffb347' : '#ff6a3d'}"/>`).join('') : '';
-  const gemSpark = live ? `<g transform="translate(51 46)"><path class="rk-sp g" d="M0 -5 C.6 -1 1 -.6 5 0 C1 .6 .6 1 0 5 C-.6 1 -1 .6 -5 0 C-1 -.6 -.6 -1 0 -5 Z" fill="#fff"/></g>` : '';
+  const crown = t >= 6 ? `<path d="M45 17 L47 4 L54 10 L60 1 L66 10 L73 4 L75 17 Z" fill="url(#rim-${u})" stroke="${c1}" stroke-width="1" stroke-linejoin="round"/><circle cx="60" cy="10" r="2" fill="#fff" fill-opacity=".9"/>` : '';
+  const halo = top ? `<circle class="${live ? 'rk-halo' : ''}" cx="60" cy="58" r="56" fill="none" stroke="url(#rim-${u})" stroke-width="1.5" stroke-dasharray="1.6 5.5" stroke-linecap="round" opacity=".9"/>` : '';
+  const star = (cx, cy, r, cls = '', st = '') => `<path class="${cls}" style="${st}" d="M${P(cx, cy - r)} Q${P(cx, cy)} ${P(cx + r, cy)} Q${P(cx, cy)} ${P(cx, cy + r)} Q${P(cx, cy)} ${P(cx - r, cy)} Q${P(cx, cy)} ${P(cx, cy - r)}Z" fill="#fff"/>`;
+  // Winkel für die Stufe (III = 1, II = 2, I = 3); Olymp bekommt einen Stern
+  const n = top ? 0 : div + 1, ch = (y) => `M44 ${y} L60 ${y + 8} L76 ${y} L76 ${y + 5.5} L60 ${y + 13.5} L44 ${y + 5.5} Z`;
+  const chevrons = top ? star(60, 80, 9) : Array.from({ length: n }, (_, i) => `<path d="${ch(70 + i * 8.5 - (n - 1) * 4.25)}" fill="url(#chv-${u})" stroke="${c1}" stroke-width=".6"/>`).join('');
+  const sparks = live && t >= 4 ? [[16, 20, 0], [104, 18, 1.1], [108, 92, 2.2], [12, 90, .6]].slice(0, big ? 4 : 2).map(([x, y, d]) => star(x, y, big ? 5 : 4, 'rk-sp', `animation-delay:${d}s`)).join('') : '';
   return `<svg class="rk-svg" viewBox="0 0 120 120" aria-hidden="true">
     <defs>
-      <linearGradient id="m-${u}" x1="0" y1="0" x2=".35" y2="1"><stop offset="0" stop-color="${c3}"/><stop offset=".45" stop-color="${c2}"/><stop offset="1" stop-color="${c1}"/></linearGradient>
-      <linearGradient id="r-${u}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c3}"/><stop offset=".3" stop-color="${c2}"/><stop offset=".55" stop-color="${c1}"/><stop offset=".8" stop-color="${c2}"/><stop offset="1" stop-color="${c3}"/></linearGradient>
-      <radialGradient id="f-${u}" cx=".5" cy=".4" r=".65"><stop offset="0" stop-color="${c2}"/><stop offset=".7" stop-color="${c1}"/><stop offset="1" stop-color="${c1}"/></radialGradient>
-      <radialGradient id="g-${u}" cx=".35" cy=".28" r=".85"><stop offset="0" stop-color="#fff"/><stop offset=".3" stop-color="${c3}"/><stop offset=".75" stop-color="${c2}"/><stop offset="1" stop-color="${c1}"/></radialGradient>
-      <linearGradient id="k-${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6c2"/><stop offset=".5" stop-color="#f2c14b"/><stop offset="1" stop-color="#a86d08"/></linearGradient>
-      <linearGradient id="gl-${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".7"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
-      <linearGradient id="rb-${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c2}"/><stop offset="1" stop-color="${c1}"/></linearGradient>
-      <linearGradient id="fl-${u}" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ff3b2f"/><stop offset=".6" stop-color="#ff9a3c"/><stop offset="1" stop-color="#ffe27a"/></linearGradient>
-      <linearGradient id="s-${u}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".8"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
-      <clipPath id="c-${u}"><path d="${plate}"/></clipPath>
-      <clipPath id="cf-${u}"><path d="${plate}" ${sc(.76)}/></clipPath>
+      <linearGradient id="rim-${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c3}"/><stop offset=".55" stop-color="${c2}"/><stop offset="1" stop-color="${c1}"/></linearGradient>
+      <linearGradient id="face-${u}" x1=".15" y1="0" x2=".85" y2="1"><stop offset="0" stop-color="${c2}"/><stop offset=".6" stop-color="${c1}"/><stop offset="1" stop-color="${c1}"/></linearGradient>
+      <linearGradient id="core-${u}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c3}"/><stop offset=".5" stop-color="${c2}"/><stop offset="1" stop-color="${c1}"/></linearGradient>
+      <linearGradient id="chv-${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="${c3}"/></linearGradient>
+      <linearGradient id="sw-${u}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <clipPath id="cl-${u}"><path d="${shape(1)}"/></clipPath>
     </defs>
-    ${halo}${flames}${wings}${laurel}${horns}
-    <path d="${plate}" fill="url(#r-${u})" stroke="${c1}" stroke-width="1"/>
-    <path d="${plate}" ${sc(.9)} fill="url(#m-${u})" stroke="#fff" stroke-opacity=".5" stroke-width="1"/>
-    <path d="${plate}" ${sc(.76)} fill="url(#f-${u})" stroke="${c1}" stroke-width="1.2"/>
-    <g clip-path="url(#cf-${u})"><path d="${rays}" stroke="#fff" stroke-opacity=".07" stroke-width="1.6"/></g>
-    <g clip-path="url(#c-${u})"><path d="M0 0 H120 V46 C90 36 30 36 0 46 Z" fill="url(#gl-${u})" opacity=".35"/></g>
-    ${rivets}${emblem}${gemSpark}${crown}
-    <g clip-path="url(#c-${u})"><rect class="${live ? 'rk-shine' : ''}" x="-46" y="0" width="30" height="120" fill="url(#s-${u})" transform="skewX(-18)" opacity="${live ? 1 : 0}"/></g>
-    ${ribbon}${embers}${orbit}${sparks}
+    ${halo}${wings}${laurel}${blades}
+    <path d="${shape(1)}" fill="url(#rim-${u})" stroke="${c1}" stroke-width="1.2" stroke-linejoin="round"/>
+    <path d="${shape(.86)}" fill="url(#face-${u})"/>
+    ${facets(.86, 60, 58, shine)}
+    ${t >= 1 ? `<path d="${shape(.86)}" fill="none" stroke="${c3}" stroke-opacity="${t >= 2 ? .75 : .45}" stroke-width="1"/>` : ''}
+    <path d="${shape(.34, 60, 44)}" fill="url(#core-${u})" stroke="#fff" stroke-opacity=".7" stroke-width=".8"/>
+    ${facets(.34, 60, 44, [.6, .25, -.15, -.35, -.1, .4])}
+    ${chevrons}${crown}
+    <g clip-path="url(#cl-${u})"><rect class="${live ? 'rk-shine' : ''}" x="-46" y="0" width="28" height="120" fill="url(#sw-${u})" transform="skewX(-18)" opacity="${live ? 1 : 0}"/></g>
+    ${top && live ? star(60, 44, 6, 'rk-sp', 'animation-delay:.3s') : ''}${sparks}
   </svg>`;
 }
 
@@ -8007,31 +7922,54 @@ function rankSpark(series, color) {
     <path d="${line} L${W} ${H} L0 ${H} Z" fill="url(#rkspf)"/><path d="${line}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>`;
 }
 function rankCard() {
-  const R = rankCompute(), k = R.k, T = RANKS[k.t], w = R.week, open = !!S.rankMore;
+  const R = rankCompute(), k = R.k, T = RANKS[k.t];
   S.rankNow = R;
   const pctv = k.top ? 100 : Math.round(k.inDiv / k.size * 100), name = rankName(k);
   const vars = `--rk1:${T.c[0]};--rk2:${T.c[1]};--rk3:${T.c[2]};--rkg:${T.glow};--rkr:${T.ray}`;
-  if (!open) return `<section class="card rk rk-${T.id}" style="${vars}" aria-label="Dein Rang">
-    <button class="rk-row" data-act="rank-more" aria-expanded="false" aria-label="Dein Rang: ${esc(name)}. Details öffnen">
-      <span class="rk-stage sm"><span class="rk-glow" aria-hidden="true"></span><span class="rk-float" data-rt="${RANKS[k.t].id}">${rankBadge(k.t, k.div, 'main', 1)}</span></span>
-      <span class="rk-info"><span class="rk-eb">Dein Rang</span><span class="rk-name">${esc(name)}</span>${k.top ? '' : `<span class="rk-bar" aria-hidden="true"><i style="width:${Math.max(3, pctv)}%"></i></span>`}</span>
-      <span class="rk-car" aria-hidden="true">${icon('caret-down')}</span>
+  // Ruhige Karte wie die restliche Seite, nur Abzeichen und Rangname in Rangfarbe
+  return `<section class="card rkq" style="${vars}" aria-label="Dein Rang">
+    <button class="rkq-row" data-act="rank-open" aria-label="Dein Rang: ${esc(name)}. Alle Ränge ansehen">
+      <span class="rkq-b"><span class="rk-float" data-rt="${T.id}">${rankBadge(k.t, k.div, 'main', 1)}</span></span>
+      <span class="rkq-i"><small>Dein Rang</small><b class="rkq-n">${esc(name)}</b>${k.top ? `<small>${fmt(k.inDiv)} LP im Olymp</small>`
+        : `<span class="rkq-bar" aria-hidden="true"><i style="width:${Math.max(3, pctv)}%"></i></span><small>${k.inDiv} von ${k.size} LP, noch ${k.size - k.inDiv} bis ${esc(nextName(k))}</small>`}</span>
+      <span class="rkq-car" aria-hidden="true">${icon('caret-down')}</span>
     </button></section>`;
-  const stats = [[`${w.done}/${w.plan}`, 'Trainings'], [`${w.nutHit}/${w.days}`, 'Nährwerte'], R.cOn ? [`${w.crea}/${w.days}`, 'Creatin'] : null, [String(w.prs), w.prs === 1 ? 'Rekord' : 'Rekorde']].filter(Boolean);
-  return `<section class="card rk open rk-${T.id}" style="${vars}" aria-label="Dein Rang">
-    <button class="rk-hero" data-act="rank-more" aria-expanded="true" aria-label="Dein Rang: ${esc(name)}. Details schließen">
-      <span class="rk-stage lg"><span class="rk-rays" aria-hidden="true"></span><span class="rk-glow" aria-hidden="true"></span><span class="rk-float" data-rt="${RANKS[k.t].id}">${rankBadge(k.t, k.div, 'main', 2)}</span></span>
-      <span class="rk-eb">Dein Rang</span><span class="rk-name">${esc(name)}</span>
-    </button>
-    ${k.top ? `<p class="rk-next">${fmt(k.inDiv)} LP im Olymp</p>` : `<div class="rk-bar lg" role="progressbar" aria-valuemin="0" aria-valuemax="${k.size}" aria-valuenow="${k.inDiv}" aria-label="Fortschritt bis ${esc(nextName(k))}"><i style="width:${Math.max(3, pctv)}%"></i></div>
-    <p class="rk-next"><b class="num">${k.inDiv}/${k.size} LP</b> · noch ${k.size - k.inDiv} bis ${esc(nextName(k))}</p>`}
-    <p class="rk-wkl"><span class="rk-wk ${w.gain >= 0 ? 'up' : 'down'}">${signLp(w.gain)} LP diese Woche</span></p>
-    <div class="rk-stats" style="--n:${stats.length}">${stats.map(([v, l]) => `<div><b class="num">${v}</b><span>${l}</span></div>`).join('')}</div>
-    ${w.open > 0 ? `<p class="rk-hint">Noch ${w.open} ${w.open === 1 ? 'Training' : 'Trainings'} bis Sonntag, sonst je ${Math.abs(LP_RULE.miss)} LP Abzug.</p>` : ''}
-    ${rankMore(R)}
-    <button class="rk-tog" data-act="rank-more" aria-expanded="true">Zuklappen${icon('caret-down')}</button>
-  </section>`;
 }
+/* Eigene Seite für die Ränge, eingefärbt in der Farbe des aktuellen Rangs */
+function rankPageHtml() {
+  const R = rankCompute(), k = R.k, T = RANKS[k.t], w = R.week, name = rankName(k);
+  S.rankNow = R;
+  const pctv = k.top ? 100 : Math.round(k.inDiv / k.size * 100);
+  const stats = [[`${w.done}/${w.plan}`, 'Trainings'], [`${w.nutHit}/${w.days}`, 'Nährwerte'], R.cOn ? [`${w.crea}/${w.days}`, 'Creatin'] : null, [String(w.prs), w.prs === 1 ? 'Rekord' : 'Rekorde']].filter(Boolean);
+  return `<div class="rkp-top"><button class="rkp-x" data-act="rank-close" aria-label="Ränge schließen">${icon('x')}</button><span>Ränge</span><span></span></div>
+    <div class="rk open rkp-body">
+      <div class="rk-hero"><span class="rk-stage lg"><span class="rk-rays" aria-hidden="true"></span><span class="rk-glow" aria-hidden="true"></span><span class="rk-float" data-rt="${T.id}">${rankBadge(k.t, k.div, 'page', 2)}</span></span>
+        <span class="rk-eb">Dein Rang</span><span class="rk-name">${esc(name)}</span></div>
+      ${k.top ? `<p class="rk-next">${fmt(k.inDiv)} LP im Olymp</p>` : `<div class="rk-bar lg" role="progressbar" aria-valuemin="0" aria-valuemax="${k.size}" aria-valuenow="${k.inDiv}" aria-label="Fortschritt bis ${esc(nextName(k))}"><i style="width:${Math.max(3, pctv)}%"></i></div>
+      <p class="rk-next"><b class="num">${k.inDiv}/${k.size} LP</b>, noch ${k.size - k.inDiv} bis ${esc(nextName(k))}</p>`}
+      <p class="rk-wkl"><span class="rk-wk ${w.gain >= 0 ? 'up' : 'down'}">${signLp(w.gain)} LP diese Woche</span></p>
+      <div class="rk-stats" style="--n:${stats.length}">${stats.map(([v, l]) => `<div><b class="num">${v}</b><span>${l}</span></div>`).join('')}</div>
+      ${w.open > 0 ? `<p class="rk-hint">Noch ${w.open} ${w.open === 1 ? 'Training' : 'Trainings'} bis Sonntag, sonst je ${Math.abs(LP_RULE.miss)} LP Abzug.</p>` : ''}
+      ${rankMore(R)}
+    </div>`;
+}
+function openRankPage() {
+  let el = document.getElementById('rkPage');
+  if (!el) { el = document.createElement('div'); el.id = 'rkPage'; el.className = 'rkp'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', 'Ränge'); document.body.appendChild(el); }
+  el.innerHTML = rankPageHtml();
+  const T = RANKS[S.rankNow.k.t];
+  el.style.cssText = `--rk1:${T.c[0]};--rk2:${T.c[1]};--rk3:${T.c[2]};--rkg:${T.glow};--rkr:${T.ray}`;
+  el.scrollTop = 0; document.documentElement.classList.add('rkp-lock');
+  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('on')));
+  setTimeout(() => { const x = el.querySelector('.rkp-x'); if (x) x.focus(); }, 60);
+}
+function closeRankPage(kb) {
+  const el = document.getElementById('rkPage'); if (!el) return;
+  el.classList.remove('on'); document.documentElement.classList.remove('rkp-lock');
+  setTimeout(() => el.remove(), 280);
+  const c = document.querySelector('.rkq-row'); if (c && kb) c.focus({ preventScroll: true });
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.getElementById('rkPage')) closeRankPage(true); });
 function rankMore(R) {
   const k = R.k, cur = rankIdx(k);
   let base = 0;
@@ -8086,7 +8024,7 @@ function fortAll() {
   const F = fortSpecs();
   const tile = (seg, label, inner, wide) => `<button class="card otile ${wide ? 'wide' : ''}" data-act="fort-seg" data-s="${seg}" aria-label="${label} öffnen">${inner}</button>`;
   return rankCard() + streakCard() + rangeRow() + `<div class="otiles">`
-    + tile('gym', 'Gym', tileSub('tg', 'Gym', F.g.pts, F.g.o))
+    + tile('gym', 'Gym', tileSub('tg', 'Gym', F.g.pts, F.g.o)).replace('data-act="fort-seg" data-s="gym"', 'data-act="gym-stats"')
     + tile('weight', 'Körpergewicht', tileSub('tw', 'Körpergewicht', F.w.pts, F.w.o))
     + tile('run', 'Laufen', `<span class="ft-h">Laufen</span><span class="ft-two">${tileSub('tp', 'Tempo', F.p.pts, F.p.o, 56)}${tileSub('td', 'Distanz', F.dk.pts, F.dk.o, 56)}</span>`, true)
     + `</div>`;
@@ -8188,7 +8126,7 @@ function gymFocusHtml(D, order) {
   const w = num(E.w), stepW = ex.uni || !(w >= 20) ? 1 : 2.5;
   const tipHtml = tip && tip.kind === 'up' ? `<div class="gtip up">${icon('trend-up')}<div><p>Letztes Mal alle Sätze geschafft. Zeit für <b>${dec1(tip.to)} kg</b>.</p><button class="btn soft sm" data-act="gx-up" data-id="${esc(ex.id)}">Auf ${dec1(tip.to)} kg erhöhen</button></div></div>` : '';
   return `<div class="gf">
-    <div class="gf-top"><span>Übung ${D.cur + 1} von ${n}</span><span>${rest ? `noch ${rest} ${rest === 1 ? 'Übung' : 'Übungen'}` : 'letzte Übung'}</span></div>
+    <div class="gf-top"><span>${esc((GDAYS.find(x => x[0] === D.day) || [0, 'Training'])[1])} · Übung ${D.cur + 1} von ${n}</span><span>${rest ? `noch ${rest} ${rest === 1 ? 'Übung' : 'Übungen'}` : 'letzte Übung'}</span></div>
     <div class="gf-bar" aria-hidden="true"><i style="width:${Math.round(D.cur / n * 100)}%"></i></div>
     <p class="gf-grp">${esc(GGROUPS[g] || '')}</p>
     <h3 class="gf-name">${esc(ex.n)}</h3>
@@ -8196,8 +8134,7 @@ function gymFocusHtml(D, order) {
     ${tipHtml}
     <div class="gf-w"><span class="gf-l">${ex.time ? 'Zusatzgewicht' : ex.uni ? 'Arbeitsgewicht pro Seite' : 'Arbeitsgewicht'}</span>
       <div class="gf-ws"><button data-act="gw-step" data-id="${esc(ex.id)}" data-d="-${stepW}" aria-label="${String(stepW).replace('.', ',')} kg weniger">${icon('minus')}</button><label><input inputmode="decimal" autocomplete="off" data-gw="${esc(ex.id)}" value="${E.w === '' || E.w == null ? '' : String(E.w).replace('.', ',')}" placeholder="0" aria-label="Arbeitsgewicht ${esc(ex.n)}"><em>kg</em></label><button data-act="gw-step" data-id="${esc(ex.id)}" data-d="${stepW}" aria-label="${String(stepW).replace('.', ',')} kg mehr">${icon('plus')}</button></div></div>
-    <div class="gf-sets" aria-label="Sätze">${E.r.map((r, i) => `<span class="${i < E.si ? 'ok' : i === si ? 'now' : ''}">${i < E.si ? icon('check') : ''}${r}</span>`).join('')}</div>
-    <p class="gf-sl">Satz ${si + 1} von ${E.r.length}</p>
+    <div class="gf-sets" aria-label="Satz ${si + 1} von ${E.r.length}"><span class="gf-sl">Satz ${si + 1}/${E.r.length}</span>${E.r.map((r, i) => `<span class="${i < E.si ? 'ok' : i === si ? 'now' : ''}">${i < E.si ? icon('check') : ''}${r}</span>`).join('')}</div>
     ${E.si >= E.r.length ? `<div class="gf-big fin"><button class="gf-ok" data-act="gf-skip"><b>${icon('check')}</b><small>Fertig · weiter</small></button></div>
     <div class="gf-links"><button data-act="gf-prev" ${D.cur ? '' : 'hidden'}>${icon('arrow-left')}Zurück</button><button data-act="gf-redo">Letzten Satz ändern</button><span></span></div>` : `<div class="gf-big"><button class="gf-pm" data-act="gf-rep" data-d="-1" aria-label="Eine Wiederholung weniger">${icon('minus')}</button><button class="gf-ok" data-act="gf-set" aria-label="Satz ${si + 1} mit ${E.r[si]} ${unit} bestätigen"><b>${E.r[si]}</b><small>${unit} · ${icon('check')} bestätigen</small></button><button class="gf-pm" data-act="gf-rep" data-d="1" aria-label="Eine Wiederholung mehr">${icon('plus')}</button></div>
     <div class="gf-links">${D.cur ? `<button data-act="gf-prev">${icon('arrow-left')}Zurück</button>` : '<span></span>'}${E.si === 0 && lastH ? `<button data-act="gf-all">Alles wie letztes Mal</button>` : `<button data-act="gx-add" data-id="${esc(ex.id)}">${icon('plus')}Satz dazu</button>`}<button data-act="gf-skip">Überspringen${icon('arrow-right')}</button></div>`}
@@ -8232,20 +8169,21 @@ function fortGym() {
   const exPts = selH.map(h => { const b = bestOf(selEx, h.sets); return { d: h.date, y: selEx.time ? +b[1] : +b[0] > 0 ? +b[0] : +b[1], label: setTxt(selEx, b) }; });
   const kgMode = selEx && !selEx.time && selH.some(h => +bestOf(selEx, h.sets)[0] > 0);
   const exCol = exPts.length > 1 ? (exPts[exPts.length - 1].y > exPts[0].y ? 'var(--up)' : exPts[exPts.length - 1].y < exPts[0].y ? 'var(--bad)' : 'var(--accent)') : 'var(--accent)';
-  return `<div class="card gform">
-      <div class="spread"><h3>Training eintragen</h3><input id="gy-date" type="date" value="${D.date}" max="${S.today}" class="fsel" style="width:auto;padding:6px 8px;font-size:14px" aria-label="Tag des Trainings"></div>
-      <div class="gchips" role="group" aria-label="Was trainierst du?">${GDAYS.map(([k, n]) => `<button data-act="gy-day" data-k="${k}" aria-pressed="${D.day === k}">${n}</button>`).join('')}${D.day !== 'abs' ? `<button data-act="gy-abs" aria-pressed="${!!D.abs}">${icon('plus')}Bauch</button>` : ''}</div>
-      ${S.gxList ? `<p class="fhint" style="margin:-4px 0 0">Alle Übungen: hier kannst du Übungen hinzufügen, entfernen oder einzeln ändern.</p>${grpHtml}
-      ${hidden ? `<button class="linkbtn" data-act="gx-unhide" style="justify-self:start;font-size:13px">Entfernte Übungen wieder anzeigen (${hidden})</button>` : ''}` : gymFocusHtml(D, gymOrder(D))}
-      <button class="linkbtn" data-act="gx-list" style="justify-self:center;font-size:13px">${S.gxList ? 'Zurück zur Übung' : 'Alle Übungen bearbeiten'}</button>
-      <button class="btn" data-act="gy-save">${icon('check')}Training speichern${doneN ? ` (${doneN} ${doneN === 1 ? 'Übung' : 'Übungen'})` : ''}</button>
-    </div>
-    ${withData.length ? `<div class="card"><h3>Pro Übung</h3>
+  if (!S.gxList && !Object.values(D.ex || {}).some(e => e && e.done)) { const pd = plannedGymDay() || nextGymDay(); if (D.day !== pd || D.date !== S.today) { D.day = pd; D.date = S.today; D.cur = null; saveDraft(); } }
+  // Auswertung (Pro Übung, Letzte Trainings) nur über die Gym-Kachel in der Gesamtansicht
+  if (S.gymStats) return `<button class="linkbtn" data-act="gym-log" style="justify-self:start;margin:0 0 8px">${icon('arrow-left')}Training eintragen</button>` + `${withData.length ? `<div class="card"><h3>Pro Übung</h3>
       <select class="fsel" id="gx-sel" style="margin-top:10px" aria-label="Übung wählen">${withData.map(e => `<option value="${esc(e.id)}" ${e.id === S.gxSel ? 'selected' : ''}>${esc(e.n)}</option>`).join('')}</select>
       ${exPts.length > 1 ? chartSlot('gx', { points: exPts, fmt: v => (kgMode ? dec1(v) + ' kg' : fmt(v) + (selEx.time ? ' s' : ' Wdh.')), tick: v => dec1(v), minRange: kgMode ? 5 : 4, stock: true, color: exCol, h: 150, aria: 'Kurve deines besten Satzes' }) : `<p class="fempty">Ab dem zweiten Training mit dieser Übung siehst du hier eine Kurve.</p>`}
       <ul class="flist">${selH.slice().reverse().slice(0, 3).map(h => `<li><div><b>${h.sets.map(x => setTxt(selEx, x)).join(' · ')}</b><small>${dShort(h.date)}</small></div><span></span><span></span></li>`).join('')}</ul></div>` : ''}
     ${sessions.length ? `<div class="card"><h3>Letzte Trainings</h3><ul class="flist">${sessions.slice(0, S.fmore === 'gym' ? 30 : 3).map(x => { const ids = Object.keys(x.sets || {}), vol = ids.reduce((a, id) => a + x.sets[id].reduce((b, st) => b + (+st[0] || 0) * (+st[1] || 0), 0), 0);
-        return `<li><div><b>${esc((GDAYS.find(g => g[0] === x.day) || [0, 'Training'])[1])}</b><small>${dShort(x.date)} · ${ids.length} Übungen${vol ? ` · ${fmt(vol)} kg bewegt` : ''}</small></div><button class="linkbtn" data-act="gy-edit" data-id="${esc(x.id)}" style="font-size:12.5px">Bearbeiten</button><button class="ddel" data-act="gy-del" data-id="${esc(x.id)}" aria-label="Training löschen">${icon('x')}</button></li>`; }).join('')}</ul>${moreBtn('gym', sessions.length)}</div>` : ''}`;
+        return `<li><div><b>${esc((GDAYS.find(g => g[0] === x.day) || [0, 'Training'])[1])}</b><small>${dShort(x.date)} · ${ids.length} Übungen${vol ? ` · ${fmt(vol)} kg bewegt` : ''}</small></div><button class="linkbtn" data-act="gy-edit" data-id="${esc(x.id)}" style="font-size:12.5px">Bearbeiten</button><button class="ddel" data-act="gy-del" data-id="${esc(x.id)}" aria-label="Training löschen">${icon('x')}</button></li>`; }).join('')}</ul>${moreBtn('gym', sessions.length)}</div>` : ''}` + (withData.length || sessions.length ? '' : `<div class="card"><p class="fempty">Noch keine Trainings gespeichert.</p></div>`);
+  return `<div class="card gform">
+      ${S.gxList ? `<div class="spread"><h3>Alle Übungen</h3><input id="gy-date" type="date" value="${D.date}" max="${S.today}" class="fsel" style="width:auto;padding:6px 8px;font-size:14px" aria-label="Tag des Trainings"></div>
+      <div class="gchips" role="group" aria-label="Was trainierst du?">${GDAYS.map(([k, n]) => `<button data-act="gy-day" data-k="${k}" aria-pressed="${D.day === k}">${n}</button>`).join('')}${D.day !== 'abs' ? `<button data-act="gy-abs" aria-pressed="${!!D.abs}">${icon('plus')}Bauch</button>` : ''}</div>` : ''}
+      ${S.gxList ? `<p class="fhint" style="margin:-4px 0 0">Alle Übungen: hier kannst du Übungen hinzufügen, entfernen oder einzeln ändern.</p>${grpHtml}
+      ${hidden ? `<button class="linkbtn" data-act="gx-unhide" style="justify-self:start;font-size:13px">Entfernte Übungen wieder anzeigen (${hidden})</button>` : ''}` : gymFocusHtml(D, gymOrder(D))}
+      <div class="gf-foot"><button class="btn" data-act="gy-save">${icon('check')}Speichern${doneN ? ` (${doneN})` : ''}</button><button class="linkbtn" data-act="gx-list">${S.gxList ? 'Zurück zur Übung' : 'Übungen bearbeiten'}</button></div>
+    </div>`;
 }
 
 function renderFort() {
@@ -8550,7 +8488,7 @@ Store.init().then(() => {
   } catch (e) {}
 })();
 /* Nur für Tests: index.html?dbg */
-if (/[?&]dbg\b/.test(location.search)) window.__np = { get S() { return S; }, get plan() { return todayPlan; }, get rem() { return todayRem; }, calcTargets, MEALS, FOODS, mealNameOf };
+if (/[?&]dbg\b/.test(location.search)) window.__np = { get S() { return S; }, get plan() { return todayPlan; }, get rem() { return todayRem; }, calcTargets, MEALS, FOODS, mealNameOf, rankBadge, RANKS };
 })();
 </script>
 
