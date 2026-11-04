@@ -1466,6 +1466,7 @@ button.hn-row:active .hn-ic{transform:scale(.94)}
 .kdish:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .tl-body .kmenu{margin:10px 0 2px}
 .hn-row.bk{--ic:var(--warn)}
+.tl-item.train.skipped .tl-name{text-decoration:none!important;opacity:1}
 /* Mengen anpassen im Tagesablauf */
 .sedit{display:grid;gap:12px}
 .sedit-h{margin:0;font-weight:650;font-size:14.5px}
@@ -3787,7 +3788,7 @@ function renderTimeline() {
   for (const ev of (P.events || [])) rows.push({ kind: 'event', t: ev.s0, ev });
   rows.sort((a, b) => a.t - b.t || (a.kind === 'event' ? -1 : b.kind === 'event' ? 1 : 0) || (a.kind === 'train' ? -1 : b.kind === 'train' ? 1 : 0));
   const now = nowMin();
-  let html = '', nowDone = false;
+  let html = trainSkippedRow(), nowDone = false;
   const nowRow = `<li class="tl-now" aria-label="Jetzt"><span>${toHHMM(now)}</span><i></i><b></b></li>`;
   for (const r of rows) {
     if (!nowDone && r.t > now) { html += nowRow; nowDone = true; }
@@ -3804,16 +3805,17 @@ function renderTimeline() {
     }
     if (r.kind === 'train') {
       const ty = TYPES[P.type], gym = P.type === 'gym';
-      const state = now >= r.end ? 'done' : (now >= r.t ? 'live' : 'soon');
+      const state = S.log.trainDone ? 'done' : now >= r.end ? 'ask' : (now >= r.t ? 'live' : 'soon');
       const after = P.slots.find(x => x.t >= r.end);
       const tip = state === 'done' ? (after && !meals[after.id] ? `Als Nächstes: ${esc(after.meal.n)} (${after.time})` : 'Erledigt, stark!')
+        : state === 'ask' ? `Warst du ${gym ? 'trainieren' : 'laufen'}?`
         : state === 'live' ? (gym ? 'Läuft gerade. Genug trinken!' : 'Läuft gerade. Locker bleiben, gleichmäßig atmen.')
         : (after ? `Danach: ${esc(after.meal.n)} um ${after.time}` : (gym ? 'Wasserflasche einpacken' : 'Schuhe raus, Wasser bereit'));
       html += `<li class="tl-item train ${state}">
         <span class="tl-time">${toHHMM(r.t)}</span><span class="tl-dot">${icon(state === 'done' ? 'check' : ty.icon)}</span>
         <div class="tl-body">
-          <div class="tl-head"><span class="tl-name">${gym ? gymTitle(dayInfo(S.profile, new Date()).f) : 'Laufen'}</span><span class="tl-kcal">${state === 'live' ? 'jetzt' : state === 'done' ? 'erledigt' : 'bis ' + toHHMM(r.end)}</span></div>
-          <div class="tl-sub"><span class="chip">${icon('clock')}ca. ${r.dur} min</span><span>${tip}</span></div>
+          <div class="tl-head"><span class="tl-name">${gym ? gymTitle(dayInfo(S.profile, new Date()).f) : 'Laufen'}</span><span class="tl-kcal">${state === 'live' ? 'jetzt' : state === 'done' ? 'erledigt' : state === 'ask' ? 'vorbei' : 'bis ' + toHHMM(r.end)}</span></div>
+          <div class="tl-sub"><span class="chip">${icon('clock')}ca. ${r.dur} min</span><span>${tip}</span></div>${trainActs(state, gym)}
         </div></li>`;
       continue;
     }
@@ -3905,7 +3907,7 @@ function planDayList(p, R, isToday) {
   let nextId = null;
   if (isToday) { const skipIds = new Set(R.open.filter(o => o.skip).map(o => o.id)); const nx = p.slots.find(s => !meals[s.id] && s.t >= now - 45 && !skipIds.has(s.id)); nextId = nx ? nx.id : null; }
   const nowRow = `<li class="tl-now" aria-label="Jetzt"><span>${toHHMM(now)}</span><i></i><b></b></li>`;
-  let html = '', nowDone = !isToday;
+  let html = isToday ? trainSkippedRow() : '', nowDone = !isToday;
   for (const r of rows) {
     if (!nowDone && r.t > now) { html += nowRow; nowDone = true; }
     if (r.kind === 'event') {
@@ -3916,12 +3918,12 @@ function planDayList(p, R, isToday) {
       continue;
     }
     if (r.kind === 'train') {
-      const gym = p.type === 'gym', state = !isToday ? 'soon' : now >= r.end ? 'done' : now >= r.t ? 'live' : 'soon';
+      const gym = p.type === 'gym', state = !isToday ? 'soon' : S.log.trainDone ? 'done' : now >= r.end ? 'ask' : now >= r.t ? 'live' : 'soon';
       const after = p.slots.find(x => x.t >= r.end);
-      const tip = state === 'done' ? 'Erledigt, stark!' : state === 'live' ? (gym ? 'Läuft gerade. Genug trinken!' : 'Läuft gerade. Locker bleiben.') : (after ? `Danach: ${esc(after.buy ? 'unterwegs kaufen' : after.meal.n)} um ${after.time}` : (gym ? 'Wasserflasche einpacken' : 'Schuhe raus, Wasser bereit'));
+      const tip = state === 'done' ? 'Erledigt, stark!' : state === 'ask' ? `Warst du ${gym ? 'trainieren' : 'laufen'}?` : state === 'live' ? (gym ? 'Läuft gerade. Genug trinken!' : 'Läuft gerade. Locker bleiben.') : (after ? `Danach: ${esc(after.buy ? 'unterwegs kaufen' : after.meal.n)} um ${after.time}` : (gym ? 'Wasserflasche einpacken' : 'Schuhe raus, Wasser bereit'));
       html += `<li class="tl-item train ${state}"><span class="tl-time">${toHHMM(r.t)}</span><span class="tl-dot">${icon(state === 'done' ? 'check' : TYPES[p.type].icon)}</span>
-        <div class="tl-body"><div class="tl-head"><span class="tl-name">${gym ? gymTitle(dayInfo(S.profile, new Date(p.date + 'T12:00')).f) : 'Laufen'}</span><span class="tl-kcal">${state === 'live' ? 'jetzt' : state === 'done' ? 'erledigt' : 'bis ' + toHHMM(r.end)}</span></div>
-        <div class="tl-sub"><span class="chip">${icon('clock')}ca. ${r.dur} min</span><span>${tip}</span></div></div></li>`;
+        <div class="tl-body"><div class="tl-head"><span class="tl-name">${gym ? gymTitle(dayInfo(S.profile, new Date(p.date + 'T12:00')).f) : 'Laufen'}</span><span class="tl-kcal">${state === 'live' ? 'jetzt' : state === 'done' ? 'erledigt' : state === 'ask' ? 'vorbei' : 'bis ' + toHHMM(r.end)}</span></div>
+        <div class="tl-sub"><span class="chip">${icon('clock')}ca. ${r.dur} min</span><span>${tip}</span></div>${isToday ? trainActs(state, gym) : ''}</div></li>`;
       continue;
     }
     if (r.kind === 'extra') {
@@ -5746,6 +5748,18 @@ function renderCal() {
 }
 
 
+/* Training selbst bestätigen: nach der Zeit fragt die App, ob es stattgefunden hat. Fällt es aus, gilt der Tag als Ruhetag
+   (weniger Kalorien und Kohlenhydrate), mit Rückgängig. */
+function trainActs(state, gym) {
+  if (state === 'done') return `<div class="tl-acts"><button data-act="train-undo">${icon('arrow-clockwise')}Rückgängig</button></div>`;
+  if (state === 'ask') return `<div class="tl-acts"><button data-act="train-done">${icon('check')}${gym ? 'Trainiert' : 'Gelaufen'}</button><button data-act="train-skip">${icon('x')}Ausgefallen</button></div>`;
+  return `<div class="tl-acts"><button data-act="train-skip">${icon('x')}Fällt heute aus</button></div>`;
+}
+function trainSkippedRow() {
+  const t = S.log.trainSkipped; if (!t || !TYPES[t]) return '';
+  return `<li class="tl-item train skipped"><span class="tl-time"></span><span class="tl-dot">${icon('x')}</span><div class="tl-body"><div class="tl-head"><span class="tl-name">${t === 'gym' ? 'Training' : 'Laufen'} ausgefallen</span><span class="tl-kcal">Ruhetag</span></div>
+    <div class="tl-sub"><span>Heute zählt als Ruhetag, deine Ziele sind angepasst.</span></div><div class="tl-acts"><button data-act="train-unskip">${icon('arrow-clockwise')}Doch ${t === 'gym' ? 'trainiert' : 'gelaufen'}</button></div></div></li>`;
+}
 /* ================= Mengen anpassen ================= */
 /* Im Tagesablauf: Mengen und Zutaten einer Mahlzeit so eintragen, wie man sie wirklich gegessen hat
    (z. B. die ganze 274-g-Packung Fleisch). Danach rechnet die App den Rest des Tages neu. */
@@ -6268,7 +6282,11 @@ document.addEventListener('click', e => {
     S.prefs = { ...S.prefs, swaps: sw }; Store.savePrefs(); afterTaste();
     toast(a === 'nocook' ? 'Getauscht: ohne Kochen, gleiche Nährwerte' : 'Wieder das gekochte Gericht'); return;
   }
-  if (a === 'daytype-set') return mutateLog(l => { l.dayType = b.dataset.v; }, `Heute: ${TYPES[b.dataset.v].n}`);
+  if (a === 'daytype-set') return mutateLog(l => { l.dayType = b.dataset.v; delete l.trainSkipped; delete l.trainDone; }, `Heute: ${TYPES[b.dataset.v].n}`);
+  if (a === 'train-done') return mutateLog(l => { l.trainDone = true; }, 'Erledigt, stark!');
+  if (a === 'train-undo') return mutateLog(l => { delete l.trainDone; }, 'Zurückgesetzt');
+  if (a === 'train-skip') { const cur = todayPlan.type; return mutateLog(l => { l.trainSkipped = cur; l.dayType = 'rest'; delete l.trainDone; }, 'Heute als Ruhetag gerechnet, Ziele angepasst'); }
+  if (a === 'train-unskip') return mutateLog(l => { const t = l.trainSkipped; delete l.trainSkipped; l.dayType = t || null; l.trainDone = true; }, 'Training zählt wieder, Ziele angepasst');
   if (a === 'info-goal') { S.profile.goal = b.dataset.v; profileChanged(true); return; }
   if (a === 'info-weight') {
     const v = parseFloat(String($('#i-w').value).replace(',', '.'));
