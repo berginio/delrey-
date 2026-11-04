@@ -6634,8 +6634,9 @@ document.addEventListener('click', e => {
   }
   if (a === 'frange') { S.frange = b.dataset.r; try { localStorage.setItem('np:frange', S.frange); } catch (e) {} renderFort(); return; }
   if (a === 'fw-step') { const i = $('#fw-kg'), v = num(i.value); i.value = dec1(Math.max(30, (isFinite(v) && v > 0 ? v : (+S.profile.weight || 75)) + (+b.dataset.d))); return; }
+  if (a === 'run-stats' || a === 'run-log') { S.runStats = a === 'run-stats'; S.fseg = 'run'; if (S.tab !== 'fort') setTab('fort'); else { renderFort(); window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }); } return; }
   if (a === 'gym-stats' || a === 'gym-log') { S.gymStats = a === 'gym-stats'; S.fseg = 'gym'; if (S.tab !== 'fort') setTab('fort'); else { renderFort(); window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }); } return; }
-  if (a === 'fort-seg') { S.gymStats = false; S.fseg = b.dataset.s; try { localStorage.setItem('np:fseg', S.fseg); } catch (e) {} if (S.tab !== 'fort') setTab('fort'); else { renderFort(); window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }); } return; }
+  if (a === 'fort-seg') { S.gymStats = false; S.runStats = false; S.fseg = b.dataset.s; try { localStorage.setItem('np:fseg', S.fseg); } catch (e) {} if (S.tab !== 'fort') setTab('fort'); else { renderFort(); window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }); } return; }
   if (a === 'fw-save') {
     const v = num($('#fw-kg').value), date = $('#fw-date').value || S.today;
     if (!(v > 30 && v < 250)) { toast('Bitte ein Gewicht in kg eingeben, z. B. 79,4'); $('#fw-kg').focus(); return; }
@@ -8026,7 +8027,7 @@ function fortAll() {
   return rankCard() + streakCard() + rangeRow() + `<div class="otiles">`
     + tile('gym', 'Gym', tileSub('tg', 'Gym', F.g.pts, F.g.o)).replace('data-act="fort-seg" data-s="gym"', 'data-act="gym-stats"')
     + tile('weight', 'Körpergewicht', tileSub('tw', 'Körpergewicht', F.w.pts, F.w.o))
-    + tile('run', 'Laufen', `<span class="ft-h">Laufen</span><span class="ft-two">${tileSub('tp', 'Tempo', F.p.pts, F.p.o, 56)}${tileSub('td', 'Distanz', F.dk.pts, F.dk.o, 56)}</span>`, true)
+    + tile('run', 'Laufen', `<span class="ft-h">Laufen</span><span class="ft-two">${tileSub('tp', 'Tempo', F.p.pts, F.p.o, 56)}${tileSub('td', 'Distanz', F.dk.pts, F.dk.o, 56)}</span>`, true).replace('data-act="fort-seg" data-s="run"', 'data-act="run-stats"')
     + `</div>`;
 }
 
@@ -8048,14 +8049,17 @@ function fortWeight() {
 function fortRun() {
   const runs = runPts(), last = runs[runs.length - 1];
   const best = runs.reduce((b, r) => !b || r.sec / r.km < b.sec / b.km ? r : b, null);
-  return `<div class="card"><h3>Lauf eintragen</h3>
+  const form = `<div class="card"><h3>Lauf eintragen</h3>
       <div class="field" style="margin-top:10px"><label for="fr-km">Distanz</label><label class="gin"><input id="fr-km" inputmode="decimal" autocomplete="off" value="${last ? dec1(last.km) : ''}" placeholder="5,0"><em>km</em></label>
         <div class="fr-chips" role="group" aria-label="Übliche Strecken">${[...new Set([last ? Math.round(last.km * 10) / 10 : null, 3, 5, 7.5, 10, 21.1].filter(Boolean))].slice(0, 5).map(k => `<button class="pchip" data-act="fr-km" data-v="${k}" aria-pressed="${!!last && Math.abs(last.km - k) < 0.05}">${dec1(k)} km</button>`).join('')}</div></div>
       <div class="two" style="margin-top:10px"><div class="field"><label for="fr-min">Zeit</label><label class="gin"><input id="fr-min" inputmode="numeric" autocomplete="off" placeholder="${last ? Math.floor(last.sec / 60) : '30'}"><em>min</em></label></div>
         <div class="field"><label for="fr-sec">&nbsp;</label><label class="gin"><input id="fr-sec" inputmode="numeric" autocomplete="off" placeholder="00"><em>sek</em></label></div></div>
       <div class="field" style="margin-top:10px"><label for="fr-date">Tag</label><input id="fr-date" type="date" value="${S.today}" max="${S.today}"></div>
-      <button class="btn" data-act="fr-save" style="margin-top:12px">${icon('check')}Lauf speichern</button>
-      ${best ? `<p class="fhint">Dein bestes Tempo bisher: <b>${mmss(best.sec / best.km)} min/km</b> (${dShort(best.date)}).</p>` : ''}</div>
+      <button class="btn" data-act="fr-save" style="margin-top:12px">${icon('check')}Lauf speichern</button></div>`;
+  // Vergangene Läufe und Kurven nur über die Lauf-Kachel in der Gesamtansicht
+  if (!S.runStats) return form;
+  return `<button class="linkbtn" data-act="run-log" style="justify-self:start;margin:0 0 8px">${icon('arrow-left')}Lauf eintragen</button>
+    ${best ? `<div class="card"><p class="fhint" style="margin:0">Dein bestes Tempo bisher: <b>${mmss(best.sec / best.km)} min/km</b> (${dShort(best.date)}).</p></div>` : ''}
     ${runs.length > 1 ? (() => { const F = fortSpecs(); return rangeRow() + `<div class="card stk">${stockSub('sp', 'Tempo', F.p.pts, { ...F.p.o, h: 130 })}${stockSub('sd', 'Distanz', F.dk.pts, { ...F.dk.o, h: 130 })}</div>`; })() : ''}
     ${runs.length ? `<div class="card"><h3>Letzte Läufe</h3><ul class="flist">${runs.slice().reverse().slice(0, S.fmore === 'run' ? 30 : 3).map(r => `<li><div><b>${dec1(r.km)} km in ${mmss(r.sec)}</b><small>${dShort(r.date)} · ${mmss(r.sec / r.km)} min/km</small></div><span></span><button class="ddel" data-act="fr-del" data-id="${esc(r.id)}" aria-label="Lauf löschen">${icon('x')}</button></li>`).join('')}</ul>${moreBtn('run', runs.length)}</div>` : ''}`;
 }
