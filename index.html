@@ -1467,6 +1467,8 @@ button.hn-row:active .hn-ic{transform:scale(.94)}
 .tl-body .kmenu{margin:10px 0 2px}
 .hn-row.bk{--ic:var(--warn)}
 .tl-item.train.skipped .tl-name{text-decoration:none!important;opacity:1}
+.prep .bag{list-style:none;margin:6px 0 8px;padding:0;display:grid;gap:4px;font-size:15px}
+.prep .bag b{display:inline-block;min-width:52px;font-variant-numeric:tabular-nums}
 /* Mengen anpassen im Tagesablauf */
 .sedit{display:grid;gap:12px}
 .sedit-h{margin:0;font-weight:650;font-size:14.5px}
@@ -3872,7 +3874,7 @@ function renderPlan() {
   const kantineMode = (pr.workLunch || 'kantine') === 'kantine';
   let html = planSummary(p, R, isToday) + (isToday ? planNotes(p, R) : '') + evListCard(p) + planDayList(p, R, isToday);
   if (prepTomorrow.length) html += kantineMode
-    ? `<div class="card prep"><span class="ico-big">${icon('briefcase')}</span><div><h3>Morgen in die Tasche</h3><p>${[...new Set(prepTomorrow.map(s => s.meal.n))].map(esc).join(', ')}. Mittag gibt es in der Kantine.</p></div></div>`
+    ? `<div class="card prep"><span class="ico-big">${icon('briefcase')}</span><div><h3>Morgen in die Tasche</h3><ul class="bag">${bagList(prepTomorrow).map(x => `<li>${x}</li>`).join('')}</ul><p>Mittag gibt es in der Kantine.</p></div></div>`
     : `<div class="card prep"><span class="ico-big">${icon('cooking-pot')}</span><div><h3>Heute Abend für morgen</h3><p>${prepTomorrow.map(s => esc(s.meal.n)).join(' und ')} vorbereiten und in Boxen packen, dann ist das Essen für die Arbeit fertig.</p></div></div>`;
   const el = $('#planDay');
   if (el.dataset.h !== html) { el.innerHTML = html; el.dataset.h = html; }
@@ -5759,6 +5761,14 @@ function trainSkippedRow() {
   const t = S.log.trainSkipped; if (!t || !TYPES[t]) return '';
   return `<li class="tl-item train skipped"><span class="tl-time"></span><span class="tl-dot">${icon('x')}</span><div class="tl-body"><div class="tl-head"><span class="tl-name">${t === 'gym' ? 'Training' : 'Laufen'} ausgefallen</span><span class="tl-kcal">Ruhetag</span></div>
     <div class="tl-sub"><span>Heute zählt als Ruhetag, deine Ziele sind angepasst.</span></div><div class="tl-acts"><button data-act="train-unskip">${icon('arrow-clockwise')}Doch ${t === 'gym' ? 'trainiert' : 'gelaufen'}</button></div></div></li>`;
+}
+/* Was in die Tasche muss: Zutaten aller Arbeits-Snacks zusammengezählt, Stückobst als „2× Banane“ */
+function bagList(slots) {
+  const sum = {};
+  for (const s of slots) for (const it of s.items || []) if (it.g > 0) sum[it.food] = (sum[it.food] || 0) + it.g;
+  return Object.entries(sum).map(([k, g]) => { const F = FOODS[k]; if (!F) return '';
+    if (F.piece) { const n = Math.max(1, Math.round(g / F.piece)); return `<b>${n}×</b> ${esc(n === 1 ? F.pn[0] : F.pn[1])}`; }
+    return `<b>${fmt(g)} ${F.unit || 'g'}</b> ${esc(F.nom || F.n)}`; }).filter(Boolean);
 }
 /* ================= Mengen anpassen ================= */
 /* Im Tagesablauf: Mengen und Zutaten einer Mahlzeit so eintragen, wie man sie wirklich gegessen hat
