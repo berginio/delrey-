@@ -2105,19 +2105,19 @@ const CATS = [
 const MEALS = {
   porridge:   {n:'Power-Porridge', cook:true, icon:'bowl-steam', items:[['oats',70,'C','core'],['milk',250,0],['whey',30,'P'],['banana',120,0],['pb',15,'F']],
                how:'Haferflocken mit {1d} aufkochen, vom Herd nehmen. {2n} einrühren. {3n} drauf. {4n} drüber.'},
-  eggbread:   {n:'Rührei mit {1d}', cook:true, icon:'egg', items:[['eggs',180,'F','core'],['bread',100,'C','main'],['ham',40,'P'],['orange',180,0],['tomato',80,0]],
+  eggbread:   {n:'Rührei mit {1d}, dazu {3n}', cook:true, icon:'egg', items:[['eggs',180,'F','core'],['bread',100,'C','main'],['ham',40,'P'],['orange',180,0],['tomato',80,0]],
                how:'Eier verquirlen und in der Pfanne stocken lassen. {1n} dazu. {2n} drauf. {3n} als Obst dazu. {4n} halbiert daneben.'},
   pancakes:   {n:'Protein-Pancakes', cook:true, icon:'egg', items:[['oats',60,'C','core'],['eggs',120,'F','core'],['skyr',150,'P'],['banana',120,0],['berries',100,0],['honey',10,0]],
                how:'Haferflocken und Eier mixen. {2n} einrühren. Kleine Pancakes braten. {3n} drauf. {4n} drüber. {5n} zum Schluss.'},
   muesli:     {n:'{0p}-Müsli', icon:'bowl-food', items:[['skyr',200,'P','main'],['oats',60,'C','core'],['banana',120,0],['peanuts',15,'F']],
                how:'Haferflocken in {0d} rühren. {2n} in Scheiben drauf. {3n} drüber.'},
-  rollbf:     {n:'Semmeln mit {1d}', icon:'bread', items:[['roll',120,'C','core'],['ham',60,'P','main'],['creamch',30,'F'],['orange',180,0],['cucumber',60,0]],
+  rollbf:     {n:'Semmeln mit {1d}, dazu {3n}', icon:'bread', items:[['roll',120,'C','core'],['ham',60,'P','main'],['creamch',30,'F'],['orange',180,0],['cucumber',60,0]],
                how:'Semmeln aufschneiden. Mit {2d} bestreichen. Mit {1d} belegen. {4n} in Scheiben drauf. {3n} dazu.'},
   skyrbowl:   {n:'{0p}-Bowl', icon:'bowl-food', items:[['skyr',200,'P','main'],['berries',125,0],['oats',20,'C'],['peanuts',15,'F']],
                how:'Am Vorabend {0n} in eine Box. {1n} drauf. {2n} extra einpacken. {3n} dazu.'},
   cottagebread:{n:'{1p}-Brote', icon:'bread', items:[['bread',100,'C','main'],['cottage',150,'P','main'],['apple',160,0],['peanuts',10,'F'],['cucumber',80,0]],
                how:'{0n} dick mit {1d} bestreichen, Salz und Pfeffer drauf. {4n} in Scheiben drauf. {2n} dazu. {3n} als Snack.'},
-  shake:      {n:'Protein-Shake', icon:'drop', items:[['whey',30,0,'main'],['milk',300,0],['peanuts',15,'F']],
+  shake:      {n:'Protein-Shake mit {1d}, dazu {2n}', icon:'drop', items:[['whey',30,0,'main'],['milk',300,0],['peanuts',15,'F']],
                how:'{0n} mit {1d} shaken. {2n} dazu, das hält satt.'},
   chickenbox: {n:'{2p}-{0n} mit {1d}', cook:true, icon:'bowl-food', items:[['chicken',180,'P','main'],['rice',85,'C','main'],['teriyaki',25,0,'main'],['oil',8,'F'],['broccoli',150,0]],
                how:'{1n} kochen. {4n} kurz mitdünsten. {0n} in Streifen anbraten. Mit {2d} ablöschen.'},
@@ -2125,9 +2125,9 @@ const MEALS = {
                how:'{0n} in Streifen braten. Mit {2d} einrollen. {5n} mit rein. {6n} mit rein. {3n} mit Salz und Knoblauch als Dip dazu.'},
   tunabowl:   {n:'{1p}-Bowl mit {0d}', cook:true, icon:'fish', items:[['tuna',110,0,'main'],['rice',80,'C','main'],['eggs',60,'F'],['teriyaki',20,0],['cucumber',100,0]],
                how:'{1n} kochen und {0n} drauf. Ein Spiegelei dazu{2x}. {4n} in Würfeln dazu. {3n} drüber.'},
-  prerice:    {n:'{0n} mit {2d}', icon:'lightning', items:[['ricecake',32,'C','main'],['honey',15,0],['apple',160,0,'main']],
+  prerice:    {n:'{0n} mit {1d} und {2d}', icon:'lightning', items:[['ricecake',32,'C','main'],['honey',15,0],['apple',160,0,'main']],
                how:'60 bis 90 Minuten vor dem Training. Schnelle Kohlenhydrate, kaum Fett, liegt nicht schwer im Magen. {1n} drauf.'},
-  prerun:     {n:'{0n} & {1n}', icon:'lightning', items:[['banana',120,0,'main'],['ricecake',16,'C','main'],['honey',10,0]],
+  prerun:     {n:'{0n} & {1n} mit {2d}', icon:'lightning', items:[['banana',120,0,'main'],['ricecake',16,'C','main'],['honey',10,0]],
                how:'45 bis 60 Minuten vor dem Lauf. Leicht verdaulich und gibt Energie für die Beine. {2n} drauf.'},
   pasta:      {n:'Pasta mit {1d} in {2n}-Sauce', cook:true, icon:'cooking-pot', items:[['pasta',110,'C','core'],['chicken',170,'P','main'],['creamch',50,'F','main'],['parmesan',10,0],['spinach',120,0]],
                how:'Nudeln kochen. {1n} in Würfeln anbraten. {4n} mit in die Pfanne. {2n} mit einem Schuss Nudelwasser einrühren. {3n} drüber.'},
@@ -2179,9 +2179,9 @@ const MEALS = {
                how:'Pulver zu Hause in den Shaker. Auf Arbeit mit 400 bis 500 ml kaltem Wasser auffüllen und schütteln.'},
   wheyshake:  {n:'Protein-Shake', icon:'drop', items:[['whey',30,'P','core']],
                how:'Pulver zu Hause in den Shaker. Auf Arbeit mit Wasser oder Milch auffüllen und schütteln.'},
-  breadhoney: {n:'{0n} mit {1d}', icon:'bread', items:[['bread',100,'C','main'],['honey',20,'C','main'],['banana',120,0]],
+  breadhoney: {n:'{0n} mit {1d}, dazu {2n}', icon:'bread', items:[['bread',100,'C','main'],['honey',20,'C','main'],['banana',120,0]],
                how:'Einfache Extra-Kohlenhydrate für Tage mit viel Bedarf. {2n} dazu.'},
-  isobanana:  {n:'Isoclear-Shake & {1n}', icon:'lightning', items:[['isoclear',25,0,'core'],['banana',120,0,'main'],['ricecake',16,'C']],
+  isobanana:  {n:'Isoclear-Shake, {1n} & {2n}', icon:'lightning', items:[['isoclear',25,0,'core'],['banana',120,0,'main'],['ricecake',16,'C']],
                how:'Etwa eine Stunde vor dem Gym. Shake und Obst geben Eiweiß und schnelle Energie. {2n} passen in jede Tasche.'},
 };
 const POOLS = {
@@ -2233,6 +2233,12 @@ function fillText(tpl, items) {
     return ok ? out : '';
   }).filter(Boolean).join(' ').replace(/\s{2,}/g, ' ').trim();
 }
+/* Namen von Mahlzeiten: fehlt eine Zutat (z. B. abgewählt), fällt nur ihr Teil weg statt des ganzen Namens */
+function fillName(tpl, items) {
+  const parts = String(tpl).split(/(, dazu | & | und | mit |, )/), segs = [];
+  for (let i = 0; i < parts.length; i += 2) { const t = fillText(parts[i], items); if (t) segs.push((segs.length ? parts[i - 1] : '') + t); }
+  return segs.join('') || fillText(tpl, items);
+}
 function resolveMeal(key, taste, used) {
   const M = MEALS[key];
   if (!M) return null;
@@ -2254,7 +2260,7 @@ function resolveMeal(key, taste, used) {
     swaps.push({ from: food, to: null });
   }
   return {
-    key, icon: M.icon, cook: !!M.cook, n: fillText(M.n, items), how: fillText(M.how || '', items), swaps,
+    key, icon: M.icon, cook: !!M.cook, n: fillName(M.n, items), how: fillText(M.how || '', items), swaps,
     items: items.map(it => [it.food, it.g, it.lev, it.role, it.from]),
   };
 }
@@ -2262,7 +2268,7 @@ function pickMeal(pref, pool, taste, used) {
   const order = [pref].concat(pool.filter(k => k !== pref));
   for (const k of order) { const r = resolveMeal(k, taste, used); if (r) return { ...r, replaced: k !== pref ? pref : null }; }
   const M = MEALS[pref];
-  return { key: pref, icon: M.icon, cook: !!M.cook, n: fillText(M.n, M.items.map(([food, g], idx) => ({ idx, food, g }))), how: '', swaps: [], items: M.items.slice(), blocked: true };
+  return { key: pref, icon: M.icon, cook: !!M.cook, n: fillName(M.n, M.items.map(([food, g], idx) => ({ idx, food, g }))), how: '', swaps: [], items: M.items.slice(), blocked: true };
 }
 
 /* Gewürze aus den Anleitungen. Sie zählen nicht zu den Nährwerten, kommen aber auf den Einkauf,
@@ -3162,7 +3168,7 @@ const cookBtn = (meal, date, slotId) => {
 };
 const lazyChip = meal => meal.lazy ? `<span class="chip">${icon('clock')}Ohne Kochen</span>` : '';
 const tasteBtn = key => key === 'kantine' ? '' : `<button class="taste-btn" data-act="taste-meal" data-meal="${key}">${icon('thumbs-down')}Schmeckt mir nicht</button>`;
-function mealNameOf(key) { const M = MEALS[key]; return fillText(M.n, M.items.map(([food, g], idx) => ({ idx, food, g }))); }
+function mealNameOf(key) { const M = MEALS[key]; return fillName(M.n, M.items.map(([food, g], idx) => ({ idx, food, g }))); }
 const dec = n => (Math.round((+n || 0) * 10) / 10).toString().replace('.', ',');
 const leuMeal = () => calcTargets(S.profile).leuMeal;
 const leuHit = t => t && t.leu != null && t.leu >= leuMeal() - 0.05;
@@ -8046,7 +8052,7 @@ Store.init().then(() => {
   } catch (e) {}
 })();
 /* Nur für Tests: index.html?dbg */
-if (/[?&]dbg\b/.test(location.search)) window.__np = { get S() { return S; }, get plan() { return todayPlan; }, get rem() { return todayRem; }, calcTargets };
+if (/[?&]dbg\b/.test(location.search)) window.__np = { get S() { return S; }, get plan() { return todayPlan; }, get rem() { return todayRem; }, calcTargets, MEALS, FOODS, mealNameOf };
 })();
 </script>
 
