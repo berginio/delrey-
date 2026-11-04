@@ -1507,6 +1507,7 @@ button.hn-row:active .hn-ic{transform:scale(.94)}
 .wz-side{display:grid;gap:8px}
 .wz-side.on .wz-sz{padding:0 2px 4px}
 .wz-two{display:grid;grid-template-columns:minmax(0,1fr) 112px;gap:10px}
+.wz-two.one{grid-template-columns:1fr}
 .wz-rec{display:grid;gap:8px}
 .hn-log{width:100%;margin-top:-4px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
@@ -3942,13 +3943,14 @@ function planDayList(p, R, isToday) {
       s.atWork ? `<span class="chip">${icon('briefcase')}Arbeit</span>` : '', s.away ? `<span class="chip warn">${icon('package')}Unterwegs</span>` : '',
       s.buy ? `<span class="chip warn">${icon('storefront')}Kaufen</span>` : '', s.moved ? `<span class="chip warn">${icon('clock')}verschoben</span>` : '',
       s.breakEnd ? `<span class="chip">${icon('clock')}Pause bis ${s.breakEnd}</span>` : '', s.meal.lazy && !s.buy ? `<span class="chip">${icon('clock')}Ohne Kochen</span>` : ''].join('');
-    const editing = isToday && S.slotEdit && S.slotEdit.id === s.id;
-    const body = state === 'skipped' ? '' : s.buy ? buyBlock(s, tot, isToday && state === 'open')
+    const editing = isToday && S.slotEdit && S.slotEdit.id === s.id, dish = st && st.state === 'eaten' && st.dish;
+    const body = state === 'skipped' ? '' : dish ? `${st.parts && st.parts.length ? `<ul class="ings">${st.parts.map(x => `<li><span>${esc(x.n)}</span><span class="num">${fmt(x.g)} g</span></li>`).join('')}</ul>` : ''}${macroLine(tot)}`
+      : s.buy ? buyBlock(s, tot, isToday && state === 'open')
       : editing ? slotEditHtml()
       : `${ingList(items, adj && adj.changed ? s.items : null, s.key)}${macroLine(tot)}
         ${s.meal.how ? `<div class="howt"><span class="label">So geht's</span><p>${esc(s.meal.how)}</p>${spiceLine(s.key)}</div>` : ''}
         <div class="row">${cookBtn(s.meal, p.date, s.id)}${tasteBtn(s.key)}</div>`;
-    const canEdit = !s.buy && s.key !== 'kantine' && !(S.slotEdit && S.slotEdit.id === s.id);
+    const canEdit = !s.buy && s.key !== 'kantine' && !dish && !(S.slotEdit && S.slotEdit.id === s.id);
     const acts = !isToday ? '' : state !== 'open' ? `<button data-act="undo" data-slot="${s.id}">${icon('arrow-clockwise')}Rückgängig</button>${state === 'eaten' && canEdit ? `<button data-act="slot-edit" data-slot="${s.id}">${icon('pencil-simple')}Menge ändern</button>` : ''}`
       : s.buy ? `<button data-act="skip" data-slot="${s.id}">${icon('x')}Nichts gekauft</button>`
       : s.key === 'kantine' ? (kantineToday().length ? '' : `<button data-act="log-kantine" data-slot="${s.id}">${icon('storefront')}Eintragen, was es gab</button><button data-act="eat" data-slot="${s.id}">${icon('check')}Wie geplant</button>`)
@@ -3956,7 +3958,7 @@ function planDayList(p, R, isToday) {
       : `<button data-act="eat" data-slot="${s.id}">${icon('check')}Gegessen</button>${canEdit ? `<button data-act="slot-edit" data-slot="${s.id}">${icon('pencil-simple')}Andere Menge</button>` : ''}<button data-act="skip" data-slot="${s.id}">${icon('x')}Auslassen</button>`;
     html += `<li class="tl-item ${state} ${isNext ? 'nx' : ''}"><span class="tl-time">${s.time}</span><span class="tl-dot"></span>
       <div class="tl-body"><details class="prow" data-row="${key}" ${open ? 'open' : ''}><summary>
-        <div class="tl-head"><span class="tl-name">${s.buy ? 'Unterwegs kaufen' : esc(s.meal.n)}</span><span class="tl-kcal">${state === 'skipped' ? 'ausgelassen' : fmt(tot.kcal) + ' kcal'}${state === 'skipped' ? '' : icon('caret-down', 'pcar')}</span></div>
+        <div class="tl-head"><span class="tl-name">${dish ? esc(dish) : s.buy ? 'Unterwegs kaufen' : esc(s.meal.n)}</span><span class="tl-kcal">${state === 'skipped' ? 'ausgelassen' : fmt(tot.kcal) + ' kcal'}${state === 'skipped' ? '' : icon('caret-down', 'pcar')}</span></div>
         <div class="tl-sub">${chips}</div></summary><div class="pbody">${body}</div></details>
         ${acts ? `<div class="tl-acts">${acts}</div>` : ''}${isToday && state === 'open' && s.key === 'kantine' ? kantineMenuHtml(s.id) : ''}</div></li>`;
   }
@@ -5622,7 +5624,7 @@ function chatSave() {
       leu: Math.round(e.p * LEU_PER_P * 10) / 10, src: 'chat', replaces: (sel && sel.value) || null };
   });
   S.chatPend = null; S.chatMsg = '';
-  mutateLog(l => { l.extras = (l.extras || []).concat(entries); for (const en of entries) if (en.replaces) l.meals[en.replaces] = { state: 'skipped', by: en.id }; },
+  mutateLog(l => { for (const en of entries) if (!(en.replaces && dishAsSlot(l, en.replaces, en))) l.extras = (l.extras || []).concat(en); },
     entries.length === 1 ? 'Eingetragen, Rest neu berechnet' : `${entries.length} Einträge übernommen`);
   renderChatCard();
   if (S.tab === 'track') setTimeout(() => setTab('tag', -1), 250);
@@ -5651,7 +5653,7 @@ function kantinePick(slot, i) {
   const sl = todayPlan && todayPlan.slots.find(s => s.id === slot);
   const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
   const entry = { id, name: 'Kantine: ' + k.n, time: sl ? sl.time : toHHMM(nowMin()), kcal: k.kcal, p: k.p, c: k.c, f: k.f, fib: 0, leu: Math.round(k.p * LEU_PER_P * 10) / 10, src: 'kantine', replaces: sl ? slot : null };
-  mutateLog(l => { l.extras = (l.extras || []).concat(entry); if (sl) l.meals[slot] = { state: 'skipped', by: id }; }, `${k.n} eingetragen, Rest neu berechnet`);
+  mutateLog(l => { if (!(sl && dishAsSlot(l, slot, { ...entry, name: k.n }))) l.extras = (l.extras || []).concat(entry); }, `${k.n} eingetragen, Rest neu berechnet`);
   if (S.tab === 'plan') renderPlan();
 }
 
@@ -5784,6 +5786,14 @@ function slotEditSave() {
   if (S.tab === 'plan') renderPlan();
 }
 
+/* Ein eingetragenes Gericht IST diese Mahlzeit: als gegessen speichern (mit Name und Nährwerten), nicht als ausgelassen + Extra */
+function dishAsSlot(l, slotId, e) {
+  const sl = todayPlan && todayPlan.slots.find(s => s.id === slotId); if (!sl) return false;
+  const r = v => Math.round((+v || 0) * 10) / 10;
+  l.meals[slotId] = { state: 'eaten', at: sl.time, dish: e.name, parts: e.parts || null, edited: true,
+    tot: { kcal: r(e.kcal), p: r(e.p), c: r(e.c), f: r(e.f), fib: r(e.fib), leu: e.leu != null ? r(e.leu) : r((+e.p || 0) * LEU_PER_P) } };
+  return true;
+}
 /* ================= Essen eintragen: Fragebogen ================= */
 /* Gericht wählen, dann Schritt für Schritt: Fleisch, Sorte, Beilagen, Sauce und wie viel.
    Nährwerte pro 100 g (bzw. 100 ml), typische Werte für zubereitete Speisen. */
@@ -5984,11 +5994,11 @@ function wzSave() {
   const t = wzMac(items), rep = ($('#wzRep') || {}).value || '', time = ($('#wzTime') || {}).value || W.time;
   const sl = rep && todayPlan && todayPlan.slots.find(s => s.id === rep);
   const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
-  const entry = { id, name: W.name, time: rep && sl && !($('#wzTime') || {}).dataset.touched ? sl.time : time, kcal: Math.round(t.kcal), p: Math.round(t.p), c: Math.round(t.c), f: Math.round(t.f), fib: 0,
+  const entry = { id, name: W.name, time: rep && sl ? sl.time : time, kcal: Math.round(t.kcal), p: Math.round(t.p), c: Math.round(t.c), f: Math.round(t.f), fib: 0,
     leu: Math.round(t.p * LEU_PER_P * 10) / 10, src: 'wizard', replaces: rep || null, parts: items.map(i => ({ n: wcName(i.id), g: i.g })) };
   try { const R = wzRecent().filter(r => r.name !== W.name); R.unshift({ name: W.name, items }); localStorage.setItem(WZ_REC, JSON.stringify(R.slice(0, 6))); } catch (e) {}
   S.wz = null; S.kantineSlot = null;
-  mutateLog(l => { l.extras = (l.extras || []).concat(entry); if (rep) l.meals[rep] = { state: 'skipped', by: id }; }, `${entry.name}: ${fmt(entry.kcal)} kcal eingetragen`);
+  mutateLog(l => { if (!(rep && dishAsSlot(l, rep, entry))) l.extras = (l.extras || []).concat(entry); }, rep && sl ? `${entry.name} als ${sl.label} eingetragen` : `${entry.name}: ${fmt(entry.kcal)} kcal eingetragen`);
   renderWizard();
   if (S.tab === 'track') setTimeout(() => setTab('tag', -1), 300);
 }
@@ -6017,8 +6027,8 @@ function renderWizard() {
         <button class="sedit-x" data-act="wz-del" data-i="${i}" aria-label="${esc(wcName(it.id))} entfernen">${icon('x')}</button></li>`).join('')}</ul>
       <p class="sedit-sum" id="wzSum"><b>${fmt(t.kcal)} kcal</b> · Eiweiß ${fmt(t.p)} g · KH ${fmt(t.c)} g · Fett ${fmt(t.f)} g</p>
       <p class="fhint" style="margin:0">Die Mengen sind geschätzt. Wenn du es genauer weißt, ändere sie einfach.</p>
-      <div class="wz-two"><div class="field" style="margin:0"><label for="wzRep">Statt einer Mahlzeit?</label><select id="wzRep"><option value="">Zusätzlich gegessen</option>${open.map(s => `<option value="${s.id}" ${W.rep === s.id ? 'selected' : ''}>Statt ${esc(s.label)}</option>`).join('')}</select></div>
-      <div class="field" style="margin:0"><label for="wzTime">Uhrzeit</label><input id="wzTime" type="time" value="${W.time}"></div></div>
+      <div class="wz-two ${W.rep ? 'one' : ''}"><div class="field" style="margin:0"><label for="wzRep">Welche Mahlzeit war das?</label><select id="wzRep"><option value="">Etwas zusätzlich</option>${open.map(s => `<option value="${s.id}" ${W.rep === s.id ? 'selected' : ''}>${esc(s.label)} (${s.time})</option>`).join('')}</select></div>
+      ${W.rep ? '' : `<div class="field" style="margin:0"><label for="wzTime">Uhrzeit</label><input id="wzTime" type="time" value="${W.time}"></div>`}</div>
       <button class="btn" data-act="wz-save" style="width:100%">${icon('check')}Eintragen</button>`;
     return;
   }
@@ -8363,6 +8373,7 @@ document.addEventListener('input', e => {
   e.target.nextElementSibling.textContent = U.u(v || 0); $('#seSum').innerHTML = slotEditSum();
 });
 document.addEventListener('change', e => {
+  if (e.target && e.target.id === 'wzRep' && S.wz) { S.wz.rep = e.target.value; renderWizard(); return; }
   if (!e.target || e.target.id !== 'se-add' || !S.slotEdit || !e.target.value) return;
   const k = e.target.value, F = FOODS[k];
   S.slotEdit.items.push({ food: k, g: F.piece ? F.piece : F.spoon ? F.spoon : 100 });
