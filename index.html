@@ -1936,6 +1936,7 @@ html.rkp-lock,html.rkp-lock body{overflow:hidden}
     <section class="view" id="v-einkauf" aria-label="Einkauf" hidden>
       <div style="--i:0"><h2 class="sec">Einkauf</h2><p class="sec-sub">Zwei Einkäufe pro Woche halten Fleisch und Milchprodukte frisch.</p></div>
       <div id="shopMain" style="--i:2"></div>
+      <div id="shopPantry" style="--i:2"></div>
       <div id="shopSecond" style="--i:3"></div>
       <div id="shopStock" style="--i:4"></div>
       <div id="shopSpice" style="--i:4"></div>
@@ -2289,6 +2290,62 @@ function capFoods(slots, pr) {
     }
     for (const f of Object.keys(FOOD_CAP)) if (mealHas(sl.meal, f)) cnt[f] = (cnt[f] || 0) + 1;
   }
+  lockFoods(slots, pr);
+}
+
+
+/* ================= Noch zuhause & gekaufte Zutaten =================
+   1) Wird eine Mahlzeit ausgelassen oder durch etwas anderes ersetzt (z. B. bei den Eltern gegessen), bleiben ihre Zutaten zuhause.
+      Sie werden beim nächsten Großeinkauf abgezogen, und der Plan der Woche danach greift bevorzugt darauf zurück.
+   2) Am Einkaufstag merkt sich die App, was auf der Liste stand. Für diese Tage plant sie nur noch mit Zutaten, die du gekauft hast
+      (plus Vorrat und „Noch zuhause“). So steht nie ein Apfel im Plan, der nicht auf der Liste war. */
+const isoPlus = (iso, n) => isoDate(addDays(new Date(iso + 'T12:00'), n));
+const mainAfter = (iso, pr) => { let d = addDays(new Date(iso + 'T12:00'), 1); while (dow(d) !== pr.shopMain) d = addDays(d, 1); return isoDate(d); };
+const freshFood = f => { const F = FOODS[f]; return !!F && !F.stock && !F.portion; };
+function pantryOn(iso, pr) {
+  const m = new Map(); let id = null;
+  for (const e of pr.pantry || []) {
+    if (!(iso >= e.from && iso < isoPlus(e.from, 7))) continue;
+    if (!id || e.from < id) id = e.from;
+    for (const it of e.items) if (!(e.gone || []).includes(it.food)) m.set(it.food, (m.get(it.food) || 0) + it.g);
+  }
+  m.id = id; return m;
+}
+function pantryForTrip(mainIso, pr) {
+  const m = {};
+  for (const e of pr.pantry || []) if (e.from === mainIso) for (const it of e.items) if (!(e.gone || []).includes(it.food)) m[it.food] = (m[it.food] || 0) + it.g;
+  return m;
+}
+function availOn(iso, pr) {
+  const snaps = pr.shopSnap || {}; let cover = false; const set = new Set();
+  for (const [k, v] of Object.entries(snaps)) {
+    if (k > iso || k < isoPlus(iso, -8)) continue;
+    if ((v.days || []).includes(iso)) cover = true;
+    (v.foods || []).forEach(f => set.add(f));
+  }
+  if (!cover) return null;
+  for (const f of pantryOn(iso, pr).keys()) set.add(f);
+  return set;
+}
+const mealAvail = (meal, av) => !av || (meal.items || []).every(it => { const f = it.food || it[0]; return !freshFood(f) || av.has(f); });
+/* Für schon eingekaufte Tage: Gerichte mit nicht gekauften Zutaten gegen eines tauschen, das nur Gekauftes braucht */
+function lockFoods(slots, pr) {
+  const av = slots.avail; if (!av) return;
+  const cnt = {};
+  for (const sl of slots) {
+    if (sl.meal && !sl.buy && !sl.meal.portion && !mealAvail(sl.meal, av) && sl.spec && sl.spec.pool) {
+      const full = Object.keys(FOOD_CAP).filter(f => (cnt[f] || 0) >= FOOD_CAP[f]);
+      const cands = [sl.spec.pref].concat(POOLS[sl.spec.pool] || [], CAP_ALT[sl.spec.pool] || []).filter((k, i, a) => k && a.indexOf(k) === i);
+      let pick = null, fb = null;
+      for (const k of cands) {
+        const m = resolveMeal(k, pr.taste, new Set()); if (!m || !mealAvail(m, av)) continue;
+        if (!full.some(f => mealHas(m, f))) { pick = m; break; }
+        fb = fb || m;
+      }
+      const m = pick || fb; if (m) { sl.meal = { ...m, replaced: null }; sl.key = m.key; }
+    }
+    for (const f of Object.keys(FOOD_CAP)) if (mealHas(sl.meal, f)) cnt[f] = (cnt[f] || 0) + 1;
+  }
 }
 
 /* ---------- Geschmack: Zutaten tauschen, Gerichte ersetzen ---------- */
@@ -2405,6 +2462,9 @@ function varietyScore(k, r, H, usedFoods, usedFam) {
   if (H.prevFam && H.prevFam.has(fam)) s += 6;         // gestern schon so etwas
   if (H.prevCarb && H.prevCarb.has(mc)) s += 6;        // gestern schon diese Beilage
   if (H.prev && H.prev.has(k)) s += 100;               // gestern genau das
+  // Noch zuhause (von ausgelassenen Mahlzeiten): solche Gerichte zuerst
+  if (H.pan && mp && (H.pan.get(mp) || 0) >= 60 && !usedFoods.has(mp)) s -= 60;
+  else if (H.pan && mc && (H.pan.get(mc) || 0) >= 40 && !usedFam.has('carb:' + mc)) s -= 20;
   s += n(H.prot, mp) * 3;                              // gleiches Fleisch diese Woche
   return s;
 }
@@ -2669,11 +2729,15 @@ function trainTime(pr, type, d) {
 function mainsHist(d, pr) {
   const H = { win: mainWindow(d), prev: new Set(), prevFam: new Set(), prevCarb: new Set(), week: new Map(), sig: new Map(), fam: new Map(), prot: new Map(), carb: new Map() };
   const target = isoDate(d);
+  const panSet = x => { const px = pantryOn(isoDate(x), pr); if (!px.size) H.pan = null; else if (!H.pan || H.panId !== px.id) { H.pan = px; H.panId = px.id; } };
   for (let x = addDays(d, -dow(d)); isoDate(x) < target; x = addDays(x, 1)) {
+    panSet(x);
     const mains = slotsFor(x, evNoTrain(pr, x) ? 'rest' : typeOn(pr, x), pr, H).filter(sl => FAM[sl.key]);
+    if (H.pan) for (const sl of mains) for (const it of sl.meal.items || []) { const f = it.food || it[0]; if (H.pan.has(f)) H.pan.set(f, H.pan.get(f) - (it.g != null ? it.g : it[1] || 0)); }
     H.prev = new Set(mains.map(sl => sl.key)); H.prevFam = new Set(mains.map(sl => FAM[sl.key])); H.prevCarb = new Set(mains.map(sl => mainCarb(sl.meal)));
     for (const sl of mains) histAdd(H, sl.meal);
   }
+  panSet(d);
   return H;
 }
 const prevMains = (d, pr) => mainsHist(d, pr).prev;
@@ -2857,6 +2921,7 @@ function planDay(d, pr, typeOverride, opts) {
   const type = typeOverride || (evNoTrain(pr, d) ? 'rest' : typeOn(pr, d));
   const T = opts && opts.burned > 800 ? targetFromBurned(pr, type, opts.burned, opts.burnedAt) : calcTargets(pr).per[type];
   const slots = slotsFor(d, type, pr);
+  slots.avail = availOn(isoDate(d), pr);
   capFoods(slots, pr);
   let s;
   const solve = target => {
@@ -3052,12 +3117,16 @@ function shoppingCycle(today, pr) {
     const F = FOODS[food];
     return { food, g, weeks: F.pack / g, packLabel: F.packLabel, cat: 'vorrat' };
   }).sort((a, b) => a.weeks - b.weeks);
-  const itemsA = need(daysA);
-  const carry = {};
-  for (const it of itemsA) if (it.leftover > 0 && FOODS[it.food].cat !== 'obst' && FOODS[it.food].cat !== 'brot') carry[it.food] = it.leftover;
+  const pan = pantryForTrip(isoDate(main), pr);
+  const itemsA = need(daysA, false, pan);
+  const carry = {}, gA = {};
+  for (const it of itemsA) gA[it.food] = it.g;
+  for (const c of itemsA.carried) gA[c.food] = c.g;
+  for (const [f, g] of Object.entries(pan)) if (g - (gA[f] || 0) > 0) carry[f] = g - (gA[f] || 0);
+  for (const it of itemsA) if (it.leftover > 0 && FOODS[it.food].cat !== 'obst' && FOODS[it.food].cat !== 'brot') carry[it.food] = (carry[it.food] || 0) + it.leftover;
   const itemsB = need(daysB, false, carry);
   return {
-    main: { date: main, days: daysA, items: itemsA },
+    main: { date: main, days: daysA, items: itemsA, carried: itemsA.carried },
     second: { date: second, days: daysB, items: itemsB, carried: itemsB.carried },
     bridge: daysBridge.length ? { date: t0, days: daysBridge, items: need(daysBridge, true) } : null,
     stock: stockList,
@@ -3092,9 +3161,9 @@ const S = {
   profile: { ...DEFAULT_PROFILE, week: DEFAULT_PROFILE.week.slice() },
   today: isoDate(new Date()), log: emptyLog(), weights: [], shop: {}, tab: 'heute',
   planDow: dow(new Date()), est: null, sample: null, sampleImages: false, photo: null,
-  prefs: { taste: { foods: {}, meals: {} }, challenge: null, challenges: [], spiceMiss: [], nut: {} }, userName: '', chEdit: null, chDel: null,
+  prefs: { taste: { foods: {}, meals: {} }, challenge: null, challenges: [], spiceMiss: [], nut: {}, pantry: [], shopSnap: {} }, userName: '', chEdit: null, chDel: null,
 };
-const planPr = () => ({ ...S.profile, taste: S.prefs.taste, swaps: S.prefs.swaps || {}, events: S.prefs.events || [], phaseList: typeof phaseListAll === 'function' ? phaseListAll() : [] });
+const planPr = () => ({ ...S.profile, taste: S.prefs.taste, pantry: S.prefs.pantry || [], shopSnap: S.prefs.shopSnap || {}, swaps: S.prefs.swaps || {}, events: S.prefs.events || [], phaseList: typeof phaseListAll === 'function' ? phaseListAll() : [] });
 
 /* ================= Speicher: claude db (privat pro Person), sonst Browser ================= */
 const Store = {
@@ -3117,7 +3186,7 @@ const Store = {
     S.train = { ...emptyTrain(), ...(this.ls('train') || {}) };
     S.shop = this.ls('shop') || {};
     this.got = new Set(['prefs', 'train']);
-    const pf = this.ls('prefs'); if (pf) S.prefs = { taste: { foods: {}, meals: {}, ...(pf.taste || {}) }, challenge: pf.challenge || null, challenges: migrateCh(pf), swaps: pf.swaps || {}, creaDays: pf.creaDays || [], dishes: pf.dishes || [], recent: pf.recent || [], favs: pf.favs || [], events: pf.events || [], trackDays: pf.trackDays || [], phasePlan: pf.phasePlan || null, spiceMiss: pf.spiceMiss || [], nut: pf.nut || {}, kantine: pf.kantine || [] };
+    const pf = this.ls('prefs'); if (pf) S.prefs = { taste: { foods: {}, meals: {}, ...(pf.taste || {}) }, challenge: pf.challenge || null, challenges: migrateCh(pf), swaps: pf.swaps || {}, creaDays: pf.creaDays || [], dishes: pf.dishes || [], recent: pf.recent || [], favs: pf.favs || [], events: pf.events || [], trackDays: pf.trackDays || [], phasePlan: pf.phasePlan || null, spiceMiss: pf.spiceMiss || [], pantry: pf.pantry || [], shopSnap: pf.shopSnap || {}, nut: pf.nut || {}, kantine: pf.kantine || [] };
     backfillTracked();
     renderAll(true); renderChallenge(true);
   },
@@ -3139,7 +3208,7 @@ const Store = {
     this.subShop();
     this.unsub.prefs = db.doc(this.base).collection('prefs').doc('main').onSnapshot(snap => {
       const d = snap.exists ? snap.data() : {}; this.got.add('prefs');
-      S.prefs = { taste: { foods: {}, meals: {}, ...(d.taste || {}) }, challenge: d.challenge || null, challenges: migrateCh(d), swaps: d.swaps || {}, creaDays: d.creaDays || [], dishes: d.dishes || [], recent: d.recent || [], favs: d.favs || [], events: d.events || [], trackDays: d.trackDays || [], phasePlan: d.phasePlan || null, spiceMiss: d.spiceMiss || [], nut: d.nut || {}, kantine: d.kantine || [] };
+      S.prefs = { taste: { foods: {}, meals: {}, ...(d.taste || {}) }, challenge: d.challenge || null, challenges: migrateCh(d), swaps: d.swaps || {}, creaDays: d.creaDays || [], dishes: d.dishes || [], recent: d.recent || [], favs: d.favs || [], events: d.events || [], trackDays: d.trackDays || [], phasePlan: d.phasePlan || null, spiceMiss: d.spiceMiss || [], pantry: d.pantry || [], shopSnap: d.shopSnap || {}, nut: d.nut || {}, kantine: d.kantine || [] };
       renderAll(false); renderChallenge(true);
     }, () => {});
   },
@@ -3193,7 +3262,7 @@ const Store = {
     const swaps = Object.fromEntries(Object.entries(S.prefs.swaps || {}).filter(([k]) => k.slice(0, 10) >= old));
     const chs = S.prefs.challenges || [];
     const main = chs.slice().filter(c => c.date >= S.today).sort((a, b) => a.date.localeCompare(b.date))[0] || null;
-    const d = { taste: S.prefs.taste, challenges: chs, challenge: main ? { title: main.title, with: main.with, date: main.date, start: main.start } : null, swaps, creaDays: (S.prefs.creaDays || []).slice(-120), dishes: S.prefs.dishes || [], recent: S.prefs.recent || [], favs: S.prefs.favs || [], events: (S.prefs.events || []).filter(e => e.date >= isoDate(addDays(new Date(), -2))), trackDays: (S.prefs.trackDays || []).slice(-400), phasePlan: S.prefs.phasePlan || null, spiceMiss: S.prefs.spiceMiss || [], nut: S.prefs.nut || {}, kantine: (S.prefs.kantine || []).filter(k => k.d >= isoDate(addDays(new Date(), -3))), updatedAt: Date.now() };
+    const d = { taste: S.prefs.taste, challenges: chs, challenge: main ? { title: main.title, with: main.with, date: main.date, start: main.start } : null, swaps, creaDays: (S.prefs.creaDays || []).slice(-120), dishes: S.prefs.dishes || [], recent: S.prefs.recent || [], favs: S.prefs.favs || [], events: (S.prefs.events || []).filter(e => e.date >= isoDate(addDays(new Date(), -2))), trackDays: (S.prefs.trackDays || []).slice(-400), phasePlan: S.prefs.phasePlan || null, spiceMiss: S.prefs.spiceMiss || [], pantry: S.prefs.pantry || [], shopSnap: S.prefs.shopSnap || {}, nut: S.prefs.nut || {}, kantine: (S.prefs.kantine || []).filter(k => k.d >= isoDate(addDays(new Date(), -3))), updatedAt: Date.now() };
     if (this.mode === 'db') this.write(this.base + '/prefs/main', d); else this.ls('prefs', d);
   },
   saveTrain() { if (this.mode === 'db') this.write(this.base + '/train/main', { ...S.train, updatedAt: Date.now() }); else this.ls('train', S.train); },
@@ -3268,7 +3337,39 @@ function computeToday() {
   const d = new Date();
   const gOn = S.profile.garmin === 'on';
   todayPlan = planDay(d, planPr(), S.log.dayType, gOn ? { burned: S.log.burned, burnedAt: S.log.burnedAt } : {});
+  try { keepPastSlots(todayPlan); } catch (e) {}
   todayRem = planRemaining(todayPlan, S.log);
+}
+/* Rechnet die App den Tag neu (z. B. Training ausgefallen), dürfen Mahlzeiten nicht einfach verschwinden,
+   deren Zeit schon da war oder die schon abgehakt sind. Sie bleiben im Plan, so wie sie waren. */
+function keepPastSlots(plan) {
+  if (!plan || plan.date !== S.today) return;
+  const key = 'np:slots:' + S.today;
+  let snap = {}; try { snap = JSON.parse(localStorage.getItem(key) || '{}') || {}; } catch (e) {}
+  const now = nowMin(), meals = (S.log && S.log.meals) || {}, have = new Set(plan.slots.map(x => x.id));
+  let added = false;
+  for (const [id, x] of Object.entries(snap)) {
+    if (have.has(id)) continue;
+    if (!meals[id] && (x.t > now || x.t < now - 180)) { if (x.t > now) delete snap[id]; continue; }
+    const m = resolveMeal(x.key, S.prefs && S.prefs.taste, new Set()); if (!m) continue;
+    const items = (x.items || []).filter(i => FOODS[i.food]);
+    plan.slots.push({ id, label: x.label, t: x.t, time: toHHMM(x.t), meal: { ...m, n: x.n || m.n, replaced: null }, key: x.key, spec: x.spec || { pref: x.key, pool: 'carbs' }, items, tot: sumItems(items), atWork: !!x.atWork, kept: true });
+    added = true;
+  }
+  // Was schon dran war, bleibt so, wie es da stand (z. B. das Frühstück, wenn das Training später ausfällt)
+  for (const x of plan.slots) {
+    const o = snap[x.id]; if (!o || o.key === x.key || o.t > now || x.buy) continue;
+    const m = resolveMeal(o.key, S.prefs && S.prefs.taste, new Set()); if (!m) continue;
+    const items = (o.items || []).filter(i => FOODS[i.food]);
+    Object.assign(x, { meal: { ...m, n: o.n || m.n, replaced: null }, key: o.key, items, tot: sumItems(items), t: o.t, time: toHHMM(o.t), kept: true });
+    added = true;
+  }
+  if (added) { plan.slots.sort((a, b) => a.t - b.t); plan.tot = plan.slots.reduce((t, x) => add(t, x.tot), Z()); }
+  for (const x of plan.slots) if (!x.buy && x.meal) snap[x.id] = { key: x.key, t: x.t, label: x.label, n: x.meal.n, items: (x.items || []).map(i => ({ food: i.food, g: i.g })), spec: x.spec, atWork: !!x.atWork };
+  try {
+    localStorage.setItem(key, JSON.stringify(snap));
+    for (let i = localStorage.length - 1; i >= 0; i--) { const k = localStorage.key(i); if (k && k.startsWith('np:slots:') && k !== key) localStorage.removeItem(k); }
+  } catch (e) {}
 }
 
 const gymTitle = f => focusShort(f) ? `Gym: ${esc(focusShort(f))}${focusLong(f) ? ` <small class="tl-fo">${esc(focusLong(f))}</small>` : ''}` : 'Gym-Training';
@@ -4010,7 +4111,7 @@ function shopList(items, key, extraStock) {
     const F = FOODS[it.food], done = !!checked[it.food];
     const q = it.stockRow ? `1 × ${F.packLabel}` : (it.qty.pieces ? `${it.qty.n} ${it.qty.label}` : `${it.qty.n} × ${it.qty.label}`);
     const need = it.stockRow ? 'Vorrat auffüllen' : `Du brauchst ${F.piece && (it.qty.pieces || it.food === 'eggs') ? Math.round(it.g / F.piece) + ' ' + F.pn[Math.round(it.g / F.piece) === 1 ? 0 : 1] : fmt(it.g) + ' ' + (F.unit || 'g')} für ${listDe(it.days)}`;
-    const rest = it.fromStock ? `. ${fmt(it.fromStock)} ${F.unit || 'g'} hast du noch vom letzten Einkauf` : '';
+    const rest = it.fromStock ? `. ${fmt(it.fromStock)} ${F.unit || 'g'} hast du noch zuhause` : '';
     return `<li><button data-act="shop" data-key="${key}" data-food="${it.food}" class="${done ? 'done' : ''}" aria-pressed="${done}">
       <span class="box">${icon('check')}</span>
       <span class="nm">${esc(F.n).replace(/(\d) %/g, '$1\u00a0%')}<small>${esc(need + rest)}</small>${it.freeze ? `<span class="tag">${icon('snowflake')}Portion für ${it.freeze.join(', ')} einfrieren</span>` : ''}</span>
@@ -4056,7 +4157,7 @@ function tripCard(trip, key, title, open, extraStock, sub, spices) {
   const head = `<div class="trip-hero"><div><span class="label">${esc(title)}</span><h3 style="margin-top:4px">${dateLabel(trip.date)}</h3>
       <p class="muted" style="margin:4px 0 0;font-size:13px">${sub || `Für ${days[0]} bis ${days[days.length - 1]}`}</p></div>
       <div class="pring" aria-label="${done} von ${n} im Wagen"><svg viewBox="0 0 62 62"><circle class="t" cx="31" cy="31" r="26"/><circle class="a" cx="31" cy="31" r="26" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - (n ? done / n : 0))).toFixed(1)}"/></svg><span>${done}/${n}</span></div></div>`;
-  const carried = trip.carried && trip.carried.length ? `<div class="note" style="margin-top:12px">${icon('package')}<p>Vom letzten Einkauf reicht noch: ${trip.carried.map(c => esc(FOODS[c.food].n)).join(', ')}.</p></div>` : '';
+  const carried = trip.carried && trip.carried.length ? `<div class="note" style="margin-top:12px">${icon('package')}<p>Hast du noch zuhause, nicht kaufen: ${trip.carried.map(c => esc(FOODS[c.food].n)).join(', ')}.</p></div>` : '';
   const body = shopList(trip.items, key, extraStock) + spiceList(spices, key) + carried;
   if (open) return `<div class="card">${head}${body}</div>`;
   return `<details class="card trip" data-dk="${esc(key)}" ${S.shopOpen.has(key) ? 'open' : ''}><summary><div class="trip-hero"><div><span class="label">${esc(title)}</span><h3 style="margin-top:4px">${dateLabel(trip.date)}</h3><p class="muted" style="margin:4px 0 0;font-size:13px">${sub || `Für ${days[0]} bis ${days[days.length - 1]}`}</p></div>${icon('caret-down', 'car')}</div></summary>${body}</details>`;
@@ -4065,6 +4166,68 @@ function stockRows(list, stFlags, kMain) {
   return list.map(s => { const F = FOODS[s.food], on = !!stFlags[s.food];
     const reach = s.weeks >= 1 ? `1 ${F.packLabel} reicht etwa ${String(Math.floor(s.weeks * 2) / 2).replace('.', ',')} Wochen` : `Mehr als 1 ${F.packLabel} pro Woche`;
     return `<div class="stock-row"><div class="nm">${esc(F.n)}<small>${fmt(s.g)} ${F.unit || 'g'} pro Woche. ${reach}.</small></div><button class="toggle" data-act="stock" data-key="${kMain}" data-food="${s.food}" aria-pressed="${on}">${on ? 'Auf der Liste' : 'Fehlt'}</button></div>`; }).join('');
+}
+
+/* Zutaten von heute ausgelassenen oder ersetzten Mahlzeiten merken (wird nach jeder Änderung am Tag neu berechnet) */
+function pantrySync() {
+  if (!(Store.got && Store.got.has('prefs'))) return;   // erst wenn die gespeicherten Daten da sind, sonst würde Leeres gespeichert
+  if (!todayPlan || todayPlan.date !== S.today) return;
+  const pr = planPr(), meals = (S.log && S.log.meals) || {}, old = S.prefs.pantry || [];
+  const add = [];
+  for (const sl of todayPlan.slots) {
+    if (sl.buy || sl.key === 'kantine' || !sl.items) continue;
+    const st = meals[sl.id]; if (!st) continue;
+    const ate = {};
+    if (st.state === 'eaten' && !st.dish) { if (!st.items) continue; for (const it of st.items) ate[it.food] = (ate[it.food] || 0) + it.g; }
+    else if (!(st.state === 'skipped' || st.dish)) continue;
+    const left = {};
+    for (const it of sl.items) if (freshFood(it.food)) left[it.food] = (left[it.food] || 0) + it.g;
+    const items = Object.entries(left).map(([food, g]) => ({ food, g: Math.round(g - (ate[food] || 0)) }))
+      .filter(it => it.g >= (FOODS[it.food].piece ? FOODS[it.food].piece * .5 : 10));
+    if (!items.length) continue;
+    const k = S.today + ':' + sl.id, prev = old.find(e => e.k === k);
+    add.push({ k, d: S.today, src: sl.label, from: mainAfter(S.today, pr), items, gone: (prev && prev.gone) || [] });
+  }
+  const next = old.filter(e => e.d !== S.today && S.today < isoPlus(e.from, 7)).concat(add);
+  if (JSON.stringify(next) !== JSON.stringify(old)) { S.prefs = { ...S.prefs, pantry: next }; Store.savePrefs(); }
+}
+/* Am Einkaufstag (oder beim ersten Öffnen danach) merken, was auf der Liste stand */
+function shopSnapSync() {
+  if (!(Store.got && Store.got.has('prefs'))) return;   // erst wenn die gespeicherten Daten da sind, sonst würde Leeres gespeichert
+  const pr = planPr(), T = new Date(); T.setHours(12, 0, 0, 0); const t = isoDate(T);
+  let lm = new Date(T); while (dow(lm) !== pr.shopMain) lm = addDays(lm, -1);
+  let sec = addDays(lm, 1); while (dow(sec) !== pr.shopSecond) sec = addDays(sec, 1);
+  const snaps = S.prefs.shopSnap || {}, kM = isoDate(lm), kS = isoDate(sec);
+  const wantM = !snaps[kM] && t < kS, wantS = !snaps[kS] && t >= kS;
+  const stale = Object.keys(snaps).filter(k => k < isoPlus(t, -21));
+  if (!wantM && !wantS && !stale.length) return;
+  const next = { ...snaps }; stale.forEach(k => delete next[k]);
+  if (wantM || wantS) {
+    const c = shoppingCycle(lm, pr);
+    const put = trip => { next[isoDate(trip.date)] = { days: trip.days.map(isoDate), foods: [...new Set(trip.items.map(i => i.food).concat((trip.carried || []).map(x => x.food)))] }; };
+    if (wantM) put(c.main);
+    if (wantS) put(c.second);
+  }
+  S.prefs = { ...S.prefs, shopSnap: next }; Store.savePrefs();
+}
+function pantryCard() {
+  const rows = new Map();
+  for (const e of S.prefs.pantry || []) {
+    if (!(S.today < isoPlus(e.from, 7))) continue;
+    for (const it of e.items) {
+      if ((e.gone || []).includes(it.food)) continue;
+      const r = rows.get(it.food) || { food: it.food, g: 0, src: [], from: e.from };
+      r.g += it.g; const lab = `${e.src} am ${DAYSHORT[dow(new Date(e.d + 'T12:00'))]}`; if (!r.src.includes(lab)) r.src.push(lab);
+      if (e.from < r.from) r.from = e.from; rows.set(it.food, r);
+    }
+  }
+  if (!rows.size) return '';
+  const list = [...rows.values()], meat = list.some(r => FOODS[r.food].cat === 'fleisch');
+  const amt = r => { const F = FOODS[r.food]; if (F.piece) { const n = Math.max(1, Math.round(r.g / F.piece)); return `${n} ${F.pn[n === 1 ? 0 : 1]}`; } return `${fmt(r.g)} ${F.unit || 'g'}`; };
+  const later = list.some(r => r.from > S.today), fromD = list.map(r => r.from).sort()[0];
+  return `<div class="card"><div class="spread"><h3>Noch zuhause</h3>${icon('package')}</div>
+    <p class="muted" style="margin:6px 0 4px;font-size:13.5px">Von Mahlzeiten, die du ausgelassen oder anders gegessen hast. ${later ? `Kommt nicht auf den Großeinkauf am ${DAYNAMES[dow(new Date(fromD + 'T12:00'))]}, und der Plan danach verwendet es zuerst.` : 'Ist in dieser Woche eingeplant.'}${meat ? ' Fleisch einfrieren, wenn es nicht so lange hält.' : ''}</p>
+    ${list.map(r => `<div class="stock-row"><div class="nm">${esc(FOODS[r.food].n)}<small>${esc(amt(r))} · von ${esc(r.src.join(', '))}</small></div><button class="toggle" data-act="pantry-gone" data-food="${r.food}">Nicht mehr da</button></div>`).join('')}</div>`;
 }
 let shopCache = null;
 /* Aufgeklappte Teile der Einkaufsliste merken, damit sie beim Abhaken offen bleiben */
@@ -4078,6 +4241,7 @@ function renderShop() {
   const miss = spiceMissSet(), chk = (S.shop[kMain] || {}).checked || {};
   const spiceItems = cyc.spices.filter(sp => miss.has(sp.id) || chk['sp:' + sp.id]);
   $('#shopMain').innerHTML = tripCard(cyc.main, kMain, 'Großeinkauf', true, extraStock, undefined, spiceItems);
+  $('#shopPantry').innerHTML = pantryCard();
   $('#shopSpice').innerHTML = spiceCard(cyc);
   $('#shopSecond').innerHTML = tripCard(cyc.second, kSec, 'Frisch nachkaufen', false);
   $('#shopStock').innerHTML = `<div class="card"><div class="spread"><h3>Vorrat</h3>${icon('package')}</div>
@@ -4142,7 +4306,7 @@ const gymHint = p => {
   return parts.length ? `Startet 15 Minuten nach Feierabend${loopOf(p) ? ', diese Woche' : ''}: ${parts.join(' · ')}. An freien Tagen wie an einem normalen Arbeitstag.` : 'Kein Gym-Tag eingeplant.';
 };
 function exportCode() {
-  const d = { v: 1, profile: { ...S.profile, example: false }, prefs: { taste: S.prefs.taste, challenges: S.prefs.challenges || [], creaDays: S.prefs.creaDays || [], dishes: S.prefs.dishes || [], recent: S.prefs.recent || [], favs: S.prefs.favs || [], events: S.prefs.events || [], trackDays: S.prefs.trackDays || [], phasePlan: S.prefs.phasePlan || null, spiceMiss: S.prefs.spiceMiss || [], nut: S.prefs.nut || {} }, weights: S.weights || [], train: S.train || emptyTrain(), today: { date: S.today, log: S.log } };
+  const d = { v: 1, profile: { ...S.profile, example: false }, prefs: { taste: S.prefs.taste, challenges: S.prefs.challenges || [], creaDays: S.prefs.creaDays || [], dishes: S.prefs.dishes || [], recent: S.prefs.recent || [], favs: S.prefs.favs || [], events: S.prefs.events || [], trackDays: S.prefs.trackDays || [], phasePlan: S.prefs.phasePlan || null, spiceMiss: S.prefs.spiceMiss || [], pantry: S.prefs.pantry || [], shopSnap: S.prefs.shopSnap || {}, nut: S.prefs.nut || {} }, weights: S.weights || [], train: S.train || emptyTrain(), today: { date: S.today, log: S.log } };
   return 'DELREY1:' + btoa(unescape(encodeURIComponent(JSON.stringify(d))));
 }
 function importCode(code) {
@@ -4152,7 +4316,7 @@ function importCode(code) {
   if (!d || !d.profile) throw new Error('leer');
   S.profile = { ...DEFAULT_PROFILE, ...d.profile, example: false };
   const pf = d.prefs || {};
-  S.prefs = { taste: { foods: {}, meals: {}, ...(pf.taste || {}) }, challenge: null, challenges: pf.challenges || [], swaps: {}, creaDays: pf.creaDays || [], dishes: pf.dishes || [], recent: pf.recent || [], favs: pf.favs || [], events: pf.events || [], trackDays: pf.trackDays || [], phasePlan: pf.phasePlan || null, spiceMiss: pf.spiceMiss || [], nut: pf.nut || {}, kantine: pf.kantine || [] };
+  S.prefs = { taste: { foods: {}, meals: {}, ...(pf.taste || {}) }, challenge: null, challenges: pf.challenges || [], swaps: {}, creaDays: pf.creaDays || [], dishes: pf.dishes || [], recent: pf.recent || [], favs: pf.favs || [], events: pf.events || [], trackDays: pf.trackDays || [], phasePlan: pf.phasePlan || null, spiceMiss: pf.spiceMiss || [], pantry: pf.pantry || [], shopSnap: pf.shopSnap || {}, nut: pf.nut || {}, kantine: pf.kantine || [] };
   S.weights = (d.weights || []).filter(w => w && w.date && +w.kg > 0).sort((a, b) => a.date < b.date ? -1 : 1);
   if (d.today && d.today.date === S.today && d.today.log) S.log = { ...emptyLog(), ...d.today.log };
   if (d.train) { S.train = { ...emptyTrain(), ...d.train }; Store.saveTrain(); }
@@ -6160,6 +6324,7 @@ function mutateLog(fn, msg) {
   fn(S.log);
   try { markTracked(); } catch (e) {}
   Store.saveLog(); renderToday(); renderHeader();
+  try { pantrySync(); } catch (e) {}
   if (msg) toast(msg);
 }
 
@@ -6186,6 +6351,11 @@ document.addEventListener('click', e => {
     it.g = Math.max(0, U.k === 'g' ? Math.round((it.g + st) / Math.abs(st)) * Math.abs(st) : (seVal(it) + st) * U.per);
     const inp = $('#se-' + b.dataset.i); if (inp) { const v = seVal(it); inp.value = String(v).replace('.', ','); inp.nextElementSibling.textContent = U.u(v); }
     $('#seSum').innerHTML = slotEditSum(); return; }
+  if (a === 'pantry-gone') {
+    const f = b.dataset.food;
+    S.prefs = { ...S.prefs, pantry: (S.prefs.pantry || []).map(e => e.items.some(it => it.food === f) ? { ...e, gone: [...new Set((e.gone || []).concat(f))] } : e) };
+    Store.savePrefs(); renderShop(); toast(`${FOODS[f] ? FOODS[f].n : 'Zutat'} kommt wieder auf die Liste, wenn ein Gericht sie braucht`); return;
+  }
   if (a === 'se-pick') {
     const k = b.dataset.k, F = FOODS[k]; if (!F || !S.slotEdit) return;
     S.slotEdit.items.push({ food: k, g: F.piece ? F.piece : F.spoon ? F.spoon : F.grp === 'nuts' ? 30 : 100 }); S.slotEdit.q = '';
@@ -6195,7 +6365,8 @@ document.addEventListener('click', e => {
   if (a === 'se-save') { slotEditSave(); return; }
   if (a === 'se-cancel') { S.slotEdit = null; renderPlan(); return; }
   if (a === 'eat') { const id = b.dataset.slot; const snap = snapshotSlot(id); return mutateLog(l => { l.meals[id] = { state: 'eaten', at: toHHMM(nowMin()), ...snap }; }, 'Abgehakt'); }
-  if (a === 'skip') { const id = b.dataset.slot; return mutateLog(l => { l.meals[id] = { state: 'skipped' }; }, 'Ausgelassen, Rest angepasst'); }
+  if (a === 'skip') { const id = b.dataset.slot, sl = todayPlan && todayPlan.slots.find(x => x.id === id), home = sl && !sl.buy && sl.key !== 'kantine' && (sl.items || []).some(it => freshFood(it.food));
+    return mutateLog(l => { l.meals[id] = { state: 'skipped' }; }, home ? 'Ausgelassen. Die Zutaten bleiben für nächste Woche und kommen nicht auf den Einkauf' : 'Ausgelassen, Rest angepasst'); }
   if (a === 'undo') { const id = b.dataset.slot; return mutateLog(l => { delete l.meals[id]; }); }
   if (a === 'del-extra') {
     const id = b.dataset.id, before = JSON.parse(JSON.stringify(S.log));
@@ -8398,6 +8569,7 @@ function saveEstimate(keepIt) {
 function tick() {
   const t = isoDate(new Date());
   if (t !== S.today) { S.today = t; S.log = emptyLog(); Store.subDay(); Store.subShop(); if (syncPhaseGoal()) { renderAll(true); return; } }
+  try { shopSnapSync(); } catch (e) {}
   renderHeader(); renderToday();
 }
 const start = location.hash.replace('#', '');
@@ -8437,6 +8609,7 @@ document.addEventListener('change', async e => {
   renderBackup();
 });
 Store.init().then(() => {
+  setTimeout(() => { try { shopSnapSync(); } catch (e) {} }, 1500);
   if (!Backup.can()) return;
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {}
   setTimeout(() => { Backup.auto(); Cal.push(); }, 2500);
@@ -8461,7 +8634,7 @@ Store.init().then(() => {
   } catch (e) {}
 })();
 /* Nur für Tests: index.html?dbg */
-if (/[?&]dbg\b/.test(location.search)) window.__np = { get S() { return S; }, get plan() { return todayPlan; }, get rem() { return todayRem; }, calcTargets, MEALS, FOODS, mealNameOf, rankBadge, RANKS };
+if (/[?&]dbg\b/.test(location.search)) window.__np = { get S() { return S; }, get plan() { return todayPlan; }, get rem() { return todayRem; }, calcTargets, MEALS, FOODS, mealNameOf, rankBadge, RANKS, planDay, planPr, shoppingCycle, addDays, isoDate, computeToday };
 })();
 </script>
 
