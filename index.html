@@ -2319,7 +2319,7 @@ function pantryForTrip(mainIso, pr) {
 function availOn(iso, pr) {
   const snaps = pr.shopSnap || {}; let cover = false; const set = new Set();
   for (const [k, v] of Object.entries(snaps)) {
-    if (k > iso || k < isoPlus(iso, -8)) continue;
+    if (k > iso || k < isoPlus(iso, -8) || !v || v.taken !== k) continue;
     if ((v.days || []).includes(iso)) cover = true;
     (v.foods || []).forEach(f => set.add(f));
   }
@@ -3344,7 +3344,7 @@ function computeToday() {
    deren Zeit schon da war oder die schon abgehakt sind. Sie bleiben im Plan, so wie sie waren. */
 function keepPastSlots(plan) {
   if (!plan || plan.date !== S.today) return;
-  const key = 'np:slots:' + S.today;
+  const key = 'np:slots2:' + S.today;
   let snap = {}; try { snap = JSON.parse(localStorage.getItem(key) || '{}') || {}; } catch (e) {}
   const now = nowMin(), meals = (S.log && S.log.meals) || {}, have = new Set(plan.slots.map(x => x.id));
   let added = false;
@@ -3368,7 +3368,7 @@ function keepPastSlots(plan) {
   for (const x of plan.slots) if (!x.buy && x.meal) snap[x.id] = { key: x.key, t: x.t, label: x.label, n: x.meal.n, items: (x.items || []).map(i => ({ food: i.food, g: i.g })), spec: x.spec, atWork: !!x.atWork };
   try {
     localStorage.setItem(key, JSON.stringify(snap));
-    for (let i = localStorage.length - 1; i >= 0; i--) { const k = localStorage.key(i); if (k && k.startsWith('np:slots:') && k !== key) localStorage.removeItem(k); }
+    for (let i = localStorage.length - 1; i >= 0; i--) { const k = localStorage.key(i); if (k && k.startsWith('np:slots') && k !== key) localStorage.removeItem(k); }
   } catch (e) {}
 }
 
@@ -4085,7 +4085,7 @@ function planDayList(p, R, isToday) {
       : `<button data-act="eat" data-slot="${s.id}">${icon('check')}Gegessen</button>${canEdit ? `<button data-act="slot-edit" data-slot="${s.id}">${icon('pencil-simple')}Andere Menge</button>` : ''}<button data-act="skip" data-slot="${s.id}">${icon('x')}Auslassen</button>`;
     html += `<li class="tl-item ${state} ${isNext ? 'nx' : ''}"><span class="tl-time">${s.time}</span><span class="tl-dot"></span>
       <div class="tl-body"><details class="prow" data-row="${key}" ${open ? 'open' : ''}><summary>
-        <div class="tl-head"><span class="tl-name">${dish ? esc(dish) : s.buy ? 'Unterwegs kaufen' : esc(s.meal.n)}</span><span class="tl-kcal">${state === 'skipped' ? 'ausgelassen' : fmt(tot.kcal) + ' kcal'}${state === 'skipped' ? '' : icon('caret-down', 'pcar')}</span></div>
+        <div class="tl-head"><span class="tl-name">${dish ? esc(dish) : s.buy ? 'Unterwegs kaufen' : esc(st && st.state === 'eaten' && st.n ? st.n : s.meal.n)}</span><span class="tl-kcal">${state === 'skipped' ? 'ausgelassen' : fmt(tot.kcal) + ' kcal'}${state === 'skipped' ? '' : icon('caret-down', 'pcar')}</span></div>
         <div class="tl-sub">${chips}</div></summary><div class="pbody">${body}</div></details>
         ${acts ? `<div class="tl-acts">${acts}</div>` : ''}${isToday && state === 'open' && s.key === 'kantine' ? kantineMenuHtml(s.id) : ''}</div></li>`;
   }
@@ -4198,13 +4198,14 @@ function shopSnapSync() {
   let lm = new Date(T); while (dow(lm) !== pr.shopMain) lm = addDays(lm, -1);
   let sec = addDays(lm, 1); while (dow(sec) !== pr.shopSecond) sec = addDays(sec, 1);
   const snaps = S.prefs.shopSnap || {}, kM = isoDate(lm), kS = isoDate(sec);
-  const wantM = !snaps[kM] && t < kS, wantS = !snaps[kS] && t >= kS;
-  const stale = Object.keys(snaps).filter(k => k < isoPlus(t, -21));
+  const wantM = !snaps[kM] && t === kM, wantS = !snaps[kS] && t === kS;
+  // nur am Einkaufstag selbst merken; nachträglich gemachte Schnappschüsse sind unzuverlässig und fliegen raus
+  const stale = Object.keys(snaps).filter(k => k < isoPlus(t, -21) || !snaps[k] || snaps[k].taken !== k);
   if (!wantM && !wantS && !stale.length) return;
   const next = { ...snaps }; stale.forEach(k => delete next[k]);
   if (wantM || wantS) {
     const c = shoppingCycle(lm, pr);
-    const put = trip => { next[isoDate(trip.date)] = { days: trip.days.map(isoDate), foods: [...new Set(trip.items.map(i => i.food).concat((trip.carried || []).map(x => x.food)))] }; };
+    const put = trip => { next[isoDate(trip.date)] = { taken: t, days: trip.days.map(isoDate), foods: [...new Set(trip.items.map(i => i.food).concat((trip.carried || []).map(x => x.food)))] }; };
     if (wantM) put(c.main);
     if (wantS) put(c.second);
   }
@@ -5998,7 +5999,8 @@ function slotEditSave() {
   const r = o => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, Math.round(v * 10) / 10]));
   const tot = r(sumItems(items)), id = E.id, at = E.was || toHHMM(nowMin());
   S.slotEdit = null;
-  mutateLog(l => { l.meals[id] = { state: 'eaten', at, items, tot, edited: true }; }, `Eingetragen mit ${fmt(tot.kcal)} kcal, Rest neu berechnet`);
+  const sl0 = todayPlan && todayPlan.slots.find(x => x.id === id);
+  mutateLog(l => { l.meals[id] = { state: 'eaten', at, items, tot, edited: true, n: sl0 ? sl0.meal.n : undefined, key: sl0 ? sl0.key : undefined }; }, `Eingetragen mit ${fmt(tot.kcal)} kcal, Rest neu berechnet`);
   if (S.tab === 'plan') renderPlan();
 }
 
@@ -6317,7 +6319,7 @@ function snapshotSlot(id) {
   const s = todayPlan.slots.find(x => x.id === id);
   const items = adj ? adj.items : s.items, tot = adj ? adj.tot : s.tot;
   const r = o => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, Math.round(v * 10) / 10]));
-  return { items: items.map(i => ({ food: i.food, g: i.g })), tot: r(tot) };
+  return { items: items.map(i => ({ food: i.food, g: i.g })), tot: r(tot), n: s.meal.n, key: s.key };
 }
 function mutateLog(fn, msg) {
   S.log = JSON.parse(JSON.stringify(S.log));
@@ -8609,7 +8611,7 @@ document.addEventListener('change', async e => {
   renderBackup();
 });
 Store.init().then(() => {
-  setTimeout(() => { try { shopSnapSync(); } catch (e) {} }, 1500);
+  setTimeout(() => { try { shopSnapSync(); } catch (e) {} try { computeToday(); pantrySync(); renderAll(false); } catch (e) {} }, 1500);
   if (!Backup.can()) return;
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {}
   setTimeout(() => { Backup.auto(); Cal.push(); }, 2500);
@@ -8634,7 +8636,7 @@ Store.init().then(() => {
   } catch (e) {}
 })();
 /* Nur für Tests: index.html?dbg */
-if (/[?&]dbg\b/.test(location.search)) window.__np = { get S() { return S; }, get plan() { return todayPlan; }, get rem() { return todayRem; }, calcTargets, MEALS, FOODS, mealNameOf, rankBadge, RANKS, planDay, planPr, shoppingCycle, addDays, isoDate, computeToday };
+if (/[?&]dbg\b/.test(location.search)) window.__np = { get S() { return S; }, get plan() { return todayPlan; }, get rem() { return todayRem; }, calcTargets, MEALS, FOODS, mealNameOf, rankBadge, RANKS, planDay, planPr, shoppingCycle, addDays, isoDate, computeToday, shopSnapSync };
 })();
 </script>
 
