@@ -3999,6 +3999,7 @@ function renderPlan() {
   if (prepTomorrow.length) html += kantineMode
     ? `<div class="card prep"><span class="ico-big">${icon('briefcase')}</span><div><h3>Morgen in die Tasche</h3><ul class="bag">${bagList(prepTomorrow).map(x => `<li>${x}</li>`).join('')}</ul><p>Mittag gibt es in der Kantine.</p></div></div>`
     : `<div class="card prep"><span class="ico-big">${icon('cooking-pot')}</span><div><h3>Heute Abend für morgen</h3><p>${prepTomorrow.map(s => esc(s.meal.n)).join(' und ')} vorbereiten und in Boxen packen, dann ist das Essen für die Arbeit fertig.</p></div></div>`;
+  html += thawCard(tomorrow, planPr(), isToday);
   const el = $('#planDay');
   if (el.dataset.h !== html) { el.innerHTML = html; el.dataset.h = html; }
 }
@@ -5937,6 +5938,31 @@ function trainSkippedRow() {
   return `<li class="tl-item train skipped"><span class="tl-time"></span><span class="tl-dot">${icon('x')}</span><div class="tl-body"><div class="tl-head"><span class="tl-name">${t === 'gym' ? 'Training' : 'Laufen'} ausgefallen</span><span class="tl-kcal">Ruhetag</span></div>
     <div class="tl-sub"><span>Heute zählt als Ruhetag, deine Ziele sind angepasst.</span></div><div class="tl-acts"><button data-act="train-unskip">${icon('arrow-clockwise')}Doch ${t === 'gym' ? 'trainiert' : 'gelaufen'}</button></div></div></li>`;
 }
+/* Was am Vorabend aus dem Gefrierfach muss: Fleisch und Fisch, das 2 oder mehr Tage nach dem Einkauf gegessen wird
+   (so steht es auch auf der Einkaufsliste: „Portion einfrieren“), plus Fleisch aus „Noch zuhause“ und TK-Garnelen */
+function tripDateFor(iso, pr) {
+  let m = new Date(iso + 'T12:00'); while (dow(m) !== pr.shopMain) m = addDays(m, -1);
+  let s2 = addDays(m, 1); while (dow(s2) !== pr.shopSecond) s2 = addDays(s2, 1);
+  return iso > isoDate(s2) ? isoDate(s2) : isoDate(m);
+}
+function thawList(plan, pr) {
+  const age = dayDiffISO(tripDateFor(plan.date, pr), plan.date), pan = pantryOn(plan.date, pr), out = [];
+  for (const sl of plan.slots) {
+    if (sl.buy || !sl.items) continue;
+    for (const it of sl.items) {
+      const F = FOODS[it.food]; if (!F || F.grp !== 'meat' || !(F.cat === 'fleisch' || F.cat === 'tk') || !(it.g > 0)) continue;
+      if (F.cat === 'fleisch' && age < 2 && !pan.has(it.food)) continue;
+      out.push({ food: it.food, g: it.g, sl });
+    }
+  }
+  return out;
+}
+function thawCard(plan, pr, isToday) {
+  const L = thawList(plan, pr); if (!L.length) return '';
+  return `<div class="card prep"><span class="ico-big">${icon('snowflake')}</span><div><h3>${isToday ? 'Heute Abend auftauen' : 'Am Abend davor auftauen'}</h3>
+    <ul class="bag">${L.map(x => `<li><b>${fmt(Math.round(x.g / 5) * 5)} g</b> ${esc(FOODS[x.food].nom || FOODS[x.food].n)} <span class="muted">für ${esc(x.sl.meal.n)} (${esc(x.sl.label)}, ${x.sl.time})</span></li>`).join('')}</ul>
+    <p>Aus dem Gefrierfach in den Kühlschrank legen, am besten auf einem Teller. Über Nacht taut es langsam und sicher auf.</p></div></div>`;
+}
 /* Was in die Tasche muss: Zutaten aller Arbeits-Snacks zusammengezählt, Stückobst als „2× Banane“ */
 function bagList(slots) {
   const sum = {};
@@ -6070,7 +6096,24 @@ const WC = {
   // Jause
   butter: ['Butter', 740, 0.7, 0.6, 83], wurst: ['Extrawurst', 250, 13, 1, 21], schinken: ['Schinken', 110, 20, 1, 3], kaese: ['Käse', 360, 25, 0, 28], aufstrich: ['Aufstrich', 250, 8, 3, 22],
 };
-const wcName = id => WC[id][0];
+/* Zutaten aus der App (FOODS) als „f:<id>“, damit auch Rezepte aus dem Plan eingetragen werden können */
+const wcGet = id => WC[id] || (String(id).startsWith('f:') && FOODS[id.slice(2)] ? (WC[id] = [FOODS[id.slice(2)].n, FOODS[id.slice(2)].kcal, FOODS[id.slice(2)].p, FOODS[id.slice(2)].c, FOODS[id.slice(2)].f]) : null);
+const wcName = id => (wcGet(id) || ['Zutat'])[0];
+const wzUnit = id => id.startsWith('dr_') || id.startsWith('su_') || (id.startsWith('f:') && FOODS[id.slice(2)] && FOODS[id.slice(2)].unit === 'ml') ? 'ml' : 'g';
+/* Rezepte der App für die Suche: Name so, wie er im Plan steht */
+let RECIPE_CACHE = null;
+function recipeList() {
+  if (RECIPE_CACHE) return RECIPE_CACHE;
+  RECIPE_CACHE = Object.keys(MEALS).filter(k => k !== 'kantine' && !(MEALS[k].items || []).some(it => FOODS[it[0]] && FOODS[it[0]].portion))
+    .map(k => { const m = resolveMeal(k, S.prefs.taste, new Set()); return m ? { k, n: m.n, items: m.items } : null; }).filter(Boolean);
+  return RECIPE_CACHE;
+}
+function recipeHits(qx) {
+  const w = normQ(qx).split(/\s+/).filter(x => x.length > 2 && !['mit', 'und', 'dazu'].includes(x)); if (!w.length) return [];
+  const seen = new Set();
+  return recipeList().map(r => [r, w.filter(x => normQ(r.n).includes(x)).length]).filter(([r, n]) => n > 0 && !seen.has(r.n) && seen.add(r.n))
+    .sort((a, b) => b[1] - a[1]).slice(0, 6).map(x => x[0]);
+}
 /* Beilagen mit normaler Portion in Gramm */
 const SIDES = {
   pommes: 150, erdaepfel: 200, kartsalat: 180, gratin: 200, bratkart: 180, puree: 200, reis: 180, nudeln: 200, spaetzle: 200,
@@ -6181,9 +6224,10 @@ const DISH = {
 const DISH_ORDER = ['schnitzel', 'fleisch', 'gulasch', 'nudeln', 'braten', 'burger', 'pizza', 'kebap', 'hendl', 'leberkaese', 'fisch', 'asia', 'kaesespaetzle', 'lasagne', 'suppe', 'mehlspeise', 'jause', 'suesses', 'getraenk'];
 const WZ_REC = 'np:wzrecent';
 const wzRecent = () => { try { return JSON.parse(localStorage.getItem(WZ_REC) || '[]') || []; } catch (e) { return []; } };
+const wzOpenSlots = () => todayPlan ? todayPlan.slots.filter(s => { const m = (S.log.meals || {})[s.id]; return !s.buy && (!m || m.state === 'skipped'); }) : [];
 function wzMac(items) {
   const t = { kcal: 0, p: 0, c: 0, f: 0 };
-  for (const it of items) { const C = WC[it.id]; if (!C) continue; const k = it.g / 100; t.kcal += C[1] * k; t.p += C[2] * k; t.c += C[3] * k; t.f += C[4] * k; }
+  for (const it of items) { const C = wcGet(it.id); if (!C) continue; const k = it.g / 100; t.kcal += C[1] * k; t.p += C[2] * k; t.c += C[3] * k; t.f += C[4] * k; }
   return t;
 }
 const wzQs = W => DISH[W.dish].q.filter(q => !q.if || q.if(W.A));
@@ -6214,7 +6258,7 @@ function wzFinish() {
   const sides = sideIds.filter(id => !['ketchup', 'mayo', 'saft'].includes(id)).map(wcName);
   W.name = D.name(A) + (sides.length ? ` mit ${sides.length > 1 ? sides.slice(0, -1).join(', ') + ' und ' + sides[sides.length - 1] : sides[0]}` : '');
   W.items = items; W.step = 99;
-  const open = todayPlan ? todayPlan.slots.filter(s => !(S.log.meals || {})[s.id]) : [];
+  const open = wzOpenSlots();
   W.rep = S.kantineSlot && open.some(s => s.id === S.kantineSlot) ? S.kantineSlot : chatRepFor({ kcal: wzMac(items).kcal });
   W.time = toHHMM(nowMin());
   renderWizard();
@@ -6244,24 +6288,26 @@ function renderWizard() {
     // Jedes Wort zählt einzeln: „Schweinefilet mit Pfefferrahm“ findet Steak & Filet
     const qw = qx.split(/[\s,&+]+/).filter(w => w.length > 2 && !['mit', 'und', 'dazu', 'ohne', 'von', 'vom', 'beim'].includes(w));
     const hit = k => { const h = DISH[k].n.toLowerCase() + ' ' + (DISH[k].syn || ''); return h.includes(qx) ? 99 : qw.filter(w => h.includes(w) || h.split(' ').some(x => x.length > 3 && w.includes(x))).length; };
+    const recs = qx ? recipeHits(qx) : [];
     const list = !qx ? DISH_ORDER : DISH_ORDER.map(k => [k, hit(k)]).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]).map(([k]) => k);
     el.innerHTML = `<h3 class="wz-h">Was hast du gegessen?</h3>
       <div class="field" style="margin:0"><label for="wzSearch" class="sr">Gericht</label><input id="wzSearch" type="search" autocomplete="off" placeholder="z. B. Schnitzel, Gulasch, Pizza" value="${esc(S.wzQ || '')}"></div>
       ${rec.length && !qx ? `<div class="wz-rec"><span class="kmenu-l">Zuletzt</span><div class="chipwrap">${rec.map((r, i) => `<button class="pchip" data-act="wz-recent" data-i="${i}">${esc(r.name)}</button>`).join('')}</div></div>` : ''}
-      <div class="wz-grid">${list.map(k => `<button class="wz-dish" data-act="wz-dish" data-k="${k}">${esc(DISH[k].n)}</button>`).join('')}</div>
-      ${!list.length ? `<p class="fhint" style="margin:0">Nichts Passendes. Such unten in der Liste nach Zutaten oder gib es selbst ein.</p>` : ''}`;
+      ${list.length ? `<div class="wz-grid">${list.map(k => `<button class="wz-dish" data-act="wz-dish" data-k="${k}">${esc(DISH[k].n)}</button>`).join('')}</div>` : ''}
+      ${recs.length ? `<div class="wz-rec"><span class="kmenu-l">Rezepte aus der App</span><div class="chipwrap">${recs.map(r => `<button class="pchip" data-act="wz-meal" data-k="${r.k}">${esc(r.n)}</button>`).join('')}</div></div>` : ''}
+      ${!list.length && !recs.length ? `<p class="fhint" style="margin:0">Nichts Passendes. Such unten in der Liste nach Zutaten oder gib es selbst ein.</p>` : ''}`;
     return;
   }
   if (W.step === 99) {
-    const t = wzMac(W.items), open = todayPlan ? todayPlan.slots.filter(s => !(S.log.meals || {})[s.id]) : [];
-    el.innerHTML = `<div class="wz-top"><button class="wz-back" data-act="wz-back" aria-label="Zurück">${icon('arrow-left')}</button><span>${esc(DISH[W.dish] ? DISH[W.dish].n : 'Zuletzt')}</span><button class="wz-x" data-act="wz-cancel" aria-label="Abbrechen">${icon('x')}</button></div>
+    const t = wzMac(W.items), open = wzOpenSlots();
+    el.innerHTML = `<div class="wz-top"><button class="wz-back" data-act="wz-back" aria-label="Zurück">${icon('arrow-left')}</button><span>${esc(W.head || (DISH[W.dish] ? DISH[W.dish].n : 'Zuletzt'))}</span><button class="wz-x" data-act="wz-cancel" aria-label="Abbrechen">${icon('x')}</button></div>
       <h3 class="wz-h">${esc(W.name)}</h3>
       <ul class="sedit-l">${W.items.map((it, i) => `<li><span class="sedit-n">${esc(wcName(it.id))}</span>
-        <span class="sedit-q"><button data-act="wz-step" data-i="${i}" data-d="-1" aria-label="${esc(wcName(it.id))} weniger">${icon('minus')}</button><label><input data-wz="${i}" inputmode="numeric" autocomplete="off" value="${it.g}" aria-label="${esc(wcName(it.id))} in ${it.id.startsWith('dr_') || it.id.startsWith('su_') ? 'Milliliter' : 'Gramm'}"><small>${it.id.startsWith('dr_') || it.id.startsWith('su_') ? 'ml' : 'g'}</small></label><button data-act="wz-step" data-i="${i}" data-d="1" aria-label="${esc(wcName(it.id))} mehr">${icon('plus')}</button></span>
+        <span class="sedit-q"><button data-act="wz-step" data-i="${i}" data-d="-1" aria-label="${esc(wcName(it.id))} weniger">${icon('minus')}</button><label><input data-wz="${i}" inputmode="numeric" autocomplete="off" value="${it.g}" aria-label="${esc(wcName(it.id))} in ${wzUnit(it.id) === 'ml' ? 'Milliliter' : 'Gramm'}"><small>${wzUnit(it.id)}</small></label><button data-act="wz-step" data-i="${i}" data-d="1" aria-label="${esc(wcName(it.id))} mehr">${icon('plus')}</button></span>
         <button class="sedit-x" data-act="wz-del" data-i="${i}" aria-label="${esc(wcName(it.id))} entfernen">${icon('x')}</button></li>`).join('')}</ul>
       <p class="sedit-sum" id="wzSum"><b>${fmt(t.kcal)} kcal</b> · Eiweiß ${fmt(t.p)} g · KH ${fmt(t.c)} g · Fett ${fmt(t.f)} g</p>
       <p class="fhint" style="margin:0">Die Mengen sind geschätzt. Wenn du es genauer weißt, ändere sie einfach.</p>
-      <div class="wz-two ${W.rep ? 'one' : ''}"><div class="field" style="margin:0"><label for="wzRep">Welche Mahlzeit war das?</label><select id="wzRep"><option value="">Etwas zusätzlich</option>${open.map(s => `<option value="${s.id}" ${W.rep === s.id ? 'selected' : ''}>${esc(s.label)} (${s.time})</option>`).join('')}</select></div>
+      <div class="wz-two ${W.rep ? 'one' : ''}"><div class="field" style="margin:0"><label for="wzRep">Welche Mahlzeit war das?</label><select id="wzRep"><option value="">Etwas zusätzlich</option>${open.map(s => `<option value="${s.id}" ${W.rep === s.id ? 'selected' : ''}>${esc(s.label)} (${s.time})${(S.log.meals || {})[s.id] ? ', ausgelassen' : ''}</option>`).join('')}</select></div>
       ${W.rep ? '' : `<div class="field" style="margin:0"><label for="wzTime">Uhrzeit</label><input id="wzTime" type="time" value="${W.time}"></div>`}</div>
       <button class="btn" data-act="wz-save" style="width:100%">${icon('check')}Eintragen</button>`;
     return;
@@ -6294,6 +6340,15 @@ function wzAct(a, b) {
   if (a === 'wz-recent') { const r = wzRecent()[+b.dataset.i]; if (!r) return true; S.wz = { dish: null, step: 99, A: {}, name: r.name, items: r.items.map(i => ({ ...i })), time: toHHMM(nowMin()) };
     S.wz.rep = chatRepFor({ kcal: wzMac(S.wz.items).kcal }); renderWizard(); return true; }
   if (a === 'wz-cancel') { S.wz = null; renderWizard(); return true; }
+  if (a === 'wz-meal') {
+    const r = recipeList().find(x => x.k === b.dataset.k); if (!r) return true;
+    const pl = todayPlan && todayPlan.slots.find(x => x.key === r.k && x.items);
+    const src = pl ? pl.items.map(i => [i.food, i.g]) : r.items.map(it => [it[0], it[1]]);
+    S.wz = { dish: null, head: 'Rezept aus der App', step: 99, A: {}, name: r.n, items: src.filter(([f, g]) => FOODS[f] && g > 0).map(([f, g]) => ({ id: 'f:' + f, g: Math.round(g / 5) * 5 })), time: toHHMM(nowMin()) };
+    const sk = wzOpenSlots().find(x => x.key === r.k) || wzOpenSlots().find(x => (S.log.meals || {})[x.id] && FAM[r.k] && x.id === 'dinner');
+    S.wz.rep = sk ? sk.id : chatRepFor({ kcal: wzMac(S.wz.items).kcal });
+    renderWizard(); return true;
+  }
   if (!W) return false;
   const Q = W.step === 99 ? [] : wzQs(W), q = Q[W.step];
   if (a === 'wz-back') { if (W.step === 99) { if (!W.dish) { S.wz = null; renderWizard(); return true; } W.step = wzQs(W).length - 1; } else if (W.step === 0) S.wz = null; else W.step--; renderWizard(); return true; }
