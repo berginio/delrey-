@@ -5908,6 +5908,11 @@ const WC = {
   s_pesto: ['Pesto', 480, 5, 5, 48], s_kaese: ['Käse-Sahne-Sauce', 190, 6, 4, 17], s_aglio: ['Olivenöl mit Knoblauch', 880, 0, 0, 99],
   s_lachs: ['Lachs-Sahne-Sauce', 170, 9, 3, 14], s_hendl: ['Hendl-Rahm-Sauce', 150, 11, 4, 10], parmesan: ['Parmesan', 390, 33, 0, 28],
   tortellini: ['Tortellini', 220, 9, 30, 7], lasagne: ['Lasagne', 165, 9, 13, 8.5], kaesespaetzle: ['Käsespätzle', 235, 10, 23, 11.5],
+  // Steak und Filet, gebraten (pro 100 g fertig)
+  fl_schwein: ['Schweinsfilet', 150, 27, 0, 4.5], fl_rind: ['Rindersteak', 175, 28, 0, 7], fl_pute: ['Putensteak', 140, 29, 0, 2.5],
+  fl_hendl: ['Hühnerbrust', 150, 30, 0, 3], fl_kalb: ['Kalbsmedaillons', 150, 28, 0, 4],
+  sc_pfeffer: ['Pfefferrahmsauce', 135, 2, 5, 12], sc_champ: ['Champignonrahmsauce', 105, 2, 4, 9], sc_jaeger: ['Jägersauce', 70, 1.5, 6, 4.5],
+  sc_kbutter: ['Kräuterbutter', 720, 1, 1, 79], kroketten: ['Kroketten', 200, 3, 25, 9.5],
   // Braten
   br_schwein: ['Schweinsbraten', 220, 23, 0, 14], br_rind: ['Rindsbraten', 180, 27, 0, 8], br_pute: ['Putenbraten', 145, 26, 0, 4.5],
   br_stelze: ['Stelze', 270, 22, 0, 20], br_tafelspitz: ['Tafelspitz', 155, 28, 0, 5],
@@ -5938,7 +5943,7 @@ const wcName = id => WC[id][0];
 /* Beilagen mit normaler Portion in Gramm */
 const SIDES = {
   pommes: 150, erdaepfel: 200, kartsalat: 180, gratin: 200, bratkart: 180, puree: 200, reis: 180, nudeln: 200, spaetzle: 200,
-  knoedel: 130, servietten: 140, kartknoedel: 140, nockerl: 200, semmel: 55, brot: 50, salat: 100, sauerkraut: 120, preisel: 25, saft: 80, ketchup: 30, mayo: 25,
+  knoedel: 130, servietten: 140, kartknoedel: 140, nockerl: 200, semmel: 55, brot: 50, salat: 100, sauerkraut: 120, preisel: 25, kroketten: 150, saft: 80, ketchup: 30, mayo: 25,
 };
 const SZ = [['klein', 'Klein', .7], ['normal', 'Normal', 1], ['gross', 'Groß', 1.4]];
 const szF = v => (SZ.find(s => s[0] === v) || SZ[1])[2];
@@ -5951,12 +5956,20 @@ const DISH = {
     { k: 'side', t: 'Was war dabei?', type: 'multi', opts: SIDE_STD.concat(['preisel', 'ketchup', 'mayo']) }],
     build: A => [[`sch_${A.meat}_${A.style}`, A.n.n * A.n.g]],
     name: A => `${A.style === 'cor' ? 'Cordon bleu' : 'Schnitzel'} (${{ schwein: 'Schwein', pute: 'Pute', hendl: 'Huhn', kalb: 'Kalb' }[A.meat]}${A.style === 'nat' ? ', natur' : A.style === 'pan' ? ', paniert' : ''})` },
+  fleisch: { n: 'Steak & Filet', syn: 'schweinefilet schweinsfilet filet medaillons steak rindersteak putensteak hühnerbrust hendlbrust pfefferrahm pfeffersauce rahmsauce champignon schwammerl jäger kräuterbutter natur', q: [
+    { k: 'meat', t: 'Welches Fleisch?', type: 'one', opts: [['fl_schwein', 'Schweinsfilet'], ['fl_rind', 'Rindersteak'], ['fl_pute', 'Putensteak'], ['fl_hendl', 'Hühnerbrust'], ['fl_kalb', 'Kalbsmedaillons']] },
+    { k: 'p', t: 'Wie viel Fleisch?', type: 'size', base: 180 },
+    { k: 'sauce', t: 'Welche Sauce?', type: 'one', opts: [['sc_pfeffer', 'Pfefferrahm'], ['sc_champ', 'Champignonrahm'], ['sc_jaeger', 'Jägersauce'], ['saft', 'Bratensaft'], ['sc_kbutter', 'Kräuterbutter'], ['none', 'Keine Sauce']] },
+    { k: 'side', t: 'Was war dabei?', type: 'multi', opts: ['kroketten', 'pommes', 'erdaepfel', 'bratkart', 'reis', 'spaetzle', 'nudeln', 'gratin', 'puree', 'salat'] }],
+    build: A => { const f = szF(A.p), sg = { sc_pfeffer: 120, sc_champ: 120, sc_jaeger: 100, saft: 80, sc_kbutter: 15 }[A.sauce];
+      return [[A.meat, 180 * f]].concat(sg ? [[A.sauce, sg * f]] : []); },
+    name: A => wcName(A.meat) + ({ sc_pfeffer: ' in Pfefferrahmsauce', sc_champ: ' in Champignonrahmsauce', sc_jaeger: ' mit Jägersauce', sc_kbutter: ' & Kräuterbutter' }[A.sauce] || '') },
   gulasch: { n: 'Gulasch', syn: 'paprikahendl fiaker', q: [
     { k: 'meat', t: 'Welches Gulasch?', type: 'one', opts: [['gul_rind', 'Rindsgulasch'], ['gul_schwein', 'Schweinsgulasch'], ['gul_hendl', 'Paprikahendl'], ['gul_fiaker', 'Fiakergulasch']] },
     { k: 'p', t: 'Wie viel Gulasch?', type: 'size', base: 300 },
     { k: 'side', t: 'Womit hast du es gegessen?', type: 'multi', opts: ['nudeln', 'erdaepfel', 'servietten', 'knoedel', 'semmel', 'spaetzle', 'nockerl', 'reis'] }],
     build: A => [[A.meat, 300 * szF(A.p)]], name: A => wcName(A.meat) },
-  nudeln: { n: 'Nudeln', syn: 'pasta spaghetti penne tagliatelle tortellini', q: [
+  nudeln: { n: 'Nudeln', syn: 'pasta spaghetti penne tagliatelle tortellini bolognese carbonara pesto hendl rahmsauce', q: [
     { k: 'typ', t: 'Welche Nudeln?', type: 'one', opts: [['spaghetti', 'Spaghetti'], ['penne', 'Penne oder Fusilli'], ['tagliatelle', 'Tagliatelle'], ['tortellini', 'Tortellini']] },
     { k: 'sauce', t: 'Welche Sauce?', type: 'one', opts: [['s_bolo', 'Bolognese'], ['s_tomate', 'Tomate'], ['s_carbo', 'Carbonara'], ['s_kaese', 'Käse-Sahne'], ['s_hendl', 'Hendl in Rahmsauce'], ['s_lachs', 'Lachs-Sahne'], ['s_pesto', 'Pesto'], ['s_aglio', 'Aglio e olio']] },
     { k: 'p', t: 'Wie groß war der Teller?', type: 'size', base: 250 },
@@ -6034,7 +6047,7 @@ const DISH = {
     { k: 'm', t: 'Wie viel?', type: 'amount', opts: () => [[250, '0,25 l'], [330, '0,33 l'], [500, '0,5 l'], [1000, '1 l']] }],
     build: A => [[A.typ, +A.m]], name: A => wcName(A.typ) },
 };
-const DISH_ORDER = ['schnitzel', 'gulasch', 'nudeln', 'braten', 'burger', 'pizza', 'kebap', 'hendl', 'leberkaese', 'fisch', 'asia', 'kaesespaetzle', 'lasagne', 'suppe', 'mehlspeise', 'jause', 'suesses', 'getraenk'];
+const DISH_ORDER = ['schnitzel', 'fleisch', 'gulasch', 'nudeln', 'braten', 'burger', 'pizza', 'kebap', 'hendl', 'leberkaese', 'fisch', 'asia', 'kaesespaetzle', 'lasagne', 'suppe', 'mehlspeise', 'jause', 'suesses', 'getraenk'];
 const WZ_REC = 'np:wzrecent';
 const wzRecent = () => { try { return JSON.parse(localStorage.getItem(WZ_REC) || '[]') || []; } catch (e) { return []; } };
 function wzMac(items) {
@@ -6097,7 +6110,10 @@ function renderWizard() {
   const W = S.wz;
   if (!W) {
     const rec = wzRecent(), qx = (S.wzQ || '').trim().toLowerCase();
-    const list = DISH_ORDER.filter(k => !qx || DISH[k].n.toLowerCase().includes(qx) || (DISH[k].syn || '').includes(qx));
+    // Jedes Wort zählt einzeln: „Schweinefilet mit Pfefferrahm“ findet Steak & Filet
+    const qw = qx.split(/[\s,&+]+/).filter(w => w.length > 2 && !['mit', 'und', 'dazu', 'ohne', 'von', 'vom', 'beim'].includes(w));
+    const hit = k => { const h = DISH[k].n.toLowerCase() + ' ' + (DISH[k].syn || ''); return h.includes(qx) ? 99 : qw.filter(w => h.includes(w) || h.split(' ').some(x => x.length > 3 && w.includes(x))).length; };
+    const list = !qx ? DISH_ORDER : DISH_ORDER.map(k => [k, hit(k)]).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]).map(([k]) => k);
     el.innerHTML = `<h3 class="wz-h">Was hast du gegessen?</h3>
       <div class="field" style="margin:0"><label for="wzSearch" class="sr">Gericht</label><input id="wzSearch" type="search" autocomplete="off" placeholder="z. B. Schnitzel, Gulasch, Pizza" value="${esc(S.wzQ || '')}"></div>
       ${rec.length && !qx ? `<div class="wz-rec"><span class="kmenu-l">Zuletzt</span><div class="chipwrap">${rec.map((r, i) => `<button class="pchip" data-act="wz-recent" data-i="${i}">${esc(r.name)}</button>`).join('')}</div></div>` : ''}
