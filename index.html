@@ -1517,6 +1517,9 @@ html.rkp-lock,html.rkp-lock body{overflow:hidden}
 .gf-foot .linkbtn{font-size:13px}
 /* Mengen anpassen im Tagesablauf */
 .sedit{display:grid;gap:12px}
+.se-hits:empty{display:none}
+.se-hits .chipwrap{margin:-4px 0 0}
+.se-hits .pchip .ico{width:14px;height:14px;margin-right:4px;vertical-align:-2px}
 .sedit-h{margin:0;font-weight:650;font-size:14.5px}
 .sedit-l{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 .sedit-l li{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:6px 8px;padding:8px 0 10px;border-bottom:1px solid var(--line)}
@@ -5801,10 +5804,28 @@ function slotEditHtml() {
       <span class="sedit-n">${esc(FOODS[it.food].n)}</span>
       <span class="sedit-q"><button data-act="se-step" data-i="${i}" data-d="-1" aria-label="${esc(FOODS[it.food].n)} weniger">${icon('minus')}</button><label><input id="se-${i}" data-se="${i}" inputmode="decimal" autocomplete="off" value="${String(v).replace('.', ',')}" aria-label="${esc(FOODS[it.food].n)} Menge"><small>${esc(U.u(v))}</small></label><button data-act="se-step" data-i="${i}" data-d="1" aria-label="${esc(FOODS[it.food].n)} mehr">${icon('plus')}</button></span>
       <button class="sedit-x" data-act="se-del" data-i="${i}" aria-label="${esc(FOODS[it.food].n)} entfernen">${icon('x')}</button></li>`; }).join('')}</ul>
-    <div class="field" style="margin:0"><label for="se-add">Etwas anderes dazu</label><select id="se-add"><option value="">Zutat auswählen …</option>${foods.map(k => `<option value="${k}">${esc(FOODS[k].n)}</option>`).join('')}</select></div>
+    <div class="field" style="margin:0"><label for="se-q">Etwas anderes dazu</label><input id="se-q" type="search" autocomplete="off" placeholder="Zutat suchen, z. B. Erdnüsse" value="${esc(E.q || '')}" aria-controls="seHits"></div>
+    <div class="se-hits" id="seHits" aria-live="polite">${seHitsHtml()}</div>
     <p class="sedit-sum" id="seSum">${slotEditSum()}</p>
     <div class="row" style="margin:0"><button class="btn sm" data-act="se-save">${icon('check')}${E.was ? 'Speichern' : 'So gegessen'}</button><button class="btn ghost sm" data-act="se-cancel">Abbrechen</button></div>
   </div>`;
+}
+/* Suche statt langer Liste: jedes Wort muss im Namen vorkommen, Treffer am Wortanfang zuerst */
+function seHits(q) {
+  const E = S.slotEdit, have = new Set(E.items.map(i => i.food)), w = normQ(q).split(/\s+/).filter(Boolean);
+  if (!w.length) return [];
+  return Object.keys(FOODS).filter(k => !have.has(k) && !FOODS[k].portion).map(k => {
+    const F = FOODS[k], h = normQ([F.n, F.nom, F.dat].filter(Boolean).join(' '));
+    if (!w.every(x => h.includes(x))) return null;
+    const ws = h.split(/[\s/(),.%-]+/);
+    return [ws.some(x => x.startsWith(w[0])) ? (normQ(F.n).startsWith(w[0]) ? 0 : 1) : 2, k];
+  }).filter(Boolean).sort((a, b) => a[0] - b[0] || FOODS[a[1]].n.localeCompare(FOODS[b[1]].n, 'de')).slice(0, 8).map(x => x[1]);
+}
+function seHitsHtml() {
+  const q = (S.slotEdit.q || '').trim(); if (!q) return '';
+  const hits = seHits(q);
+  return hits.length ? `<div class="chipwrap">${hits.map(k => `<button class="pchip" data-act="se-pick" data-k="${k}">${icon('plus')}${esc(FOODS[k].n)}</button>`).join('')}</div>`
+    : `<p class="fhint" style="margin:0">Nichts gefunden. Für ganze Gerichte nimm „Essen eintragen“.</p>`;
 }
 function slotEditSave() {
   const E = S.slotEdit; if (!E) return;
@@ -6165,6 +6186,11 @@ document.addEventListener('click', e => {
     it.g = Math.max(0, U.k === 'g' ? Math.round((it.g + st) / Math.abs(st)) * Math.abs(st) : (seVal(it) + st) * U.per);
     const inp = $('#se-' + b.dataset.i); if (inp) { const v = seVal(it); inp.value = String(v).replace('.', ','); inp.nextElementSibling.textContent = U.u(v); }
     $('#seSum').innerHTML = slotEditSum(); return; }
+  if (a === 'se-pick') {
+    const k = b.dataset.k, F = FOODS[k]; if (!F || !S.slotEdit) return;
+    S.slotEdit.items.push({ food: k, g: F.piece ? F.piece : F.spoon ? F.spoon : F.grp === 'nuts' ? 30 : 100 }); S.slotEdit.q = '';
+    renderPlan(); setTimeout(() => { const inp = $('#se-' + (S.slotEdit.items.length - 1)); if (inp) { inp.focus(); inp.select(); } }, 60); return;
+  }
   if (a === 'se-del') { S.slotEdit.items.splice(+b.dataset.i, 1); renderPlan(); return; }
   if (a === 'se-save') { slotEditSave(); return; }
   if (a === 'se-cancel') { S.slotEdit = null; renderPlan(); return; }
@@ -8391,18 +8417,16 @@ document.addEventListener('input', e => {
 });
 document.addEventListener('change', e => {
   if (e.target && e.target.id === 'wzRep' && S.wz) { S.wz.rep = e.target.value; renderWizard(); return; }
-  if (!e.target || e.target.id !== 'se-add' || !S.slotEdit || !e.target.value) return;
-  const k = e.target.value, F = FOODS[k];
-  S.slotEdit.items.push({ food: k, g: F.piece ? F.piece : F.spoon ? F.spoon : 100 });
-  renderPlan(); setTimeout(() => { const inp = $('#se-' + (S.slotEdit.items.length - 1)); if (inp) { inp.focus(); inp.select(); } }, 60);
 });
 document.addEventListener('input', e => {
   const t = e.target; if (!t) return;
   if (t.id === 'wzSearch') { S.wzQ = t.value; const pos = t.selectionStart; renderWizard(); const n = $('#wzSearch'); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (er) {} } return; }
   if (t.id === 'wzTime') { t.dataset.touched = '1'; return; }
+  if (t.id === 'se-q' && S.slotEdit) { S.slotEdit.q = t.value; const h = $('#seHits'); if (h) h.innerHTML = seHitsHtml(); return; }
   if (t.dataset && t.dataset.wz !== undefined && S.wz && S.wz.items) { const it = S.wz.items[+t.dataset.wz]; if (it) { it.g = Math.max(0, parseFloat(String(t.value).replace(',', '.')) || 0); wzSumUpdate(); } }
 });
 document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target && e.target.id === 'se-q') { const f = $('#seHits [data-act="se-pick"]'); if (f) { e.preventDefault(); f.click(); } return; }
   if (e.key === 'Enter' && e.target && e.target.id === 'wzSearch') { const f = $('#wzCard .wz-dish'); if (f) { e.preventDefault(); f.click(); } }
 });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { tick(); Backup.auto(); Cal.push(); } });
