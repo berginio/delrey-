@@ -649,6 +649,12 @@ details.how p{margin:8px 0 0;color:var(--muted);max-width:60ch}
 .shop .done .nm{color:var(--muted);text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--muted) 60%,transparent)}
 .shop .tag{display:inline-flex;align-items:center;gap:4px;margin-top:4px;font-size:11.5px;font-weight:600;color:var(--accent)}
 .shop .tag .ico{width:12px;height:12px}
+.shop .frz{grid-column:2 / -1;display:grid;gap:4px;padding:9px 11px;border-radius:12px;background:color-mix(in srgb,var(--accent) 10%,transparent);color:var(--ink);font-size:13px;line-height:1.35;font-weight:400}
+.shop .frz-h{display:flex;align-items:center;gap:6px;font-weight:600;margin-bottom:2px}
+.shop .frz-h .ico{width:14px;height:14px;flex:none;color:var(--accent)}
+.shop .frz-r{display:grid;grid-template-columns:58px 1fr;gap:8px}
+.shop .frz-r b{font-weight:600;font-variant-numeric:tabular-nums}
+.shop .frz-n{color:var(--muted);font-size:12px;margin-top:2px}
 details.trip > summary{list-style:none;cursor:pointer}
 details.trip > summary::-webkit-details-marker{display:none}
 details.trip > summary .ico.car{transition:transform .25s var(--ease);color:var(--muted)}
@@ -2453,7 +2459,10 @@ function mainWindow(d) {
 function varietyScore(k, r, H, usedFoods, usedFam) {
   const n = (m, key) => (m && key ? m.get(key) || 0 : 0), mp = mainProtein(r), fam = FAM[k], mc = mainCarb(r);
   let s = 0;
-  if (mp && usedFoods.has(mp)) s += 50;                // gleiches Fleisch wie mittags
+  // Rohes Fleisch: lieber dieselbe Sorte wie mittags, dann taut nur ein Beutel auf und eine Packung reicht
+  const thawMeat = f => FOODS[f] && FOODS[f].cat === 'fleisch' && FOODS[f].grp === 'meat';
+  if (mp && thawMeat(mp)) { if (usedFoods.has(mp)) s -= 30; else if ([...usedFoods].some(thawMeat)) s += 35; }
+  else if (mp && usedFoods.has(mp)) s += 50;           // gleiches (anderes) Eiweiß wie mittags
   if (mc && usedFam.has('carb:' + mc)) s += 50;        // gleiche Beilage wie mittags
   if (H.win && POOLS.main.includes(k) && !H.win.includes(k)) s += 45;   // nicht in der Auswahl dieser Woche
   s += n(H.week, dishKey(k)) * 100;                    // dasselbe Gericht (oder sein Zwilling) diese Woche schon
@@ -3081,7 +3090,7 @@ function shoppingCycle(today, pr) {
       for (const sl of p.slots) if (!sl.buy) for (const it of sl.items) {
         const F = FOODS[it.food]; if (F.portion || (F.stock && !withStock)) continue;
         const e = map[it.food] || (map[it.food] = { food: it.food, g: 0, uses: [], days: [] });
-        e.g += it.g; e.uses.push({ day: DAYSHORT[p.dow], off, label: sl.label });
+        e.g += it.g; e.uses.push({ day: DAYSHORT[p.dow], off, label: sl.label, g: it.g });
         if (!e.days.includes(DAYSHORT[p.dow])) e.days.push(DAYSHORT[p.dow]);
       }
     });
@@ -4115,9 +4124,23 @@ function shopList(items, key, extraStock) {
     const rest = it.fromStock ? `. ${fmt(it.fromStock)} ${F.unit || 'g'} hast du noch zuhause` : '';
     return `<li><button data-act="shop" data-key="${key}" data-food="${it.food}" class="${done ? 'done' : ''}" aria-pressed="${done}">
       <span class="box">${icon('check')}</span>
-      <span class="nm">${esc(F.n).replace(/(\d) %/g, '$1\u00a0%')}<small>${esc(need + rest)}</small>${it.freeze ? `<span class="tag">${icon('snowflake')}Portion für ${it.freeze.join(', ')} einfrieren</span>` : ''}</span>
-      <span class="qty">${esc(q)}</span></button></li>`;
+      <span class="nm">${esc(F.n).replace(/(\d) %/g, '$1\u00a0%')}<small>${esc(need + rest)}</small></span>
+      <span class="qty">${esc(q)}</span>${it.freeze && !it.stockRow ? freezePlanHtml(it) : ''}</button></li>`;
   }).join('')}</ul>`).join('');
+}
+/* Einfrier-Plan: die Packung gleich nach dem Einkauf in Beutel teilen, ein Beutel pro Tag.
+   Dann taut nur auf, was du am nächsten Tag brauchst. */
+function freezeBags(it) {
+  const r10 = g => Math.max(10, Math.round(g / 10) * 10), days = {};
+  for (const u of it.uses || []) { const d = days[u.off] || (days[u.off] = { day: u.day, off: u.off, g: 0, labels: [] }); d.g += u.g || 0; if (!d.labels.includes(u.label)) d.labels.push(u.label); }
+  const all = Object.values(days).sort((a, b) => a.off - b.off);
+  return { fresh: all.filter(d => d.off < 2).map(d => ({ ...d, g: r10(d.g) })), bags: all.filter(d => d.off >= 2).map(d => ({ ...d, g: r10(d.g) })) };
+}
+function freezePlanHtml(it) {
+  const { fresh, bags } = freezeBags(it); if (!bags.length) return '';
+  const lab = d => `${d.day}${d.labels.length > 1 ? ' (' + d.labels.join(' + ') + ')' : ''}`;
+  const row = (d, what) => `<span class="frz-r"><b>${fmt(d.g)} g</b><span>${what} · ${esc(lab(d))}</span></span>`;
+  return `<span class="frz"><span class="frz-h">${icon('snowflake')}Gleich nach dem Einkauf aufteilen</span>${fresh.map(d => row(d, 'Kühlschrank')).join('')}${bags.map((d, i) => row(d, `Beutel ${i + 1} einfrieren`)).join('')}<span class="frz-n">Der Rest der Packung kommt in den letzten Beutel.</span></span>`;
 }
 const spiceMissSet = () => new Set(S.prefs.spiceMiss || []);
 function spiceLine(key) {
@@ -5959,9 +5982,14 @@ function thawList(plan, pr) {
 }
 function thawCard(plan, pr, isToday) {
   const L = thawList(plan, pr); if (!L.length) return '';
+  const by = {};
+  for (const x of L) (by[x.food] = by[x.food] || []).push(x);
+  const rows = Object.entries(by).map(([f, xs]) => { const g = xs.reduce((a, x) => a + x.g, 0);
+    return `<li><b>${fmt(Math.round(g / 10) * 10)} g</b> ${esc(FOODS[f].nom || FOODS[f].n)} <span class="muted">· ${xs.length > 1 ? 'ein Beutel für ' + xs.map(x => `${esc(x.sl.label)} (${fmt(Math.round(x.g / 5) * 5)} g)`).join(' + ') : `für ${esc(xs[0].sl.meal.n)} (${esc(xs[0].sl.label)}, ${xs[0].sl.time})`}</span></li>`; });
+  const n = Object.keys(by).length;
   return `<div class="card prep"><span class="ico-big">${icon('snowflake')}</span><div><h3>${isToday ? 'Heute Abend auftauen' : 'Am Abend davor auftauen'}</h3>
-    <ul class="bag">${L.map(x => `<li><b>${fmt(Math.round(x.g / 5) * 5)} g</b> ${esc(FOODS[x.food].nom || FOODS[x.food].n)} <span class="muted">für ${esc(x.sl.meal.n)} (${esc(x.sl.label)}, ${x.sl.time})</span></li>`).join('')}</ul>
-    <p>Aus dem Gefrierfach in den Kühlschrank legen, am besten auf einem Teller. Über Nacht taut es langsam und sicher auf.</p></div></div>`;
+    <ul class="bag">${rows.join('')}</ul>
+    <p>${n > 1 ? `${n} Beutel` : 'Den Beutel'} aus dem Gefrierfach in den Kühlschrank legen, am besten auf einem Teller. Über Nacht taut es langsam und sicher auf.</p></div></div>`;
 }
 /* Was in die Tasche muss: Zutaten aller Arbeits-Snacks zusammengezählt, Stückobst als „2× Banane“ */
 function bagList(slots) {
