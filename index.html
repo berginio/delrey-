@@ -427,6 +427,15 @@ details.how p{margin:8px 0 0;color:var(--muted);max-width:60ch}
 .tl-item.train.done .tl-dot{background:var(--surface);color:var(--accent)}
 .tl-item.train.live .tl-dot{animation:pulse 2.4s ease-out infinite}
 .tl-item.train .tl-time{padding-top:12px}
+.tl-item.tl-drag .tl-body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.tl-movehint{margin:8px 0 0;font-size:11.5px;color:var(--muted)}
+.tl-movehint .linkbtn{font-size:11.5px}
+.tl-item.train.lifting .tl-body{transform:scale(.98);transition:transform .45s var(--ease)}
+.tl-item.train.dragging{position:relative;z-index:5}
+.tl-item.train.dragging .tl-body{transform:scale(1.03);box-shadow:0 18px 40px -16px rgb(var(--shadow) / .55),0 0 0 2px var(--accent);transition:transform .2s var(--ease),box-shadow .2s}
+.tl-item.train.dragging .tl-time{color:var(--accent);font-weight:800}
+:root .tl-item.train.dragging .tl-body{background-color:var(--surface)}
+@media (prefers-reduced-motion: reduce){.tl-item.train.lifting .tl-body,.tl-item.train.dragging .tl-body{transition:none}}
 @keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 45%,transparent)}70%{box-shadow:0 0 0 9px transparent}100%{box-shadow:0 0 0 0 transparent}}
 
 /* ---------- Plan ---------- */
@@ -2724,6 +2733,8 @@ function workDay(pr, d) {
 }
 function workEndFor(pr, d) { return workDay(pr, d).we; }
 function trainTime(pr, type, d) {
+  // für einen Tag verschoben (lange drücken und ziehen im Tagesablauf)
+  const mv = d && pr.trainMove && pr.trainMove[isoDate(d)]; if (mv) return toMin(mv);
   if (type === 'run') return toMin(pr.trainRun || pr.train || '17:00');
   // Gym direkt nach der Arbeit: 15 Minuten nach Feierabend; an freien Tagen wie an einem normalen Arbeitstag
   if ((pr.gymMode || 'afterwork') === 'afterwork') {
@@ -4056,9 +4067,11 @@ function planDayList(p, R, isToday) {
       const gym = p.type === 'gym', state = !isToday ? 'soon' : S.log.trainDone ? 'done' : now >= r.end ? 'ask' : now >= r.t ? 'live' : 'soon';
       const after = p.slots.find(x => x.t >= r.end);
       const tip = state === 'done' ? 'Erledigt, stark!' : state === 'ask' ? `Warst du ${gym ? 'trainieren' : 'laufen'}?` : state === 'live' ? (gym ? 'Läuft gerade. Genug trinken!' : 'Läuft gerade. Locker bleiben.') : (after ? `Danach: ${esc(after.buy ? 'unterwegs kaufen' : after.meal.n)} um ${after.time}` : (gym ? 'Wasserflasche einpacken' : 'Schuhe raus, Wasser bereit'));
-      html += `<li class="tl-item train ${state}"><span class="tl-time">${toHHMM(r.t)}</span><span class="tl-dot">${icon(state === 'done' ? 'check' : TYPES[p.type].icon)}</span>
+      const moved = S.profile.trainMove && S.profile.trainMove[p.date], canMove = state !== 'done';
+      html += `<li class="tl-item train ${state} ${canMove ? 'tl-drag' : ''}" data-tdate="${p.date}" data-t="${r.t}" data-dur="${r.dur}"><span class="tl-time">${toHHMM(r.t)}</span><span class="tl-dot">${icon(state === 'done' ? 'check' : TYPES[p.type].icon)}</span>
         <div class="tl-body"><div class="tl-head"><span class="tl-name">${gym ? gymTitle(dayInfo(S.profile, new Date(p.date + 'T12:00')).f) : 'Laufen'}</span><span class="tl-kcal">${state === 'live' ? 'jetzt' : state === 'done' ? 'erledigt' : state === 'ask' ? 'vorbei' : 'bis ' + toHHMM(r.end)}</span></div>
-        <div class="tl-sub"><span class="chip">${icon('clock')}ca. ${r.dur} min</span><span>${tip}</span></div>${isToday ? trainActs(state, gym) : ''}</div></li>`;
+        <div class="tl-sub"><span class="chip">${icon('clock')}ca. ${r.dur} min</span>${moved ? `<span class="chip warn">${icon('clock')}verschoben</span>` : ''}<span>${tip}</span></div>${isToday ? trainActs(state, gym) : ''}
+        ${canMove ? `<p class="tl-movehint">${moved ? `<button class="linkbtn" data-act="train-reset" data-date="${p.date}">Zurück auf ${toHHMM(trainTime({ ...S.profile, trainMove: null }, p.type, new Date(p.date + 'T12:00')))}</button> · ` : ''}Lange drücken und ziehen zum Verschieben</p>` : ''}</div></li>`;
       continue;
     }
     if (r.kind === 'extra') {
@@ -6600,6 +6613,7 @@ document.addEventListener('click', e => {
   if (a === 'daytype-set') return mutateLog(l => { l.dayType = b.dataset.v; delete l.trainSkipped; delete l.trainDone; }, `Heute: ${TYPES[b.dataset.v].n}`);
   if (a === 'train-done') return mutateLog(l => { l.trainDone = true; }, 'Erledigt, stark!');
   if (a === 'train-undo') return mutateLog(l => { delete l.trainDone; }, 'Zurückgesetzt');
+  if (a === 'train-reset') { trainMoveSet(b.dataset.date, null); return; }
   if (a === 'train-skip') { const cur = todayPlan.type; return mutateLog(l => { l.trainSkipped = cur; l.dayType = 'rest'; delete l.trainDone; }, 'Heute als Ruhetag gerechnet, Ziele angepasst'); }
   if (a === 'train-unskip') return mutateLog(l => { const t = l.trainSkipped; delete l.trainSkipped; l.dayType = t || null; l.trainDone = true; }, 'Training zählt wieder, Ziele angepasst');
   if (a === 'info-goal') { S.profile.goal = b.dataset.v; profileChanged(true); return; }
@@ -8719,6 +8733,63 @@ Store.init().then(() => {
   } catch (e) {}
 })();
 /* Nur für Tests: index.html?dbg */
+
+/* ================= Training verschieben: lange drücken, dann nach oben oder unten ziehen =================
+   15-Minuten-Schritte, gilt nur für diesen einen Tag. Die Mahlzeiten rund ums Training rechnet die App danach neu. */
+function trainMoveSet(iso, hhmm) {
+  const today = isoDate(new Date()), mv = { ...(S.profile.trainMove || {}) };
+  for (const k of Object.keys(mv)) if (k < today) delete mv[k];
+  if (hhmm) mv[iso] = hhmm; else delete mv[iso];
+  S.profile = { ...S.profile, trainMove: mv };
+  Store.saveProfileSoon(); shopCache = null;
+  try { computeToday(); } catch (e) {}
+  renderAll(false);
+  toast(hhmm ? `Training auf ${hhmm} verschoben, Mahlzeiten angepasst` : 'Training wieder zur normalen Zeit');
+}
+(() => {
+  const STEP = 15, PX = 16, MIN_T = 5 * 60, MAX_T = 22 * 60;
+  let D = null;
+  const reset = () => {
+    if (!D) return;
+    clearTimeout(D.timer);
+    D.li.classList.remove('lifting', 'dragging'); D.li.style.transform = '';
+    const tm = D.li.querySelector('.tl-time'); if (tm) tm.textContent = toHHMM(D.t0);
+    D = null;
+  };
+  document.addEventListener('pointerdown', e => {
+    const li = e.target.closest && e.target.closest('.tl-item.tl-drag');
+    if (!li || e.button > 0 || e.target.closest('button, a, input, select')) return;
+    D = { li, id: e.pointerId, y0: e.clientY, x0: e.clientX, t0: +li.dataset.t, t: +li.dataset.t, on: false };
+    li.classList.add('lifting');
+    D.timer = setTimeout(() => {
+      if (!D) return;
+      D.on = true; li.classList.remove('lifting'); li.classList.add('dragging');
+      try { navigator.vibrate && navigator.vibrate(12); } catch (x) {}
+    }, 420);
+  });
+  const move = (x, y) => {
+    if (!D) return;
+    const dy = y - D.y0;
+    if (!D.on) { if (Math.abs(dy) > 8 || Math.abs(x - D.x0) > 8) reset(); return; }
+    const steps = Math.round(dy / PX), t = Math.min(MAX_T, Math.max(MIN_T, D.t0 + steps * STEP));
+    D.li.style.transform = `translateY(${Math.max(-260, Math.min(260, dy))}px)`;
+    if (t !== D.t) { D.t = t; const tm = D.li.querySelector('.tl-time'); if (tm) tm.textContent = toHHMM(t);
+      const k = D.li.querySelector('.tl-kcal'); if (k && /^bis /.test(k.textContent)) k.textContent = 'bis ' + toHHMM(t + (+D.li.dataset.dur || 60)); try { navigator.vibrate && navigator.vibrate(4); } catch (x) {} }
+  };
+  document.addEventListener('pointermove', e => { if (D && e.pointerId === D.id) move(e.clientX, e.clientY); });
+  const end = e => {
+    if (!D || (e && e.pointerId != null && e.pointerId !== D.id)) return;
+    const { on, t, t0, li } = D; reset();
+    if (on && t !== t0) trainMoveSet(li.dataset.tdate, toHHMM(t));
+  };
+  document.addEventListener('pointerup', end);
+  // iOS kann beim Ziehen „pointercancel“ schicken; dann laufen Bewegung und Ende über die Touch-Ereignisse weiter
+  document.addEventListener('pointercancel', () => { if (D && !D.on) reset(); });
+  document.addEventListener('touchmove', e => { if (!D) return; if (D.on) e.preventDefault(); const t = e.touches[0]; if (t) move(t.clientX, t.clientY); }, { passive: false });
+  document.addEventListener('touchend', () => { if (D) end(); });
+  document.addEventListener('touchcancel', () => { if (D && !D.on) reset(); else if (D) end(); });
+  document.addEventListener('contextmenu', e => { if (D) e.preventDefault(); });
+})();
 if (/[?&]dbg\b/.test(location.search)) window.__np = { get S() { return S; }, get plan() { return todayPlan; }, get rem() { return todayRem; }, calcTargets, MEALS, FOODS, mealNameOf, rankBadge, RANKS, planDay, planPr, shoppingCycle, addDays, isoDate, computeToday, shopSnapSync };
 })();
 </script>
