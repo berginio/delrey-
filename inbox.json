@@ -1,0 +1,16 @@
+{
+ "v": 1,
+ "hinweis": "Einträge, die Claude für die App DEL REY vorbereitet. Die App übernimmt sie beim Öffnen.",
+ "items": [
+  {
+   "id": "2026-11-10-kantine-reis",
+   "d": "2026-11-10",
+   "code": "DR+ Mexikanischer Reis mit Faschiertem (Kantine) | 680 kcal | E 30 | KH 80 | F 25 | 10:30"
+  },
+  {
+   "id": "2026-11-10-kantine-suppe",
+   "d": "2026-11-10",
+   "code": "DR+ Frittatensuppe (Kantine) | 140 kcal | E 6 | KH 14 | F 6 | 10:30"
+  }
+ ]
+}

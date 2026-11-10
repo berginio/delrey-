@@ -5816,6 +5816,39 @@ function chatRepFor(e) {
   let best = null; for (const s of open) { const d = Math.abs(s.t - t); if (d <= 90 && (!best || d < Math.abs(best.t - t))) best = s; }
   return best ? best.id : '';
 }
+
+/* ================= Von Claude eingetragen =================
+   Claude legt Einträge (DR+ Zeilen) in inbox.json neben der App ab. Beim Öffnen holt die App sie und trägt die
+   von heute ein, jede nur einmal. Das größte Essen ersetzt die passende Mahlzeit, der Rest kommt als Extra dazu. */
+const INBOX_KEY = 'np:inboxDone';
+let inboxLast = 0;
+async function inboxCheck(force) {
+  if (Store.mode === 'db' || !/^https?:$/.test(location.protocol)) return;
+  if (!(Store.got && Store.got.has('profile') && Store.got.has('log'))) return;
+  if (!force && Date.now() - inboxLast < 60000) return;
+  inboxLast = Date.now();
+  let data = null;
+  try { const r = await fetch('inbox.json?t=' + Date.now(), { cache: 'no-store' }); if (r.ok) data = await r.json(); } catch (e) { return; }
+  const items = (data && Array.isArray(data.items)) ? data.items : [];
+  let done = []; try { done = JSON.parse(localStorage.getItem(INBOX_KEY) || '[]'); } catch (e) {}
+  const fresh = items.filter(it => it && it.id && !done.includes(it.id) && it.d === S.today);
+  const old = items.filter(it => it && it.id && !done.includes(it.id) && it.d < S.today).map(it => it.id);
+  if (!fresh.length) { if (old.length) try { localStorage.setItem(INBOX_KEY, JSON.stringify(done.concat(old).slice(-200))); } catch (e) {} return; }
+  const r = parseChatCodes(fresh.map(it => it.code || '').join('\n'));
+  if (!r.add.length) return;
+  const taken = new Set(), base = Date.now().toString(36);
+  const entries = r.add.map((e, i) => ({ id: base + i + Math.random().toString(36).slice(2, 5), name: e.n, time: e.time || toHHMM(nowMin()), kcal: e.kcal, p: e.p, c: e.c, f: e.f, fib: 0,
+    leu: Math.round(e.p * LEU_PER_P * 10) / 10, src: 'claude', replaces: null }));
+  entries.slice().sort((a, b) => b.kcal - a.kcal).forEach(en => {
+    if (en.kcal < 250) return;
+    let sid = chatRepFor({ time: en.time });
+    if (!sid && todayPlan) { const k = todayPlan.slots.find(x => x.key === 'kantine' && (S.log.meals || {})[x.id] && !(S.log.meals || {})[x.id].dish); if (k) sid = k.id; }
+    if (sid && !taken.has(sid)) { en.replaces = sid; taken.add(sid); }
+  });
+  try { localStorage.setItem(INBOX_KEY, JSON.stringify(done.concat(fresh.map(it => it.id), old).slice(-200))); } catch (e) {}
+  mutateLog(l => { for (const en of entries) if (!(en.replaces && dishAsSlot(l, en.replaces, en))) l.extras = (l.extras || []).concat(en); },
+    `Von Claude eingetragen: ${entries.map(e => e.name).join(', ')}`);
+}
 function chatApply(r) {
   const msgs = [];
   if (r.kantine.length) {
@@ -8709,7 +8742,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && e.target && e.target.id === 'se-q') { const f = $('#seHits [data-act="se-pick"]'); if (f) { e.preventDefault(); f.click(); } return; }
   if (e.key === 'Enter' && e.target && e.target.id === 'wzSearch') { const f = $('#wzCard .wz-dish'); if (f) { e.preventDefault(); f.click(); } }
 });
-document.addEventListener('visibilitychange', () => { if (!document.hidden) { tick(); Backup.auto(); Cal.push(); } });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { tick(); Backup.auto(); Cal.push(); inboxCheck(true); } });
 document.addEventListener('change', async e => {
   if (!e.target || e.target.id !== 'bkFile') return;
   const f = e.target.files && e.target.files[0]; if (!f) return;
@@ -8717,7 +8750,7 @@ document.addEventListener('change', async e => {
   renderBackup();
 });
 Store.init().then(() => {
-  setTimeout(() => { try { shopSnapSync(); } catch (e) {} try { computeToday(); pantrySync(); renderAll(false); } catch (e) {} }, 1500);
+  setTimeout(() => { try { shopSnapSync(); } catch (e) {} try { computeToday(); pantrySync(); renderAll(false); } catch (e) {} inboxCheck(true); }, 1500);
   if (!Backup.can()) return;
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {}
   setTimeout(() => { Backup.auto(); Cal.push(); }, 2500);
