@@ -3205,7 +3205,7 @@ const Store = {
     S.weights = this.ls('weights') || [];
     S.train = { ...emptyTrain(), ...(this.ls('train') || {}) };
     S.shop = this.ls('shop') || {};
-    this.got = new Set(['prefs', 'train']);
+    this.got = new Set(['prefs', 'train', 'profile', 'log']);
     const pf = this.ls('prefs'); if (pf) S.prefs = { taste: { foods: {}, meals: {}, ...(pf.taste || {}) }, challenge: pf.challenge || null, challenges: migrateCh(pf), swaps: pf.swaps || {}, creaDays: pf.creaDays || [], dishes: pf.dishes || [], recent: pf.recent || [], favs: pf.favs || [], events: pf.events || [], trackDays: pf.trackDays || [], phasePlan: pf.phasePlan || null, spiceMiss: pf.spiceMiss || [], pantry: pf.pantry || [], shopSnap: pf.shopSnap || {}, nut: pf.nut || {}, kantine: pf.kantine || [] };
     backfillTracked();
     renderAll(true); renderChallenge(true);
@@ -3214,6 +3214,7 @@ const Store = {
     const db = this.db;
     this.unsub.profile = db.doc(this.base).onSnapshot(snap => {
       if (snap.exists) S.profile = { ...DEFAULT_PROFILE, ...snap.data(), example: false };
+      this.got.add('profile');
       renderAll(!this._formDone); this._formDone = true;
     }, () => {});
     this.subDay();
@@ -3237,6 +3238,7 @@ const Store = {
     this.unsub.day && this.unsub.day();
     this.unsub.day = this.db.doc(this.base).collection('days').doc(S.today).onSnapshot(snap => {
       S.log = snap.exists ? { ...emptyLog(), ...snap.data() } : emptyLog();
+      this.got.add('log');
       renderToday(); renderHeader();
     }, () => {});
   },
@@ -3364,12 +3366,19 @@ function computeToday() {
    deren Zeit schon da war oder die schon abgehakt sind. Sie bleiben im Plan, so wie sie waren. */
 function keepPastSlots(plan) {
   if (!plan || plan.date !== S.today) return;
-  const key = 'np:slots2:' + S.today;
+  // Erst wenn dein Profil und dein Tag geladen sind: sonst würde der Plan mit den Grundeinstellungen gemerkt
+  // (so kam z. B. ein Frühstück in den Plan, obwohl du es nur am Wochenende willst)
+  if (!(Store.got && Store.got.has('profile') && Store.got.has('log'))) return;
+  const key = 'np:slots3:' + S.today;
   let snap = {}; try { snap = JSON.parse(localStorage.getItem(key) || '{}') || {}; } catch (e) {}
   const now = nowMin(), meals = (S.log && S.log.meals) || {}, have = new Set(plan.slots.map(x => x.id));
+  // Hast du deine Einstellungen geändert (z. B. Frühstück nur am Wochenende), gilt der neue Plan: Gemerktes, das nicht abgehakt ist, fällt weg
+  const { trainMove, updatedAt, ...base } = S.profile || {}, sig = String(JSON.stringify(base).split('').reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 7));
+  if (snap.__sig !== sig) for (const id of Object.keys(snap)) if (id !== '__sig' && !meals[id]) delete snap[id];
+  snap.__sig = sig;
   let added = false;
   for (const [id, x] of Object.entries(snap)) {
-    if (have.has(id)) continue;
+    if (id === '__sig' || have.has(id)) continue;
     if (!meals[id] && (x.t > now || x.t < now - 180)) { if (x.t > now) delete snap[id]; continue; }
     const m = resolveMeal(x.key, S.prefs && S.prefs.taste, new Set()); if (!m) continue;
     const items = (x.items || []).filter(i => FOODS[i.food]);
