@@ -6863,15 +6863,22 @@ const Voice = {
   start() {
     if (!this.ok()) { this.fallback(); return; }
     const R = window.SpeechRecognition || window.webkitSpeechRecognition;
-    this.holding = true; this.txt = ''; this.fin = ''; this.t0 = Date.now();
+    this.holding = true; this.txt = ''; this.fin = ''; this.acc = ''; this.best = ''; this.t0 = Date.now();
     const r = new R(); this.rec = r;
     r.lang = 'de-AT'; r.continuous = true; r.interimResults = true; r.maxAlternatives = 1;
-    r.onresult = e => { let fin = '', tmp = ''; for (let i = 0; i < e.results.length; i++) { const x = e.results[i][0].transcript; if (e.results[i].isFinal) fin += x + ' '; else tmp += x; } this.fin = fin; this.txt = (fin + tmp).trim(); this.bubble('Ich höre zu …', this.txt); };
+    // iPhone schickt beim Beenden oft noch ein leeres Ergebnis oder startet neu: Gehörtes darf dabei nicht verloren gehen
+    r.onresult = e => {
+      let sess = ''; for (let i = 0; i < e.results.length; i++) sess += (e.results[i][0] ? e.results[i][0].transcript : '') + ' ';
+      sess = sess.replace(/\s+/g, ' ').trim(); if (!sess) return;
+      this.txt = (this.acc ? this.acc + ' ' : '') + sess;
+      if (this.txt.length >= this.best.length) this.best = this.txt;
+      this.bubble('Ich höre zu …', this.txt);
+    };
     r.onerror = e => {
       if (e.error === 'not-allowed' && !this.tap && Date.now() - this.t0 < 1500) { this.toTap(); return; }
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed' || e.error === 'language-not-supported') { this.blocked = true; this.holding = false; this.bubble(null); this.fallback(true); }
     };
-    r.onend = () => { if (this.holding) { try { r.start(); } catch (x) {} return; } const d = this.done; this.done = null; if (d) d(); };
+    r.onend = () => { if (this.holding) { this.acc = this.best || this.txt; try { r.start(); } catch (x) {} return; } const d = this.done; this.done = null; if (d) d(); };
     try { r.start(); } catch (x) { if (!this.tap) { this.toTap(); return; } this.blocked = true; this.fallback(); return; }
     this.bubble('Ich höre zu …', this.tap ? 'Sag, was du gegessen hast. Tipp nochmal auf „Sprechen“, wenn du fertig bist.' : 'Sag, was du gegessen hast');
     try { navigator.vibrate && navigator.vibrate(10); } catch (x) {}
@@ -6880,8 +6887,8 @@ const Voice = {
     if (!this.holding) return;
     this.holding = false;
     const short = !this.tap && Date.now() - this.t0 < 350;
-    const finish = () => { this.bubble(null); const t = (this.txt || this.fin).trim(); this.rec = null; if (short && !t) { toast('Gedrückt halten und dabei sprechen'); return; } voiceHandle(t); };
-    this.done = finish; this.bubble('Moment …', this.txt);
+    const finish = () => { this.bubble(null); const t = (this.best || this.txt || '').trim(); this.rec = null; if (short && !t) { toast('Gedrückt halten und dabei sprechen'); return; } voiceHandle(t); };
+    this.done = finish; this.bubble('Moment …', this.best || this.txt);
     try { this.rec && this.rec.stop(); } catch (x) { finish(); }
     setTimeout(() => { if (this.done === finish) { this.done = null; finish(); } }, 1500);
   },
