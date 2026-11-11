@@ -6845,14 +6845,11 @@ function vAddHits(q) {
   }
   return out;
 }
-/* iPhone: Manche Versionen erlauben das Starten nur nach einem Tipp, nicht beim Gedrückthalten.
-   Dann schaltet die App einmalig auf „Tippen zum Starten, Tippen zum Beenden“ um und merkt sich das. */
+/* Sprechen: Knopf drücken = sofort zuhören, loslassen = fertig. Eine einzige Spracherkennung für die ganze Sitzung,
+   damit das iPhone nicht bei jedem Drücken neu nach dem Mikrofon fragt. Was in der Blase stand, wird auf jeden Fall verwendet. */
+try { localStorage.removeItem('np:vtap'); } catch (e) {}
 const Voice = {
-  rec: null, holding: false, txt: '', fin: '', t0: 0, done: null,
-  tap: (() => { try { return localStorage.getItem('np:vtap') === '1'; } catch (e) { return false; } })(),
-  toTap() { this.tap = true; try { localStorage.setItem('np:vtap', '1'); } catch (e) {} this.holding = false; this.bubble(null);
-    document.querySelectorAll('[data-hold="voice"].holding').forEach(x => x.classList.remove('holding'));
-    toast('Tipp auf „Sprechen“ zum Starten und nochmal zum Beenden'); },
+  rec: null, holding: false, running: false, txt: '', acc: '', best: '', t0: 0, done: null, err: '', nRes: 0, denied: 0,
   ok() { return !!(window.SpeechRecognition || window.webkitSpeechRecognition) && !this.blocked; },
   bubble(msg, live) {
     let b = $('#vBubble');
@@ -6860,37 +6857,58 @@ const Voice = {
     if (msg == null) { b.classList.remove('on'); return; }
     b.innerHTML = `<span class="vbub-dot"></span><div><b>${esc(msg)}</b>${live ? `<p>${esc(live)}</p>` : ''}</div>`; b.classList.add('on');
   },
-  start() {
-    if (!this.ok()) { this.fallback(); return; }
-    const R = window.SpeechRecognition || window.webkitSpeechRecognition;
-    this.holding = true; this.txt = ''; this.fin = ''; this.acc = ''; this.best = ''; this.t0 = Date.now();
-    const r = new R(); this.rec = r;
+  shown() { const p = $('#vBubble p'); const t = p ? p.textContent.trim() : ''; return t === 'Sag, was du gegessen hast' ? '' : t; },
+  make() {
+    if (this.rec) return this.rec;
+    const R = window.SpeechRecognition || window.webkitSpeechRecognition, r = new R();
     r.lang = 'de-AT'; r.continuous = true; r.interimResults = true; r.maxAlternatives = 1;
-    // iPhone schickt beim Beenden oft noch ein leeres Ergebnis oder startet neu: Gehörtes darf dabei nicht verloren gehen
+    r.onstart = () => { this.running = true; };
     r.onresult = e => {
+      this.nRes++;
       let sess = ''; for (let i = 0; i < e.results.length; i++) sess += (e.results[i][0] ? e.results[i][0].transcript : '') + ' ';
       sess = sess.replace(/\s+/g, ' ').trim(); if (!sess) return;
       this.txt = (this.acc ? this.acc + ' ' : '') + sess;
       if (this.txt.length >= this.best.length) this.best = this.txt;
-      this.bubble('Ich höre zu …', this.txt);
+      if (this.holding) this.bubble('Ich höre zu …', this.txt);
     };
     r.onerror = e => {
-      if (e.error === 'not-allowed' && !this.tap && Date.now() - this.t0 < 1500) { this.toTap(); return; }
-      if (e.error === 'not-allowed' || e.error === 'service-not-allowed' || e.error === 'language-not-supported') { this.blocked = true; this.holding = false; this.bubble(null); this.fallback(true); }
+      this.err = e.error || 'fehler';
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+        this.denied++;
+        if (this.denied >= 2) { this.blocked = true; this.holding = false; this.bubble(null); this.fallback(true); }
+        else { this.holding = false; this.bubble(null); toast('Bitte das Mikrofon erlauben und nochmal gedrückt halten'); }
+      }
     };
-    r.onend = () => { if (this.holding) { this.acc = this.best || this.txt; try { r.start(); } catch (x) {} return; } const d = this.done; this.done = null; if (d) d(); };
-    try { r.start(); } catch (x) { if (!this.tap) { this.toTap(); return; } this.blocked = true; this.fallback(); return; }
-    this.bubble('Ich höre zu …', this.tap ? 'Sag, was du gegessen hast. Tipp nochmal auf „Sprechen“, wenn du fertig bist.' : 'Sag, was du gegessen hast');
+    r.onend = () => {
+      this.running = false;
+      if (this.holding) { this.acc = this.best || this.txt; try { r.start(); } catch (x) {} return; }   // iPhone hört nach einer Pause auf: weiter zuhören, solange du drückst
+      const d = this.done; this.done = null; if (d) d();
+    };
+    return (this.rec = r);
+  },
+  start() {
+    if (!this.ok()) { this.fallback(); return; }
+    this.holding = true; this.txt = ''; this.acc = ''; this.best = ''; this.err = ''; this.nRes = 0; this.t0 = Date.now(); this.done = null;
+    const r = this.make();
+    this.bubble('Ich höre zu …', 'Sag, was du gegessen hast');
+    try { if (!this.running) r.start(); } catch (x) { this.err = String(x && x.name || x); }
     try { navigator.vibrate && navigator.vibrate(10); } catch (x) {}
   },
   stop() {
     if (!this.holding) return;
     this.holding = false;
-    const short = !this.tap && Date.now() - this.t0 < 350;
-    const finish = () => { this.bubble(null); const t = (this.best || this.txt || '').trim(); this.rec = null; if (short && !t) { toast('Gedrückt halten und dabei sprechen'); return; } voiceHandle(t); };
-    this.done = finish; this.bubble('Moment …', this.best || this.txt);
-    try { this.rec && this.rec.stop(); } catch (x) { finish(); }
-    setTimeout(() => { if (this.done === finish) { this.done = null; finish(); } }, 1500);
+    const quick = Date.now() - this.t0 < 300, seen = this.shown();
+    const finish = () => {
+      if (this.done !== finish && this.done !== null) return;
+      this.done = null;
+      const t = (this.best || this.txt || seen || this.shown() || '').trim();
+      this.bubble(null);
+      if (!t) { toast(quick ? 'Knopf gedrückt halten, sprechen, dann loslassen' : `Nichts verstanden${this.err ? ' (' + this.err + ')' : ''}. Nochmal versuchen`); return; }
+      voiceHandle(t);
+    };
+    this.done = finish; this.bubble('Moment …', this.best || this.txt || seen);
+    try { this.running ? this.rec.stop() : finish(); } catch (x) { finish(); }
+    setTimeout(() => { if (this.done === finish) finish(); }, 1200);
   },
   fallback(denied) {
     S.vText = true; S.wz = null; S.vMiss = '';
@@ -6900,17 +6918,13 @@ const Voice = {
   },
 };
 document.addEventListener('pointerdown', e => {
-  const b = e.target.closest && e.target.closest('[data-hold="voice"]'); if (!b || Voice.tap) return;
+  const b = e.target.closest && e.target.closest('[data-hold="voice"]'); if (!b) return;
   e.preventDefault(); b.classList.add('holding'); try { b.setPointerCapture(e.pointerId); } catch (x) {}
   Voice.start();
 });
-document.addEventListener('click', e => {
-  const b = e.target.closest && e.target.closest('[data-hold="voice"]'); if (!b || !Voice.tap) return;
-  if (Voice.holding) { document.querySelectorAll('[data-hold="voice"].holding').forEach(x => x.classList.remove('holding')); Voice.stop(); }
-  else { b.classList.add('holding'); Voice.start(); }
-});
-const vUp = e => { if (Voice.tap) return; const b = document.querySelector('[data-hold="voice"].holding'); if (!b) return; b.classList.remove('holding'); Voice.stop(); };
+const vUp = () => { const b = document.querySelector('[data-hold="voice"].holding'); if (!b) return; b.classList.remove('holding'); Voice.stop(); };
 document.addEventListener('pointerup', vUp); document.addEventListener('pointercancel', vUp);
+document.addEventListener('touchend', vUp); document.addEventListener('touchcancel', vUp);
 document.addEventListener('contextmenu', e => { if (e.target.closest && e.target.closest('[data-hold="voice"]')) e.preventDefault(); });
 
 function wzSizeChips(cur, act, extra = '', labels) {
