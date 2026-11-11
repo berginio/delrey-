@@ -1899,7 +1899,7 @@ html.rkp-lock,html.rkp-lock body{overflow:hidden}
       </section>
       <div class="hn" id="hnNow" style="--i:1"></div>
       <div class="hn-logrow" style="--i:1"><button class="btn soft hn-log" data-act="track-open"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Essen eintragen</button>
-        <button class="btn hn-mic" data-hold="voice" aria-label="Gedrückt halten und sagen, was du gegessen hast"><svg class="ico" aria-hidden="true"><use href="#i-mic"/></svg>Sprechen</button>
+        <button class="btn hn-mic" data-voice aria-label="Gedrückt halten und sagen, was du gegessen hast"><svg class="ico" aria-hidden="true"><use href="#i-mic"/></svg>Sprechen</button>
         <span class="beer-w"><button class="beer-btn" data-act="beer" aria-label="Ein Bier (0,5 l) eintragen"><svg class="ico" aria-hidden="true"><use href="#i-beer"/></svg><span class="beer-n" data-beer-n hidden>0</span></button><button class="beer-minus" data-act="beer-minus" aria-label="Ein Bier weniger" hidden>−</button></span></div>
       <section class="card hn hn-list" id="hnList" style="--i:2" aria-label="Heute erledigen"></section>
       <div id="phaseCard" style="--i:0"></div>
@@ -6918,14 +6918,14 @@ const Voice = {
   },
 };
 document.addEventListener('pointerdown', e => {
-  const b = e.target.closest && e.target.closest('[data-hold="voice"]'); if (!b) return;
+  const b = e.target.closest && e.target.closest('[data-voice]'); if (!b) return;
   e.preventDefault(); b.classList.add('holding'); try { b.setPointerCapture(e.pointerId); } catch (x) {}
   Voice.start();
 });
-const vUp = () => { const b = document.querySelector('[data-hold="voice"].holding'); if (!b) return; b.classList.remove('holding'); Voice.stop(); };
+const vUp = () => { const b = document.querySelector('[data-voice].holding'); if (!b) return; b.classList.remove('holding'); Voice.stop(); };
 document.addEventListener('pointerup', vUp); document.addEventListener('pointercancel', vUp);
 document.addEventListener('touchend', vUp); document.addEventListener('touchcancel', vUp);
-document.addEventListener('contextmenu', e => { if (e.target.closest && e.target.closest('[data-hold="voice"]')) e.preventDefault(); });
+document.addEventListener('contextmenu', e => { if (e.target.closest && e.target.closest('[data-voice]')) e.preventDefault(); });
 
 function wzSizeChips(cur, act, extra = '', labels) {
   return `<div class="wz-sz" role="group" aria-label="Größe">${SZ.map(([v, n], i) => `<button class="pchip" data-act="${act}" data-v="${v}" ${extra} aria-pressed="${cur === v}">${labels ? labels[i] : n}</button>`).join('')}</div>`;
@@ -6938,7 +6938,7 @@ function renderWizard() {
     // Jedes Wort zählt einzeln: „Schweinefilet mit Pfefferrahm“ findet Steak & Filet
     el.innerHTML = `<h3 class="wz-h">Was hast du gegessen?</h3>
       <div class="vbox">
-        <button class="vmic" data-hold="voice" aria-label="Gedrückt halten und sagen, was du gegessen hast">${icon('mic')}<span><b>Gedrückt halten und sprechen</b><small>z. B. „Mittags drei kleine Schnitzel mit Reis“</small></span></button>
+        <button class="vmic" data-voice aria-label="Gedrückt halten und sagen, was du gegessen hast">${icon('mic')}<span><b>Gedrückt halten und sprechen</b><small>z. B. „Mittags drei kleine Schnitzel mit Reis“</small></span></button>
         ${S.vText ? `<div class="field" style="margin:0"><label for="vIn">Sag es über das Mikrofon der Tastatur oder tipp es</label><textarea id="vIn" rows="2" autocomplete="off" placeholder="z. B. 2 Scheiben Vollkornbrot mit Butter und 25 g Erdnüsse">${esc(S.vDraft || '')}</textarea></div>
           <button class="btn sm" data-act="v-go" style="justify-self:start">${icon('check')}Verstehen</button>` : `<button class="linkbtn" data-act="v-text" style="justify-self:start;font-size:13px">Lieber als Satz tippen</button>`}
         ${S.vMiss ? `<p class="fhint" role="alert" style="margin:0">Nicht verstanden: „${esc(S.vMiss)}“. Sag es mit anderen Worten oder wähl unten das Gericht.</p>` : ''}
