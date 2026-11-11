@@ -430,12 +430,12 @@ details.how p{margin:8px 0 0;color:var(--muted);max-width:60ch}
 .tl-item.tl-drag .tl-body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .tl-movehint{margin:8px 0 0;font-size:11.5px;color:var(--muted)}
 .tl-movehint .linkbtn{font-size:11.5px}
-.tl-item.train.lifting .tl-body{transform:scale(.98);transition:transform .45s var(--ease)}
-.tl-item.train.dragging{position:relative;z-index:5}
-.tl-item.train.dragging .tl-body{transform:scale(1.03);box-shadow:0 18px 40px -16px rgb(var(--shadow) / .55),0 0 0 2px var(--accent);transition:transform .2s var(--ease),box-shadow .2s}
-.tl-item.train.dragging .tl-time{color:var(--accent);font-weight:800}
+.tl-item.tl-drag.lifting .tl-body{transform:scale(.98);transition:transform .45s var(--ease)}
+.tl-item.tl-drag.dragging{position:relative;z-index:5}
+.tl-item.tl-drag.dragging .tl-body{background-color:var(--surface);transform:scale(1.03);box-shadow:0 18px 40px -16px rgb(var(--shadow) / .55),0 0 0 2px var(--accent);transition:transform .2s var(--ease),box-shadow .2s}
+.tl-item.tl-drag.dragging .tl-time{color:var(--accent);font-weight:800}
 :root .tl-item.train.dragging .tl-body{background-color:var(--surface)}
-@media (prefers-reduced-motion: reduce){.tl-item.train.lifting .tl-body,.tl-item.train.dragging .tl-body{transition:none}}
+@media (prefers-reduced-motion: reduce){.tl-item.tl-drag.lifting .tl-body,.tl-item.tl-drag.dragging .tl-body{transition:none}}
 @keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 45%,transparent)}70%{box-shadow:0 0 0 9px transparent}100%{box-shadow:0 0 0 0 transparent}}
 
 /* ---------- Plan ---------- */
@@ -2984,6 +2984,9 @@ function planDay(d, pr, typeOverride, opts) {
   const type = typeOverride || (evNoTrain(pr, d) ? 'rest' : typeOn(pr, d));
   const T = opts && opts.burned > 800 ? targetFromBurned(pr, type, opts.burned, opts.burnedAt) : calcTargets(pr).per[type];
   const slots = slotsFor(d, type, pr);
+  // Von dir verschobene Mahlzeiten (lange drücken und ziehen) für diesen Tag
+  const mvD = pr.mealMove && pr.mealMove[isoDate(d)];
+  if (mvD) { for (const sl of slots) if (mvD[sl.id]) { sl.t = toMin(mvD[sl.id]); sl.time = mvD[sl.id]; sl.userMoved = true; } slots.sort((a, b) => a.t - b.t); }
   slots.avail = availOn(isoDate(d), pr);
   capFoods(slots, pr);
   let s;
@@ -3416,7 +3419,7 @@ function keepPastSlots(plan) {
   let snap = {}; try { snap = JSON.parse(localStorage.getItem(key) || '{}') || {}; } catch (e) {}
   const now = nowMin(), meals = (S.log && S.log.meals) || {}, have = new Set(plan.slots.map(x => x.id));
   // Hast du deine Einstellungen geändert (z. B. Frühstück nur am Wochenende), gilt der neue Plan: Gemerktes, das nicht abgehakt ist, fällt weg
-  const { trainMove, updatedAt, ...base } = S.profile || {}, sig = String(JSON.stringify(base).split('').reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 7));
+  const { trainMove, mealMove, updatedAt, ...base } = S.profile || {}, sig = String(JSON.stringify(base).split('').reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 7));
   if (snap.__sig !== sig) for (const id of Object.keys(snap)) if (id !== '__sig' && !meals[id]) delete snap[id];
   snap.__sig = sig;
   let added = false;
@@ -4123,7 +4126,7 @@ function planDayList(p, R, isToday) {
       html += `<li class="tl-item train ${state} ${canMove ? 'tl-drag' : ''}" data-tdate="${p.date}" data-t="${r.t}" data-dur="${r.dur}"><span class="tl-time">${toHHMM(r.t)}</span><span class="tl-dot">${icon(state === 'done' ? 'check' : TYPES[p.type].icon)}</span>
         <div class="tl-body"><div class="tl-head"><span class="tl-name">${gym ? gymTitle(dayInfo(S.profile, new Date(p.date + 'T12:00')).f) : 'Laufen'}</span><span class="tl-kcal">${state === 'live' ? 'jetzt' : state === 'done' ? 'erledigt' : state === 'ask' ? 'vorbei' : 'bis ' + toHHMM(r.end)}</span></div>
         <div class="tl-sub"><span class="chip">${icon('clock')}ca. ${r.dur} min</span>${moved ? `<span class="chip warn">${icon('clock')}verschoben</span>` : ''}<span>${tip}</span></div>${isToday ? trainActs(state, gym) : ''}
-        ${canMove ? `<p class="tl-movehint">${moved ? `<button class="linkbtn" data-act="train-reset" data-date="${p.date}">Zurück auf ${toHHMM(trainTime({ ...S.profile, trainMove: null }, p.type, new Date(p.date + 'T12:00')))}</button> · ` : ''}Lange drücken und ziehen zum Verschieben</p>` : ''}</div></li>`;
+        ${canMove ? `<p class="tl-movehint">${moved ? `<button class="linkbtn" data-act="train-reset" data-date="${p.date}">Zurück auf ${toHHMM(trainTime({ ...S.profile, trainMove: null }, p.type, new Date(p.date + 'T12:00')))}</button>` : ''}</p>` : ''}</div></li>`;
       continue;
     }
     if (r.kind === 'extra') {
@@ -4143,7 +4146,7 @@ function planDayList(p, R, isToday) {
     const chips = [isNext ? `<span class="chip nxc">${icon('lightning')}Als Nächstes</span>` : '', `<span>${esc(s.label)}</span>`,
       adj && adj.skip ? `<span class="chip">${icon('check')}Heute nicht nötig</span>` : '',
       s.atWork ? `<span class="chip">${icon('briefcase')}Arbeit</span>` : '', s.away ? `<span class="chip warn">${icon('package')}Unterwegs</span>` : '',
-      s.buy ? `<span class="chip warn">${icon('storefront')}Kaufen</span>` : '', s.moved ? `<span class="chip warn">${icon('clock')}verschoben</span>` : '',
+      s.buy ? `<span class="chip warn">${icon('storefront')}Kaufen</span>` : '', s.moved || s.userMoved ? `<span class="chip warn">${icon('clock')}verschoben</span>` : '',
       s.breakEnd ? `<span class="chip">${icon('clock')}Pause bis ${s.breakEnd}</span>` : '', s.meal.lazy && !s.buy ? `<span class="chip">${icon('clock')}Ohne Kochen</span>` : ''].join('');
     const editing = isToday && S.slotEdit && S.slotEdit.id === s.id, dish = st && st.state === 'eaten' && st.dish;
     const body = state === 'skipped' ? '' : dish ? `${st.parts && st.parts.length ? `<ul class="ings">${st.parts.map(x => `<li><span>${esc(x.n)}</span><span class="num">${fmt(x.g)} g</span></li>`).join('')}</ul>` : ''}${macroLine(tot)}`
@@ -4158,16 +4161,18 @@ function planDayList(p, R, isToday) {
       : s.key === 'kantine' ? (kantineToday().length ? '' : `<button data-act="log-kantine" data-slot="${s.id}">${icon('storefront')}Eintragen, was es gab</button><button data-act="eat" data-slot="${s.id}">${icon('check')}Wie geplant</button>`)
       : S.slotEdit && S.slotEdit.id === s.id ? ''
       : `<button data-act="eat" data-slot="${s.id}">${icon('check')}Gegessen</button>${canEdit ? `<button data-act="slot-edit" data-slot="${s.id}">${icon('pencil-simple')}Andere Menge</button>` : ''}<button data-act="skip" data-slot="${s.id}">${icon('x')}Auslassen</button>`;
-    html += `<li class="tl-item ${state} ${isNext ? 'nx' : ''}"><span class="tl-time">${s.time}</span><span class="tl-dot"></span>
+    const mvAct = s.userMoved ? `<button data-act="meal-reset" data-date="${p.date}" data-slot="${s.id}">${icon('clock')}Zeit zurücksetzen</button>` : '';
+    html += `<li class="tl-item ${state} ${isNext ? 'nx' : ''} ${state === 'open' ? 'tl-drag' : ''}" data-tdate="${p.date}" data-t="${s.t}" data-slot="${s.id}"><span class="tl-time">${s.time}</span><span class="tl-dot"></span>
       <div class="tl-body"><details class="prow" data-row="${key}" ${open ? 'open' : ''}><summary>
         <div class="tl-head"><span class="tl-name">${dish ? esc(dish) : s.buy ? 'Unterwegs kaufen' : esc(st && st.state === 'eaten' && st.n ? st.n : s.meal.n)}</span><span class="tl-kcal">${state === 'skipped' ? 'ausgelassen' : fmt(tot.kcal) + ' kcal'}${state === 'skipped' ? '' : icon('caret-down', 'pcar')}</span></div>
         <div class="tl-sub">${chips}</div></summary><div class="pbody">${body}</div></details>
-        ${acts ? `<div class="tl-acts">${acts}</div>` : ''}${isToday && state === 'open' && s.key === 'kantine' ? kantineMenuHtml(s.id) : ''}</div></li>`;
+        ${acts || mvAct ? `<div class="tl-acts">${acts}${mvAct}</div>` : ''}${isToday && state === 'open' && s.key === 'kantine' ? kantineMenuHtml(s.id) : ''}</div></li>`;
   }
   if (!nowDone) html += nowRow;
   const eatenN = p.slots.filter(s => meals[s.id] && meals[s.id].state === 'eaten').length;
   const pastN = isToday ? pastOpen().length : 0;
   return `<div class="card"><div class="spread" style="margin-bottom:6px"><h3>${isToday ? 'Dein Tag' : 'Ablauf'}</h3><span class="muted num" style="font-size:13px">${isToday ? `${eatenN} von ${p.slots.length} gegessen` : `${p.slots.length} Mahlzeiten · tipp für Rezept`}</span></div>
+    <p class="tl-movehint" style="margin:0 0 8px">Mahlzeiten und Training lange drücken und ziehen, um sie zu verschieben.</p>
     ${pastN >= 2 ? `<button class="btn soft past-all" data-act="eat-past">${icon('check')}Alles bis jetzt wie geplant gegessen (${pastN})</button>` : ''}
     <ol class="tl">${html}</ol>
     ${isToday ? `<button class="btn soft" data-act="track-open" style="width:100%;margin-top:12px">${icon('plus')}Essen eintragen</button>` : ''}</div>`;
@@ -7167,6 +7172,7 @@ document.addEventListener('click', e => {
   if (a === 'train-done') return mutateLog(l => { l.trainDone = true; }, 'Erledigt, stark!');
   if (a === 'train-undo') return mutateLog(l => { delete l.trainDone; }, 'Zurückgesetzt');
   if (a === 'train-reset') { trainMoveSet(b.dataset.date, null); return; }
+  if (a === 'meal-reset') { mealMoveSet(b.dataset.date, b.dataset.slot, null); return; }
   if (a === 'train-skip') { const cur = todayPlan.type; return mutateLog(l => { l.trainSkipped = cur; l.dayType = 'rest'; delete l.trainDone; }, 'Heute als Ruhetag gerechnet, Ziele angepasst'); }
   if (a === 'train-unskip') return mutateLog(l => { const t = l.trainSkipped; delete l.trainSkipped; l.dayType = t || null; l.trainDone = true; }, 'Training zählt wieder, Ziele angepasst');
   if (a === 'info-goal') { S.profile.goal = b.dataset.v; profileChanged(true); return; }
@@ -9301,8 +9307,22 @@ function trainMoveSet(iso, hhmm) {
   renderAll(false);
   toast(hhmm ? `Training auf ${hhmm} verschoben, Mahlzeiten angepasst` : 'Training wieder zur normalen Zeit');
 }
+function mealMoveSet(iso, slot, hhmm) {
+  const today = isoDate(new Date()), mv = JSON.parse(JSON.stringify(S.profile.mealMove || {}));
+  for (const k of Object.keys(mv)) if (k < today) delete mv[k];
+  const d = mv[iso] || (mv[iso] = {});
+  if (hhmm) d[slot] = hhmm; else delete d[slot];
+  if (!Object.keys(d).length) delete mv[iso];
+  S.profile = { ...S.profile, mealMove: mv };
+  Store.saveProfileSoon(); shopCache = null;
+  try { computeToday(); } catch (e) {}
+  renderAll(false);
+  toast(hhmm ? `Auf ${hhmm} verschoben` : 'Wieder zur geplanten Zeit');
+}
 (() => {
-  const STEP = 15, PX = 16, MIN_T = 5 * 60, MAX_T = 22 * 60;
+  const STEP = 15, PX = 16, MIN_T = 5 * 60, MAX_T = 23 * 60 + 45;
+  let suppressClick = 0;
+  document.addEventListener('click', e => { if (Date.now() < suppressClick) { e.preventDefault(); e.stopPropagation(); } }, true);
   let D = null;
   const reset = () => {
     if (!D) return;
@@ -9335,7 +9355,8 @@ function trainMoveSet(iso, hhmm) {
   const end = e => {
     if (!D || (e && e.pointerId != null && e.pointerId !== D.id)) return;
     const { on, t, t0, li } = D; reset();
-    if (on && t !== t0) trainMoveSet(li.dataset.tdate, toHHMM(t));
+    if (on) suppressClick = Date.now() + 400;   // sonst klappt die Mahlzeit beim Loslassen auf oder zu
+    if (on && t !== t0) { if (li.dataset.slot) mealMoveSet(li.dataset.tdate, li.dataset.slot, toHHMM(t)); else trainMoveSet(li.dataset.tdate, toHHMM(t)); }
   };
   document.addEventListener('pointerup', end);
   // iOS kann beim Ziehen „pointercancel“ schicken; dann laufen Bewegung und Ende über die Touch-Ereignisse weiter
