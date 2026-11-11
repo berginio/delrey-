@@ -6680,7 +6680,7 @@ const VALIAS = [
 /* Zusammengesetztes, das man in einem Wort sagt */
 const VCOMBO = [['leberkasesemmel|leberkassemmel|leberkaspitz', [['leberkaese', 100], ['semmel', 55]]], ['schnitzelsemmel', [['sch_schwein_pan', 120], ['semmel', 55]]],
   ['wurstsemmel', [['wurst', 40], ['semmel', 55]]], ['kasesemmel', [['kaese', 30], ['semmel', 55]]], ['schinkensemmel', [['schinken', 40], ['semmel', 55]]],
-  ['spaghetti bolognese|nudeln bolognese|spaghetti bolo', [['nudeln', 250], ['s_bolo', 150]]], ['schinkenkasetoast|schinken kase toast|toast mit schinken und kase', [['brot', 60], ['schinken', 25], ['kaese', 25]]]];
+  ['spaghetti bolognese|nudeln bolognese|spaghetti bolo', [['nudeln', 250], ['s_bolo', 150]]]];
 const vStem = w => w.length > 4 ? w.replace(/(ern|en|er|es|em|n|e|s)$/, '') : w;
 let VLEX = null;
 function vLex() {
@@ -6694,6 +6694,13 @@ function vLex() {
     const GD = { nuts: 30, powder: 30, dairy: 200, oats: 60, seeds: 10, fat: 10, sauce: 15, sweet: 10 };
     L.push({ ph: [...ph], id: 'f:' + k, g: F.piece || F.spoon || GD[F.grp] || (F.unit === 'ml' ? 250 : 100), kind: F.piece ? 'pc' : '', food: k });
   }
+  for (const { node: n } of treeFlat()) {
+    const ph = normQ(n.n).replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim(); if (ph.length < 3) continue;
+    if (n.meat) L.push({ ph: [ph], id: n.meat, g: n.base, kind: '', cur: true });
+    else if (n.it && n.it.length === 1) L.push({ ph: [ph], id: n.it[0][0], g: n.pc ? n.pc[2] : n.it[0][1], kind: n.pc ? 'pc' : '', cur: true });
+    else if (n.it) L.push({ ph: [ph], combo: n.it, nm: n.n, cur: true });
+  }
+  L.push({ ph: ['schinkenkasetoast', 'schinken kase toast', 'kase schinken toast', 'toast'], id: 'im_toast', g: 130, kind: 'pc', cur: true });
   for (const e of L) e.tok = e.ph.map(p => p.split(' ').filter(Boolean));
   return (VLEX = L);
 }
@@ -6773,9 +6780,10 @@ function voiceParse(raw) {
     return res;
   }
   // Sonst: in Teile zerlegen und jedes Teil erkennen
-  const body = q0.replace(/\b(zum |zu |am |in der |heute |beim )?(fruhstuck|mittagessen|mittags?|abendessen|abends?|snack|jause|zwischendurch|kantine|pause|vor dem (training|lauf|laufen|gym|sport)|nach dem (training|lauf|laufen|gym|sport))\b/g, ' ');
+  const q1 = q0.replace(/\btoasts? mit (schinken und kase|kase und schinken)\b/g, 'schinkenkasetoast').replace(/\bnudeln mit (der |einer )?bolognese\b/g, 'spaghetti bolognese');
+  const body = q1.replace(/\b(zum |zu |am |in der |heute |beim )?(fruhstuck|mittagessen|mittags?|abendessen|abends?|snack|jause|zwischendurch|kantine|pause|vor dem (training|lauf|laufen|gym|sport)|nach dem (training|lauf|laufen|gym|sport))\b/g, ' ');
   const chunks = body.split(/\s*(?:,|;|\.(?!\d)|\bund\b|\bmit\b|\bdazu\b|\bsowie\b|\bplus\b|\bdann\b|\bdanach\b|\bausserdem\b|\bnoch\b)\s*/).map(c => c.trim()).filter(Boolean);
-  let lastIdx = [];
+  let lastIdx = []; const labels = [];
   for (const ch of chunks) {
     const toks = ch.split(' ').filter(Boolean);
     const ms = vMatches(toks);
@@ -6799,16 +6807,16 @@ function voiceParse(raw) {
     }
     if (Object.keys(q).length) Object.assign(qs[ms.length - 1], q);
     ms.forEach((m, k) => {
-      if (m.e.combo) { const f = (qs[k].n || 1) * (qs[k].size || 1); for (const [id, g] of m.e.combo) { res.items.push({ id, g: Math.round(g * f / 5) * 5 }); lastIdx.push(res.items.length - 1); } return; }
+      if (m.e.combo) { const f = (qs[k].n || 1) * (qs[k].size || 1); for (const [id, g] of m.e.combo) { res.items.push({ id, g: Math.round(g * f / 5) * 5 }); lastIdx.push(res.items.length - 1); } labels.push(m.e.nm || m.e.combo.map(([id]) => wcName(id)).join(' & ')); return; }
       if (m.e.id === 'hd_brat' && qs[k].n === .5) qs[k].n = 1;   // „ein halbes Hendl“ ist die normale Portion
       res.items.push({ id: m.e.id, g: vGrams(m, qs[k]) });
-      lastIdx.push(res.items.length - 1);
+      lastIdx.push(res.items.length - 1); labels.push(wcName(m.e.id));
     });
   }
   // Doppelte zusammenlegen
   const by = new Map(); for (const it of res.items) { const o = by.get(it.id); if (o) o.g += it.g; else by.set(it.id, { ...it }); }
   res.items = [...by.values()];
-  const names = res.items.map(i => wcName(i.id).replace(/\s*\(.*?\)\s*/g, ' ').trim());
+  const names = [...new Set(labels.map(x => x.replace(/\s*\(.*?\)\s*/g, ' ').trim()))];
   res.name = names.length <= 1 ? (names[0] || '') : names.slice(0, -1).join(', ') + ' & ' + names[names.length - 1];
   const kcal = wzMac(res.items).kcal;
   res.slot = slotKind ? vSlotFor(slotKind) : (kcal >= 250 ? chatRepFor({}) : '');
