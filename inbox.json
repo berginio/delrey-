@@ -3,19 +3,9 @@
  "hinweis": "Einträge, die Claude für die App DEL REY vorbereitet. Die App übernimmt sie beim Öffnen.",
  "items": [
   {
-   "id": "2026-11-10-kantine-reis",
-   "d": "2026-11-10",
-   "code": "DR+ Mexikanischer Reis mit Faschiertem (Kantine) | 680 kcal | E 30 | KH 80 | F 25 | 10:30"
-  },
-  {
-   "id": "2026-11-10-kantine-suppe",
-   "d": "2026-11-10",
-   "code": "DR+ Frittatensuppe (Kantine) | 140 kcal | E 6 | KH 14 | F 6 | 10:30"
-  },
-  {
-   "id": "2026-11-10-abend-brot-nuesse",
-   "d": "2026-11-10",
-   "code": "DR+ Vollkornbrot (1 Scheibe) & 25 g Erdnüsse | 258 kcal | E 10 | KH 23 | F 13 | 22:15"
+   "id": "2026-11-11-abend-toasts",
+   "d": "2026-11-11",
+   "code": "DR+ 2 Schinken-Käse-Toasts | 680 kcal | E 36 | KH 68 | F 29 | 22:50"
   }
  ]
 }
