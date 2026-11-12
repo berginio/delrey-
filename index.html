@@ -6408,12 +6408,12 @@ const TREE = [
   { n: 'Fleisch & Fisch', ic: 'fork-knife', sub: 'Rind, Schwein, Huhn, Wild, Fisch …', kids: [
     { n: 'Rind', kids: [trM('Rindsgulasch', 'gul_rind', 300), trM('Rindsbraten', 'br_rind', 180, 1), trM('Tafelspitz', 'br_tafelspitz', 200), trM('Steak', 'fl_rind', 200, 1), trM('Rindsroulade', 'ri_roulade', 200, 1),
       trM('Zwiebelrostbraten', 'ri_rostbraten', 220), trM('Faschierte Laibchen', 'ri_laibchen', 160), trM('Chili con Carne', 'ri_chili', 350)] },
-    { n: 'Schwein', kids: [{ n: 'Schnitzel', d: 'schnitzel' }, trM('Schweinsbraten', 'br_schwein', 200), trM('Stelze', 'br_stelze', 400), trM('Kotelett', 'sw_kotelett', 200, 1), trM('Schweinsfilet', 'fl_schwein', 180, 1),
+    { n: 'Schwein', kids: [{ n: 'Schnitzel', d: 'schnitzel' }, trM('Cordon bleu', 'sch_schwein_cor', 180), trM('Schweinsbraten', 'br_schwein', 200), trM('Stelze', 'br_stelze', 400), trM('Kotelett', 'sw_kotelett', 200, 1), trM('Schweinsfilet', 'fl_schwein', 180, 1),
       trM('Geschnetzeltes', 'gs_schwein', 250), trM('Schweinsgulasch', 'gul_schwein', 300), trM('Spareribs', 'sw_ribs', 350), { n: 'Leberkäse', d: 'leberkaese' }] },
-    { n: 'Huhn', kids: [{ n: 'Schnitzel', d: 'schnitzel' }, trM('Hühnerbrust gebraten', 'fl_hendl', 180, 1), { n: 'Brathendl, Backhendl, Nuggets …', d: 'hendl' }, trM('Geschnetzeltes', 'gs_hendl', 250),
+    { n: 'Huhn', kids: [{ n: 'Schnitzel', d: 'schnitzel' }, trM('Cordon bleu', 'sch_hendl_cor', 180), trM('Hühnerbrust gebraten', 'fl_hendl', 180, 1), { n: 'Brathendl, Backhendl, Nuggets …', d: 'hendl' }, trM('Geschnetzeltes', 'gs_hendl', 250),
       trM('Hühnercurry', 'as_curry', 300), trM('Paprikahendl', 'gul_hendl', 300), trM('Hendl süß-sauer', 'as_suesssauer', 300)] },
-    { n: 'Pute', kids: [trM('Putenschnitzel', 'sch_pute_pan', 160, 1), trM('Putensteak', 'fl_pute', 180, 1), trM('Putenbraten', 'br_pute', 180, 1), trM('Geschnetzeltes', 'gs_pute', 250)] },
-    { n: 'Kalb', kids: [trM('Wiener Schnitzel', 'sch_kalb_pan', 160), trM('Kalbsbraten', 'ka_braten', 180, 1), trM('Rahmgeschnetzeltes', 'gs_kalb', 250), trM('Kalbsmedaillons', 'fl_kalb', 180, 1), trM('Beuschel', 'ka_beuschel', 300)] },
+    { n: 'Pute', kids: [trM('Putenschnitzel', 'sch_pute_pan', 160, 1), trM('Cordon bleu', 'sch_pute_cor', 180), trM('Putensteak', 'fl_pute', 180, 1), trM('Putenbraten', 'br_pute', 180, 1), trM('Geschnetzeltes', 'gs_pute', 250)] },
+    { n: 'Kalb', kids: [trM('Wiener Schnitzel', 'sch_kalb_pan', 160), trM('Cordon bleu', 'sch_kalb_cor', 180), trM('Kalbsbraten', 'ka_braten', 180, 1), trM('Rahmgeschnetzeltes', 'gs_kalb', 250), trM('Kalbsmedaillons', 'fl_kalb', 180, 1), trM('Beuschel', 'ka_beuschel', 300)] },
     { n: 'Wild', kids: [{ n: 'Hirsch', kids: [trM('Hirschragout', 'wi_hirschragout', 250), trM('Hirschbraten', 'wi_hirschbraten', 180, 1), trM('Hirschsteak', 'wi_hirschsteak', 180, 1)] },
       { n: 'Reh', kids: [trM('Rehragout', 'wi_rehragout', 250), trM('Rehrücken', 'wi_rehruecken', 180, 1)] },
       trM('Wildschweinbraten', 'wi_wildschwein', 180, 1), trM('Wildgulasch', 'wi_wildgulasch', 300)] },
@@ -6512,6 +6512,10 @@ function treeOpen(path) {
     pc: node.pc && items.length === 1 ? { per: node.pc[2], unit: [node.pc[0], node.pc[1]], n: Math.max(1, Math.round(items[0].g / node.pc[2])) } : null, time: toHHMM(nowMin()) };
   S.wz.rep = chatRepFor({ kcal: wzMac(items).kcal });
   renderWizard();
+}
+function wzResHtml(qx) {
+  const rec = wzRecent();
+  return treeHomeHtml(qx) + (rec.length && !qx && !(S.wzPath || []).length ? `<div class="wz-rec"><span class="kmenu-l">Zuletzt eingetragen</span><div class="chipwrap">${rec.map((r, i) => `<button class="pchip" data-act="wz-recent" data-i="${i}">${esc(r.name)}</button>`).join('')}</div></div>` : '');
 }
 /* Schnell dazu: zu jeder Hauptspeise z. B. eine Scheibe Brot */
 const WZ_QUICK = [['brot', 50, 'Scheibe Brot'], ['semmel', 55, 'Semmel'], ['salat', 100, 'Salat'], ['ketchup', 30, 'Ketchup'], ['mayo', 25, 'Mayo'], ['dr_cola', 330, 'Cola']];
@@ -6645,7 +6649,8 @@ const VSTOP = new Set(['ich', 'hab', 'habe', 'hatte', 'heute', 'gegessen', 'getr
 const VALIAS = [
   ['schnitzel|wiener schnitzel|schweinsschnitzel|schweineschnitzel', 'sch_schwein_pan', 140, 'pc'], ['putenschnitzel', 'sch_pute_pan', 140, 'pc'],
   ['huhnerschnitzel|hendlschnitzel|hahnchenschnitzel|chickenschnitzel', 'sch_hendl_pan', 140, 'pc'], ['kalbsschnitzel', 'sch_kalb_pan', 140, 'pc'],
-  ['naturschnitzel', 'sch_schwein_nat', 140, 'pc'], ['cordon bleu|cordonbleu', 'sch_schwein_cor', 180, 'pc'],
+  ['naturschnitzel', 'sch_schwein_nat', 140, 'pc'], ['cordon bleu|cordonbleu|schweins cordon bleu', 'sch_schwein_cor', 180, 'pc'], ['puten cordon bleu|cordon bleu von der pute', 'sch_pute_cor', 180, 'pc'],
+  ['huhner cordon bleu|hendl cordon bleu|chicken cordon bleu|cordon bleu vom huhn', 'sch_hendl_cor', 180, 'pc'], ['kalbs cordon bleu|cordon bleu vom kalb', 'sch_kalb_cor', 180, 'pc'],
   ['pommes|pommes frites|fritten|frites', 'pommes', 150], ['erdapfel|kartoffeln|kartoffel|petersilerdapfel|salzkartoffeln|salzerdapfel', 'erdaepfel', 200],
   ['erdapfelsalat|kartoffelsalat', 'kartsalat', 180], ['gratin|kartoffelgratin|erdapfelgratin', 'gratin', 200], ['bratkartoffeln|braterdapfel|rosti', 'bratkart', 180],
   ['pure|puree|kartoffelpuree|erdapfelpuree|kartoffelbrei', 'puree', 200], ['reis', 'reis', 180], ['nudeln|pasta|spaghetti|penne|fusilli|tagliatelle|makkaroni|maccaroni', 'nudeln', 250],
@@ -6959,8 +6964,7 @@ function renderWizard() {
         ${S.vMiss ? `<p class="fhint" role="alert" style="margin:0">Nicht verstanden: „${esc(S.vMiss)}“. Sag es mit anderen Worten oder wähl unten das Gericht.</p>` : ''}
       </div>
       <div class="field" style="margin:0"><label for="wzSearch" class="sr">Suchen</label><input id="wzSearch" type="search" autocomplete="off" placeholder="Suchen, z. B. Apfel, Hirschragout, Kornspitz" value="${esc(S.wzQ || '')}"></div>
-      ${treeHomeHtml(qx)}
-      ${rec.length && !qx && !(S.wzPath || []).length ? `<div class="wz-rec"><span class="kmenu-l">Zuletzt eingetragen</span><div class="chipwrap">${rec.map((r, i) => `<button class="pchip" data-act="wz-recent" data-i="${i}">${esc(r.name)}</button>`).join('')}</div></div>` : ''}`;
+      <div id="wzRes" class="wz-res">${wzResHtml(qx)}</div>`;
     return;
   }
   if (W.step === 99) {
@@ -9340,7 +9344,12 @@ document.addEventListener('input', e => {
   const t = e.target; if (!t) return;
   if (t.id === 'vIn') { S.vDraft = t.value; return; }
   if (t.id === 'wzAddQ') { const h = $('#wzAddHits'); if (h) { const hits = vAddHits(t.value); h.innerHTML = t.value.trim().length < 2 ? '' : hits.length ? `<div class="chipwrap">${hits.map(e => `<button class="pchip" data-act="wz-add" data-id="${e.id}" data-g="${e.g || 100}">${icon('plus')}${esc(wcName(e.id))}</button>`).join('')}</div>` : '<p class="fhint" style="margin:0">Nichts gefunden.</p>'; } return; }
-  if (t.id === 'wzSearch') { S.wzQ = t.value; const pos = t.selectionStart; renderWizard(); const n = $('#wzSearch'); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (er) {} } return; }
+  if (t.id === 'wzSearch') {
+    // Tippen bleibt flüssig: nur die Trefferliste wird erneuert, das Feld selbst bleibt unangetastet
+    S.wzQ = t.value; clearTimeout(S.wzQt);
+    S.wzQt = setTimeout(() => { const r = $('#wzRes'); if (r) r.innerHTML = wzResHtml((S.wzQ || '').trim().toLowerCase()); }, 90);
+    return;
+  }
   if (t.id === 'wzTime') { t.dataset.touched = '1'; return; }
   if (t.id === 'se-q' && S.slotEdit) { S.slotEdit.q = t.value; const h = $('#seHits'); if (h) h.innerHTML = seHitsHtml(); return; }
   if (t.dataset && t.dataset.wz !== undefined && S.wz && S.wz.items) { const it = S.wz.items[+t.dataset.wz]; if (it) { it.g = Math.max(0, parseFloat(String(t.value).replace(',', '.')) || 0); wzSumUpdate(); } }
