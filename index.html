@@ -1901,6 +1901,7 @@ html.rkp-lock,html.rkp-lock body{overflow:hidden}
       <div class="hn-logrow" style="--i:1"><button class="btn soft hn-log" data-act="track-open"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Essen eintragen</button>
         <button class="btn hn-mic" data-voice aria-label="Gedrückt halten und sagen, was du gegessen hast"><svg class="ico" aria-hidden="true"><use href="#i-mic"/></svg>Sprechen</button>
         <span class="beer-w"><button class="beer-btn" data-act="beer" aria-label="Ein Bier (0,5 l) eintragen"><svg class="ico" aria-hidden="true"><use href="#i-beer"/></svg><span class="beer-n" data-beer-n hidden>0</span></button><button class="beer-minus" data-act="beer-minus" aria-label="Ein Bier weniger" hidden>−</button></span></div>
+      <div id="shopAsk" style="--i:2"></div>
       <section class="card hn hn-list" id="hnList" style="--i:2" aria-label="Heute erledigen"></section>
       <div id="phaseCard" style="--i:0"></div>
       <div id="challengeCard" style="--i:0"></div>
@@ -2002,6 +2003,7 @@ html.rkp-lock,html.rkp-lock body{overflow:hidden}
 
     <section class="view" id="v-einkauf" aria-label="Einkauf" hidden>
       <div style="--i:0"><h2 class="sec">Einkauf</h2><p class="sec-sub">Zwei Einkäufe pro Woche halten Fleisch und Milchprodukte frisch.</p></div>
+      <div id="shopAsk2" style="--i:2"></div>
       <div id="shopMain" style="--i:2"></div>
       <div id="shopPantry" style="--i:2"></div>
       <div id="shopSecond" style="--i:3"></div>
@@ -2388,7 +2390,9 @@ function availOn(iso, pr) {
   for (const [k, v] of Object.entries(snaps)) {
     if (k > iso || k < isoPlus(iso, -8) || !v || v.taken !== k) continue;
     if ((v.days || []).includes(iso)) cover = true;
-    (v.foods || []).forEach(f => set.add(f));
+    // Hast du beim Einkauf etwas abgehakt, zählt nur Abgehaktes (oder was du später bestätigt hast) als gekauft
+    const chk = ((pr.shopChk || {})[k] || {}).checked || {}, ans = v.ans || {}, any = (v.foods || []).some(f => chk[f]);
+    (v.foods || []).forEach(f => { if (ans[f] === 'no') return; if (any && !chk[f] && ans[f] !== 'yes') return; set.add(f); });
   }
   if (!cover) return null;
   for (const f of pantryOn(iso, pr).keys()) set.add(f);
@@ -3269,7 +3273,7 @@ const S = {
   planDow: dow(new Date()), est: null, sample: null, sampleImages: false, photo: null,
   prefs: { taste: { foods: {}, meals: {} }, challenge: null, challenges: [], spiceMiss: [], nut: {}, pantry: [], shopSnap: {}, beer: {} }, userName: '', chEdit: null, chDel: null,
 };
-const planPr = () => ({ ...S.profile, taste: S.prefs.taste, pantry: S.prefs.pantry || [], shopSnap: S.prefs.shopSnap || {}, beer: S.prefs.beer || {}, swaps: S.prefs.swaps || {}, events: S.prefs.events || [], phaseList: typeof phaseListAll === 'function' ? phaseListAll() : [] });
+const planPr = () => ({ ...S.profile, taste: S.prefs.taste, pantry: S.prefs.pantry || [], shopSnap: S.prefs.shopSnap || {}, shopChk: S.shop || {}, beer: S.prefs.beer || {}, swaps: S.prefs.swaps || {}, events: S.prefs.events || [], phaseList: typeof phaseListAll === 'function' ? phaseListAll() : [] });
 
 /* ================= Speicher: claude db (privat pro Person), sonst Browser ================= */
 const Store = {
@@ -3491,7 +3495,7 @@ function keepPastSlots(plan) {
 
 const gymTitle = f => focusShort(f) ? `Gym: ${esc(focusShort(f))}${focusLong(f) ? ` <small class="tl-fo">${esc(focusLong(f))}</small>` : ''}` : 'Gym-Training';
 function renderHeader() {
-  try { renderBeer(); } catch (e) {}
+  try { renderBeer(); renderShopAsk(); } catch (e) {}
   const d = new Date(), h = d.getHours();
   $('#hdrDate').textContent = `${DAYNAMES[dow(d)]}, ${d.getDate()}. ${MONTHS[d.getMonth()]}`;
   const name = S.profile.name || S.userName || '';
@@ -4348,6 +4352,39 @@ function shopSnapSync() {
   }
   S.prefs = { ...S.prefs, shopSnap: next }; Store.savePrefs();
 }
+
+/* Am Abend vom Einkaufstag: was nicht abgehakt ist, kurz nachfragen */
+function shopAskList() {
+  const t = S.today, snaps = S.prefs.shopSnap || {}, now = nowMin(), out = [];
+  for (const [k, v] of Object.entries(snaps)) {
+    if (!v || v.taken !== k || k > t || k < isoPlus(t, -2) || (k === t && now < 17 * 60)) continue;
+    const chk = (S.shop[k] || {}).checked || {}, ans = v.ans || {};
+    if (!(v.foods || []).some(f => chk[f])) continue;
+    const pend = (v.foods || []).filter(f => FOODS[f] && !chk[f] && !ans[f]);
+    if (pend.length) out.push({ k, pend });
+  }
+  return out;
+}
+function shopAskHtml() {
+  const L = shopAskList(); if (!L.length) return '';
+  return L.map(({ k, pend }) => `<div class="card shopask"><div class="spread"><h3>${k === S.today ? 'Heute eingekauft' : `Einkauf vom ${DAYNAMES[dow(new Date(k + 'T12:00'))]}`}: hast du das bekommen?</h3>${icon('basket')}</div>
+    <p class="muted" style="margin:6px 0 4px;font-size:13.5px">Diese Sachen hast du nicht abgehakt. Was fehlt, plant die App bis zum nächsten Einkauf nicht ein.</p>
+    ${pend.length > 4 ? `<button class="btn soft sm" data-act="shopans-all" data-k="${k}" style="margin:4px 0 6px">${icon('check')}Alles da</button>` : ''}
+    ${pend.map(f => `<div class="stock-row"><div class="nm">${esc(FOODS[f].n)}</div><span class="row" style="gap:6px;flex-wrap:nowrap"><button class="toggle" data-act="shopans" data-k="${k}" data-food="${f}" data-v="yes">Hab ich</button><button class="toggle" data-act="shopans" data-k="${k}" data-food="${f}" data-v="no">Fehlt</button></span></div>`).join('')}
+    ${pend.length <= 4 ? `<button class="btn soft sm" data-act="shopans-all" data-k="${k}" style="margin-top:10px">${icon('check')}Alles da</button>` : ''}</div>`).join('');
+}
+function renderShopAsk() {
+  const h = shopAskHtml();
+  for (const id of ['shopAsk', 'shopAsk2']) { const el = $('#' + id); if (el && el.dataset.h !== h) { el.dataset.h = h; el.innerHTML = h; } }
+}
+function shopAnswer(k, foods, v) {
+  const snaps = JSON.parse(JSON.stringify(S.prefs.shopSnap || {})), sn = snaps[k]; if (!sn) return;
+  sn.ans = sn.ans || {}; for (const f of foods) sn.ans[f] = v;
+  S.prefs = { ...S.prefs, shopSnap: snaps }; Store.savePrefs(); shopCache = null;
+  try { computeToday(); } catch (e) {}
+  renderAll(false); renderShopAsk();
+}
+
 function pantryCard() {
   const rows = new Map();
   for (const e of S.prefs.pantry || []) {
@@ -4380,6 +4417,7 @@ function renderShop() {
   const spiceItems = cyc.spices.filter(sp => miss.has(sp.id) || chk['sp:' + sp.id]);
   $('#shopMain').innerHTML = tripCard(cyc.main, kMain, 'Großeinkauf', true, extraStock, undefined, spiceItems);
   $('#shopPantry').innerHTML = pantryCard();
+  try { renderShopAsk(); } catch (e) {}
   $('#shopSpice').innerHTML = spiceCard(cyc);
   $('#shopSecond').innerHTML = tripCard(cyc.second, kSec, 'Frisch nachkaufen', false);
   $('#shopStock').innerHTML = `<div class="card"><div class="spread"><h3>Vorrat</h3>${icon('package')}</div>
@@ -7126,6 +7164,8 @@ document.addEventListener('click', e => {
     const inp = $('#se-' + b.dataset.i); if (inp) { const v = seVal(it); inp.value = String(v).replace('.', ','); inp.nextElementSibling.textContent = U.u(v); }
     $('#seSum').innerHTML = slotEditSum(); return; }
   if (a === 'beer') { beerAdd(); return; }
+  if (a === 'shopans') { shopAnswer(b.dataset.k, [b.dataset.food], b.dataset.v); toast(b.dataset.v === 'no' ? `${FOODS[b.dataset.food].n} fehlt, der Plan nimmt etwas anderes` : 'Gut, ist da'); return; }
+  if (a === 'shopans-all') { const it = shopAskList().find(x => x.k === b.dataset.k); if (it) shopAnswer(it.k, it.pend, 'yes'); toast('Alles da'); return; }
   if (a === 'beer-minus') { beerMinus(); return; }
   if (a === 'v-text') { S.vText = true; renderWizard(); setTimeout(() => { const t = $('#vIn'); if (t) t.focus(); }, 40); return; }
   if (a === 'v-go') { const t = $('#vIn'); S.vDraft = ''; voiceHandle(t ? t.value : ''); return; }
@@ -7177,7 +7217,9 @@ document.addEventListener('click', e => {
     const field = a === 'shop' ? 'checked' : 'stock';
     S.shop[key][field] = S.shop[key][field] || {};
     if (S.shop[key][field][food]) delete S.shop[key][field][food]; else S.shop[key][field][food] = true;
-    Store.saveShop(key); renderShop(); return;
+    Store.saveShop(key); renderShop();
+    if ((S.prefs.shopSnap || {})[key]) { shopCache = null; try { computeToday(); } catch (e) {} renderTimeline(); renderShopAsk(); }
+    return;
   }
   if (a === 'set') {
     if (b.dataset.k === 'goal' && planRuns() && b.dataset.v !== S.profile.goal) { S.goalAsk = b.dataset.v; renderForm(); return; }
@@ -9496,7 +9538,7 @@ function mealMoveSet(iso, slot, hhmm) {
   document.addEventListener('touchcancel', () => { if (D && !D.on) reset(); else if (D) end(); });
   document.addEventListener('contextmenu', e => { if (D) e.preventDefault(); });
 })();
-if (/[?&]dbg\b/.test(location.search)) window.__np = { get S() { return S; }, get plan() { return todayPlan; }, get rem() { return todayRem; }, calcTargets, MEALS, FOODS, mealNameOf, rankBadge, RANKS, planDay, planPr, shoppingCycle, addDays, isoDate, computeToday, shopSnapSync, rankCompute, voiceParse, voiceHandle, Voice };
+if (/[?&]dbg\b/.test(location.search)) window.__np = { get S() { return S; }, get plan() { return todayPlan; }, get rem() { return todayRem; }, calcTargets, MEALS, FOODS, mealNameOf, rankBadge, RANKS, planDay, planPr, shoppingCycle, addDays, isoDate, computeToday, shopSnapSync, rankCompute, shopAskList, availOn, voiceParse, voiceHandle, Voice };
 })();
 </script>
 
