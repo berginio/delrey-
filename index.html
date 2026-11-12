@@ -3085,12 +3085,43 @@ function planRemaining(plan, log) {
       if (eaten.p + pOf(adjusted) > ST.p + 15) adjusted = build(0.25, true);
     }
   }
+  // Fehlen trotzdem noch Kohlenhydrate (z. B. weil Snacks ausgefallen sind), kommt mehr von der Beilage dazu:
+  // bei den Spaghetti mehr Nudeln, beim Reisgericht mehr Reis. Erst die Hauptmahlzeiten, die noch kommen.
+  if (open.length) carbTopUp(adjusted, eaten, plan);
   const openTot = adjusted.filter(a => !a.skip).reduce((t, a) => add(t, a.tot), Z());
   const projected = add(eaten, openTot);
   const gap = { kcal: plan.target.kcal - projected.kcal, p: plan.target.p - projected.p, c: plan.target.c - projected.c, f: plan.target.f - projected.f };
   return { eaten, open: adjusted, projected, gap, filler: fillerFor(gap) };
 }
 
+const CARB_PRIO = { pasta: 1, rice: 1, potato: 1, gnocchi: 1, spaetzle: 1, couscous: 1, oats: 2, wrap: 3 };
+const carbPrio = f => { const F = FOODS[f]; if (!F) return 0; if (CARB_PRIO[f]) return CARB_PRIO[f]; if (F.grp === 'side') return 2; if (F.grp === 'bread' || F.grp === 'oats' || F.grp === 'wrap') return 3; return 0; };
+function carbTopUp(adjusted, eaten, plan) {
+  const T = plan.target, act = adjusted.filter(a => !a.skip);
+  const tot = act.reduce((t, a) => add(t, a.tot), Z());
+  let needC = T.c - (eaten.c + tot.c);
+  // nicht weit über die Kalorien hinaus (beim Aufbauen sind gut 250 kcal drüber in Ordnung)
+  needC = Math.min(needC, ((T.kcal + 250) - (eaten.kcal + tot.kcal)) / 4);
+  if (!(needC > 15)) return;
+  const d0 = new Date(), isToday = plan.date === isoDate(d0), now = isToday ? d0.getHours() * 60 + d0.getMinutes() : 0;
+  const slotOf = id => plan.slots.find(x => x.id === id) || {};
+  const cand = act.map(a => {
+    const sl = slotOf(a.id), it = a.items.filter(i => carbPrio(i.food)).sort((x, y) => carbPrio(x.food) - carbPrio(y.food) || y.g * FOODS[y.food].c - x.g * FOODS[x.food].c)[0];
+    return it ? { a, it, main: !!FAM[sl.key] || ['lunch', 'dinner'].includes(sl.id), later: (sl.t || 0) >= now - 30, t: sl.t || 0 } : null;
+  }).filter(Boolean).filter(c => c.later)
+    .sort((x, y) => (y.main - x.main) || (carbPrio(x.it.food) - carbPrio(y.it.food)) || (x.t - y.t));
+  for (const c of cand) {
+    if (needC <= 8) break;
+    const F = FOODS[c.it.food], per = F.c / 100, g0 = c.it.g;
+    const room = Math.max(0, Math.max(g0 * 1.2, F.grp === 'side' ? 120 : 60));   // höchstens gut doppelt so viel wie geplant
+    const addG = Math.min(room, needC / per);
+    const step = F.piece || 5, g1 = Math.round((g0 + addG) / step) * step;
+    if (g1 <= g0) continue;
+    c.it.g = g1; needC -= (g1 - g0) * per;
+    c.a.tot = sumItems(c.a.items); c.a.changed = true;
+    c.a.carbUp = { food: c.it.food, from: g0, to: g1 };
+  }
+}
 function fillerFor(gap) {
   const opts = [];
   if (gap.p > 15) opts.push({ need: gap.p / 25, text: gap.p > 35 ? '250 g Skyr plus 1 Protein-Shake' : (gap.p > 22 ? '1 Protein-Shake (30 g Whey)' : '250 g Magertopfen'), macro: 'Eiweiß', g: Math.round(gap.p) });
@@ -3384,6 +3415,8 @@ function amountSub(it) {
   if (F.raw && !F.piece && ['rice','pasta','oats','potato'].includes(it.food)) bits.push('roh gewogen');
   return bits.join(', ');
 }
+const carbUpNote = cu => { if (!cu) return ''; const F = FOODS[cu.food];
+  return `<p class="sig">${icon('plus')}<span>Koch heute <b>${fmt(cu.to)} ${F.unit || 'g'} ${esc(F.nom || F.n)}</b> statt ${fmt(cu.from)}, weil dir noch Kohlenhydrate fehlen.</span></p>`; };
 function ingList(items, prev, mealKey) {
   return `<ul class="ings">${items.map(it => {
     const p = prev && prev.find(x => x.food === it.food);
@@ -3522,7 +3555,7 @@ function renderToday() {
       <div class="next-time" style="margin-top:8px"><span class="big num">${next.time}</span><span class="countdown">${relTime(next.t - now)}</span><span class="muted">${esc(next.label)}</span></div>
       <h3>${next.buy ? 'Unterwegs kaufen' : esc(next.meal.n)}</h3>
       ${next.meal.replaced ? `<div class="row" style="margin-top:6px"><span class="chip">${icon('swap')}statt ${esc(mealNameOf(next.meal.replaced))}</span></div>` : ''}
-      ${next.buy ? buyBlock(next, adj.tot, true) : ingList(adj.items, adj.changed ? next.items : null, next.key) + macroLine(adj.tot)}
+      ${next.buy ? buyBlock(next, adj.tot, true) : ingList(adj.items, adj.changed ? next.items : null, next.key) + macroLine(adj.tot) + carbUpNote(adj.carbUp)}
       ${next.buy ? '' : `<div class="spread" style="flex-wrap:wrap">${next.meal.how ? `<details class="how"><summary>So geht's ${icon('caret-down')}</summary><p>${esc(next.meal.how)}</p>${spiceLine(next.key)}</details>` : '<span></span>'}${tasteBtn(next.key)}</div>
       <div class="row" style="margin-top:4px">${lazyChip(next.meal)}${cookBtn(next.meal, todayPlan.date, next.id)}</div>`}
       ${next.buy ? `<div class="actions" style="grid-template-columns:1fr"><button class="btn ghost" data-act="skip" data-slot="${next.id}">Nichts gekauft, auslassen</button></div>` : next.key === 'kantine'
@@ -4038,9 +4071,9 @@ function renderTimeline() {
         <span class="tl-time">${s.time}</span><span class="tl-dot"></span>
         <div class="tl-body">
           <div class="tl-head"><span class="tl-name">${s.buy ? 'Unterwegs kaufen' : esc(s.meal.n)}</span><span class="tl-kcal">${state === 'skipped' ? 'ausgelassen' : fmt(tot.kcal) + ' kcal'}</span></div>
-          <div class="tl-sub"><span>${esc(s.label)}</span>${adj && adj.skip ? `<span class="chip">${icon('check')}Heute nicht nötig, Eiweiß ist voll</span>` : ''}${s.atWork ? `<span class="chip">${icon('briefcase')}Arbeit</span>` : ''}${s.away ? `<span class="chip warn">${icon('package')}Unterwegs</span>` : ''}${s.buy ? `<span class="chip warn">${icon('storefront')}Kaufen</span>` : ''}${s.moved ? `<span class="chip warn">${icon('clock')}verschoben</span>` : ''}${s.breakEnd ? `<span class="chip">${icon('clock')}Pause bis ${s.breakEnd}</span>` : ''}${state !== 'skipped' && leuHit(tot) ? `<span class="chip">${icon('dna')}Leucin ${dec(tot.leu)} g</span>` : ''}${adj && adj.changed ? `<span class="chip">${icon('arrow-clockwise')}angepasst</span>` : ''}${lazyChip(s.meal)}${st && st.by ? `<span class="chip warn">ersetzt</span>` : ''}</div>
+          <div class="tl-sub"><span>${esc(s.label)}</span>${adj && adj.skip ? `<span class="chip">${icon('check')}Heute nicht nötig, Eiweiß ist voll</span>` : ''}${adj && adj.carbUp ? `<span class="chip">${icon('plus')}mehr ${esc(FOODS[adj.carbUp.food].nom || FOODS[adj.carbUp.food].n)} für deine Kohlenhydrate</span>` : ''}${s.atWork ? `<span class="chip">${icon('briefcase')}Arbeit</span>` : ''}${s.away ? `<span class="chip warn">${icon('package')}Unterwegs</span>` : ''}${s.buy ? `<span class="chip warn">${icon('storefront')}Kaufen</span>` : ''}${s.moved ? `<span class="chip warn">${icon('clock')}verschoben</span>` : ''}${s.breakEnd ? `<span class="chip">${icon('clock')}Pause bis ${s.breakEnd}</span>` : ''}${state !== 'skipped' && leuHit(tot) ? `<span class="chip">${icon('dna')}Leucin ${dec(tot.leu)} g</span>` : ''}${adj && adj.changed ? `<span class="chip">${icon('arrow-clockwise')}angepasst</span>` : ''}${lazyChip(s.meal)}${st && st.by ? `<span class="chip warn">ersetzt</span>` : ''}</div>
           ${state === 'open' && s.buy ? `<details class="how" open><summary>Was kaufen? ${icon('caret-down')}</summary>${buyBlock(s, tot, true)}</details>` : ''}
-          ${state === 'open' && !s.buy ? `<details class="how"><summary>Zutaten ${icon('caret-down')}</summary>${ingList(items, adj && adj.changed ? s.items : null, s.key)}<div class="row">${tasteBtn(s.key)}${cookBtn(s.meal, P.date, s.id)}</div></details>` : ''}
+          ${state === 'open' && !s.buy ? `<details class="how"><summary>Zutaten ${icon('caret-down')}</summary>${ingList(items, adj && adj.changed ? s.items : null, s.key)}${carbUpNote(adj && adj.carbUp)}<div class="row">${tasteBtn(s.key)}${cookBtn(s.meal, P.date, s.id)}</div></details>` : ''}
           <div class="tl-acts">${state === 'open'
             ? `<button data-act="eat" data-slot="${s.id}">${icon('check')}Gegessen</button><button data-act="skip" data-slot="${s.id}">${icon('x')}Auslassen</button>`
             : `<button data-act="undo" data-slot="${s.id}">${icon('arrow-clockwise')}Rückgängig</button>`}</div>
@@ -4162,7 +4195,7 @@ function planDayList(p, R, isToday) {
     const body = state === 'skipped' ? '' : dish ? `${st.parts && st.parts.length ? `<ul class="ings">${st.parts.map(x => `<li><span>${esc(x.n)}</span><span class="num">${fmt(x.g)} g</span></li>`).join('')}</ul>` : ''}${macroLine(tot)}`
       : s.buy ? buyBlock(s, tot, isToday && state === 'open')
       : editing ? slotEditHtml()
-      : `${ingList(items, adj && adj.changed ? s.items : null, s.key)}${macroLine(tot)}
+      : `${ingList(items, adj && adj.changed ? s.items : null, s.key)}${carbUpNote(adj && adj.carbUp)}${macroLine(tot)}
         ${s.meal.how ? `<div class="howt"><span class="label">So geht's</span><p>${esc(s.meal.how)}</p>${spiceLine(s.key)}</div>` : ''}
         <div class="row">${cookBtn(s.meal, p.date, s.id)}${tasteBtn(s.key)}</div>`;
     const canEdit = !s.buy && s.key !== 'kantine' && !dish && !(S.slotEdit && S.slotEdit.id === s.id);
