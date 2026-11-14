@@ -6704,7 +6704,7 @@ function vNum(w) {
   m = w.match(/^(\w+?)und(zwanzig|dreissig|vierzig|funfzig|sechzig|siebzig|achtzig|neunzig)$/); if (m && VNUM[m[1]] != null) return VNUM[m[1]] + VNUM[m[2]];
   return null;
 }
-const VUNIT = { g: 'g', gramm: 'g', gr: 'g', kilo: 'kg', kg: 'kg', kilogramm: 'kg', ml: 'ml', milliliter: 'ml', l: 'l', liter: 'l',
+const VUNIT = { g: 'g', gramm: 'g', gr: 'g', gram: 'g', kram: 'g', grams: 'g', kilo: 'kg', kg: 'kg', kilogramm: 'kg', ml: 'ml', milliliter: 'ml', l: 'l', liter: 'l',
   stuck: 'pc', stk: 'pc', stuckl: 'pc', scheibe: 'pc', scheiben: 'pc', kugel: 'pc', kugeln: 'pc', riegel: 'pc', ecke: 'pc', ecken: 'pc', schnitte: 'pc', schnitten: 'pc', messlöffel: 'pc', messloffel: 'pc', scoop: 'pc', scoops: 'pc',
   portion: 'por', portionen: 'por', teller: 'por', schussel: 'por', schale: 'por', bowl: 'por',
   packung: 'pack', packungen: 'pack', packerl: 'pack', packchen: 'pack', sackerl: 'pack', tute: 'pack', tafel: 'pack', tafeln: 'pack',
@@ -6781,6 +6781,54 @@ function vLex() {
   return (VLEX = L);
 }
 /* Alle Treffer in einer Wortfolge: genaue Wörter zählen mehr als ein Teil eines zusammengesetzten Wortes */
+/* Ähnliche Wörter zählen auch (die Spracherkennung schreibt z. B. „Kise“ statt „Käse“ oder „Erdnissen“ statt „Erdnüssen“) */
+function vDist(a, b) {
+  if (Math.abs(a.length - b.length) > 2) return 9;
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) {
+    d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+  }
+  return d[a.length][b.length];
+}
+// Vorsichtig: gleicher Anfangsbuchstabe, kurze Wörter höchstens 1 Fehler, lange höchstens 2; Füllwörter, Zahlen und Einheiten nie
+const vFuzzyOk = w => w.length >= 4 && !VSTOP.has(w) && vNum(w) == null && !VUNIT[w] && VSIZE[w] == null && !/^(heute|gestern|morgen|habe|hatte|gegessen|getrunken|bisschen|einem|einen|einer|meine|meinem|meinen)$/.test(w);
+// So ähnlich, wie es klingt: „Kehse“ ≈ „Käse“, „Vlocken“ ≈ „Flocken“, „Reiß“ ≈ „Reis“
+const vPh = w => w.replace(/c(?!h)/g, 'k').replace(/ie/g, 'i').replace(/([aeiou])h(?![aeiou])/g, '$1').replace(/ck/g, 'k').replace(/tz/g, 'z').replace(/dt|th/g, 't').replace(/ph|v/g, 'f').replace(/y/g, 'i').replace(/(.)\1+/g, '$1');
+const vNear = (a, b, loose) => {
+  if (a === b) return true;
+  if (b.length < 4 || !vFuzzyOk(a) || (a[0] !== b[0] && vPh(a)[0] !== vPh(b)[0])) return false;
+  // locker: nur als Teil eines längeren Gerichts, bei dem die anderen Wörter sicher passen („Schinken Käse Tors“)
+  if (loose) { const d = Math.min(vDist(a, b), vDist(vStem(a), vStem(b)), vDist(vPh(a), vPh(b))); return d <= 2 && d < Math.min(a.length, b.length) - 1; }
+  if (Math.min(a.length, b.length) === 4 && a[a.length - 1] !== b[b.length - 1] && vPh(a) !== vPh(b)) return false;
+  // erlaubte Fehler hängen von der Länge der verglichenen Form ab („schon“ ist nicht „schink“)
+  return [[a, b], [vStem(a), vStem(b)], [vPh(a), vPh(b)]].some(([x, y]) => vDist(x, y) <= (Math.max(x.length, y.length) >= 8 ? 2 : 1));
+};
+/* Zusammengeschriebenes trennen: „schinkenkehse“ → „schinken kehse“, „frühstückhafer“ → „frühstück hafer“ */
+let VVOC = null;
+const vFrag = new Set();
+function vVocab() {
+  if (VVOC) return VVOC;
+  const v = new Set([...VSTOP, ...Object.keys(VUNIT), ...Object.keys(VSIZE), ...Object.keys(VNUM),
+    'fruhstuck', 'mittagessen', 'mittag', 'mittags', 'abendessen', 'abends', 'abend', 'snack', 'jause', 'kantine', 'pause', 'training', 'gegessen', 'getrunken',
+    'zwischendurch', 'nachmittag', 'vormittag', 'heute', 'gestern', 'morgen']);
+  for (const e of vLex()) for (const pt of e.tok) for (const w of pt) if (w.length >= 3) v.add(w);
+  return (VVOC = v);
+}
+function vSplitWord(w) {
+  const V = vVocab();
+  if (w.length < 9 || V.has(w) || V.has(vStem(w)) || /\d/.test(w)) return w;
+  let best = null;
+  for (let k = 3; k <= w.length - 3; k++) {
+    const l = w.slice(0, k), r = w.slice(k);
+    const sc = (V.has(l) && l.length >= 5 ? l.length : 0) + (V.has(r) && r.length >= 5 ? r.length : 0) + (V.has(l) && V.has(r) ? 5 : 0);
+    if (sc && (!best || sc > best.sc)) best = { l, r, sc };
+  }
+  if (!best) return w;
+  if (!V.has(best.l)) vFrag.add(best.l); if (!V.has(best.r)) vFrag.add(best.r);
+  return best.l + ' ' + best.r;
+}
 function vMatches(toks) {
   const C = [];
   vLex().forEach((e, ei) => e.tok.forEach(pt => {
@@ -6789,6 +6837,26 @@ function vMatches(toks) {
       if (ok) C.push({ e, ei, i, j: i + pt.length, s: pt.join(' ').length * (pt.length > 1 ? 1.2 : 1) + (e.cur ? 2 : 0) });
       else if (pt.length === 1 && pt[0].length >= 4 && toks[i].length > pt[0].length && toks[i].includes(pt[0]))
         C.push({ e, ei, i, j: i + 1, s: pt[0].length * .6 + (e.cur ? 1 : 0), part: true });
+    }
+  }));
+  // Unscharf nur für Wörter, die sonst nichts treffen
+  const hit = new Array(toks.length).fill(false); for (const c of C) for (let k = c.i; k < c.j; k++) hit[k] = true;
+  const strong = (a, b) => a === b || vStem(a) === vStem(b);
+  if (hit.some(h => !h)) vLex().forEach(e => e.tok.forEach(pt => {
+    for (let i = 0; i + pt.length <= toks.length; i++) {
+      let ok = true, anyFree = false, nStrong = 0, nLoose = 0;
+      for (let j = 0; j < pt.length; j++) {
+        const a = toks[i + j], b = pt[j]; if (!hit[i + j]) anyFree = true;
+        if (strong(a, b)) nStrong++; else if (vNear(a, b)) {} else if (pt.length >= 2 && vNear(a, b, true)) nLoose++; else { ok = false; break; }
+      }
+      if (ok && nLoose && !(nLoose === 1 && nStrong >= 1 && pt.join(' ').length >= 10)) ok = false;
+      if (ok && anyFree) C.push({ e, i, j: i + pt.length, s: pt.join(' ').length * (nLoose ? .6 : .7) * (pt.length > 1 ? 1.2 : 1) + (e.cur ? 1 : 0), fuzzy: true });
+    }
+    // Zwei Wörter, die eigentlich eins sind: „Hafer Vlocken“ → Haferflocken, „Kons Pitz“ → Kornspitz
+    if (pt.length === 1 && pt[0].length >= 7) for (let i = 0; i + 1 < toks.length; i++) {
+      if (hit[i] && hit[i + 1]) continue;
+      const jw = toks[i] + toks[i + 1];
+      if (strong(jw, pt[0]) || vNear(jw, pt[0])) C.push({ e, i, j: i + 2, s: pt[0].length * .8 + (e.cur ? 1 : 0), fuzzy: true });
     }
   }));
   C.sort((a, b) => b.s - a.s);
@@ -6822,7 +6890,9 @@ function vSlotFor(kind) {
   const now = nowMin(); hits.sort((a, b) => Math.abs(a.t - now) - Math.abs(b.t - now)); return hits[0].id;
 }
 function voiceParse(raw) {
-  const text = String(raw || '').trim(), q0 = normQ(text).replace(/[-–]/g, ' ').replace(/[^a-z0-9äöüß.,\s]/g, ' ').replace(/(\d)\s*(g|ml|kg|l)\b/g, '$1 $2').replace(/\s+/g, ' ').trim();
+  const text = String(raw || '').trim(); vFrag.clear();
+  const q0 = normQ(text).replace(/[-–]/g, ' ').replace(/[^a-z0-9äöüß.,\s]/g, ' ').replace(/(\d)\s*(g|ml|kg|l)\b/g, '$1 $2').replace(/\s+/g, ' ').trim()
+    .split(' ').map(w => { const m = w.match(/^(.*?)([.,]*)$/); return vSplitWord(m[1]) + m[2]; }).join(' ');
   let slotKind = ''; for (const [re, k] of VSLOTS) if (re.test(q0)) { slotKind = k; break; }
   const res = { text, items: [], unknown: [], name: '', slot: '', recipe: null };
   // „wie geplant“: einfach das, was im Plan steht
@@ -6832,7 +6902,7 @@ function voiceParse(raw) {
     if (sl && sl.items) { res.items = sl.items.filter(i => FOODS[i.food] && i.g > 0).map(i => ({ id: 'f:' + i.food, g: Math.round(i.g / 5) * 5 })); res.name = sl.meal.n; res.slot = sid; return res; }
   }
   // Ein Rezept aus der App beim Namen genannt?
-  const qw = q0.split(' ').filter(w => w.length > 3 && !VSTOP.has(w)), same = (a, b) => a === b || vStem(a) === vStem(b);
+  const qw = q0.split(' ').filter(w => w.length > 3 && !VSTOP.has(w)), same = (a, b) => a === b || vStem(a) === vStem(b) || (b.length >= 5 && vNear(a, b));
   const qToks = q0.split(' ').filter(Boolean), qFoods = vMatches(qToks).map(m => qToks.slice(m.i, m.j));
   let best = null;
   for (const r of recipeList()) {
@@ -6850,8 +6920,11 @@ function voiceParse(raw) {
   if (best && best.cov >= .6) {
     const pl = todayPlan && todayPlan.slots.find(x => x.key === best.r.k && x.items);
     const src = pl ? pl.items.map(i => [i.food, i.g]) : best.r.items.map(it => [it[0], it[1]]);
-    res.items = src.filter(([f, g]) => FOODS[f] && g > 0).map(([f, g]) => ({ id: 'f:' + f, g: Math.round(g / 5) * 5 }));
-    res.name = best.r.n; res.recipe = best.r.k;
+    // „zwei Isoclear-Shakes“: Anzahl vor dem Gericht gilt fürs ganze Rezept
+    const qt = q0.split(' '); let mul = 1;
+    for (let i = 0; i < qt.length; i++) { const n = vNum(qt[i]); if (n != null && n >= 1.5 && n <= 6 && [undefined, 'por', 'pc'].includes(VUNIT[qt[i + 1] || ''])) { mul = n; break; } }
+    res.items = src.filter(([f, g]) => FOODS[f] && g > 0).map(([f, g]) => ({ id: 'f:' + f, g: Math.round(g * mul / 5) * 5 }));
+    res.name = (mul > 1 ? String(mul).replace('.', ',') + '× ' : '') + best.r.n; res.recipe = best.r.k;
     res.slot = slotKind ? vSlotFor(slotKind) : (pl && wzOpenSlots().some(s => s.id === pl.id) ? pl.id : wzMac(res.items).kcal >= 250 ? chatRepFor({}) : '');
     return res;
   }
@@ -6864,10 +6937,12 @@ function voiceParse(raw) {
     const toks = ch.split(' ').filter(Boolean);
     const ms = vMatches(toks);
     if (!ms.length) {
-      const left = toks.filter(w => !VSTOP.has(w) && vNum(w) == null && !VUNIT[w] && VSIZE[w] == null);
+      const left = toks.filter(w => !VSTOP.has(w) && vNum(w) == null && !VUNIT[w] && VSIZE[w] == null && !vFrag.has(w));
       if (left.length) { res.unknown.push(left.join(' ')); continue; }
       // „…, großer Teller“: gilt für das, was davor stand
       const sz = toks.map(w => VSIZE[w]).find(x => x != null); if (sz != null) for (const ix of lastIdx) res.items[ix].g = Math.round(res.items[ix].g * sz / 5) * 5;
+      const nn = toks.map(vNum).find(x => x != null && x > 20), wu = { g: 1, ml: 1, kg: 1000, l: 1000 }[toks.map(w => VUNIT[w]).find(Boolean)];
+      if (nn && wu && lastIdx.length) { const tot = lastIdx.reduce((a, ix) => a + res.items[ix].g, 0); for (const ix of lastIdx) res.items[ix].g = Math.max(5, Math.round(res.items[ix].g * nn * wu / tot / 5) * 5); }
       continue;
     }
     lastIdx = [];
@@ -6883,7 +6958,8 @@ function voiceParse(raw) {
     }
     if (Object.keys(q).length) Object.assign(qs[ms.length - 1], q);
     ms.forEach((m, k) => {
-      if (m.e.combo) { const f = (qs[k].n || 1) * (qs[k].size || 1); for (const [id, g] of m.e.combo) { res.items.push({ id, g: Math.round(g * f / 5) * 5 }); lastIdx.push(res.items.length - 1); } labels.push(m.e.nm || m.e.combo.map(([id]) => wcName(id)).join(' & ')); return; }
+      if (m.e.combo) { const tot = m.e.combo.reduce((a, [, g]) => a + g, 0), u = qs[k].u, wt = { g: 1, ml: 1, kg: 1000, l: 1000 }[u];
+        const f = wt && qs[k].n ? qs[k].n * wt / tot : (qs[k].n || 1) * (qs[k].size || 1); for (const [id, g] of m.e.combo) { res.items.push({ id, g: Math.round(g * f / 5) * 5 }); lastIdx.push(res.items.length - 1); } labels.push(m.e.nm || m.e.combo.map(([id]) => wcName(id)).join(' & ')); return; }
       if (m.e.id === 'hd_brat' && qs[k].n === .5) qs[k].n = 1;   // „ein halbes Hendl“ ist die normale Portion
       res.items.push({ id: m.e.id, g: vGrams(m, qs[k]) });
       lastIdx.push(res.items.length - 1); labels.push(wcName(m.e.id));
@@ -6921,93 +6997,140 @@ function vAddHits(q) {
   }
   return out;
 }
-/* Sprechen: Knopf drücken = sofort zuhören, loslassen = fertig. Eine einzige Spracherkennung für die ganze Sitzung,
-   damit das iPhone nicht bei jedem Drücken neu nach dem Mikrofon fragt. Was in der Blase stand, wird auf jeden Fall verwendet. */
+/* Sprechen: Knopf gedrückt halten = Aufnahme, loslassen = fertig.
+   Apples eigene Spracherkennung funktioniert in Apps vom Home-Bildschirm nicht zuverlässig. Deshalb nimmt die App
+   den Ton selbst auf und ein kleines Sprachmodell (Whisper) erkennt ihn direkt im Handy, ohne Server und kostenlos. */
 try { localStorage.removeItem('np:vtap'); } catch (e) {}
+const ASR = {
+  w: null, ready: false, files: {}, cbs: {}, seq: 0, pct: null,
+  worker() {
+    if (this.w) return this.w;
+    const w = new Worker('asr-worker.js', { type: 'module' });
+    w.onmessage = e => this.msg(e.data || {});
+    w.onerror = e => { const er = new Error((e && e.message) || 'Sprachmodell konnte nicht starten'); for (const k of Object.keys(this.cbs)) this.cbs[k].rej(er); this.cbs = {}; this.w = null; };
+    return (this.w = w);
+  },
+  msg(m) {
+    if (m.type === 'progress') {
+      if (m.file && m.total) this.files[m.file] = [m.loaded || 0, m.total];
+      const t = Object.values(this.files).reduce((a, [l, n]) => [a[0] + l, a[1] + n], [0, 0]);
+      this.pct = t[1] > 5e6 ? Math.min(100, Math.round(t[0] / t[1] * 100)) : null;
+      if (Voice.waiting && this.pct != null && !this.ready) Voice.bubble('Sprachmodell wird geladen …', `${this.pct} % · nur beim ersten Mal (ca. 80 MB)`);
+    } else if (m.type === 'ready') {
+      this.ready = true; try { localStorage.setItem('np:asr', '1'); } catch (e) {}
+      if (Voice.waiting) Voice.bubble('Verstehe …', '');
+    } else if (m.type === 'result' || m.type === 'error') {
+      const c = this.cbs[m.id]; delete this.cbs[m.id];
+      if (c) { if (m.type === 'result') c.res(m.text); else c.rej(new Error(m.message)); }
+    }
+  },
+  preload() { try { this.worker().postMessage({ type: 'load' }); } catch (e) {} },
+  run(audio, prompt) {
+    return new Promise((res, rej) => {
+      const id = ++this.seq; this.cbs[id] = { res, rej };
+      try { this.worker().postMessage({ type: 'run', id, audio, prompt }, [audio.buffer]); } catch (e) { delete this.cbs[id]; rej(e); }
+    });
+  },
+};
+/* Aufnahme → 16 kHz Mono, so wie das Modell es braucht */
+async function toPcm16k(blob) {
+  const buf = await blob.arrayBuffer(), AC = window.AudioContext || window.webkitAudioContext, ac = new AC();
+  const dec = await new Promise((res, rej) => { const p = ac.decodeAudioData(buf, res, rej); if (p && p.then) p.then(res, rej); });
+  try { ac.close(); } catch (e) {}
+  const n = Math.max(1, Math.ceil(dec.duration * 16000)), off = new OfflineAudioContext(1, n, 16000);
+  const src = off.createBufferSource(); src.buffer = dec; src.connect(off.destination); src.start();
+  const out = await off.startRendering();
+  return out.getChannelData(0).slice();
+}
+// Typische Fantasie-Sätze, die das Modell bei Stille erfindet
+const ASR_JUNK = /untertitel|amara\.org|zdf|swr|vielen dank f(u|ü)rs zuschauen|bis zum n(a|ä)chsten mal|copyright|musik\]|\[musik|^\W*musik\W*$|\b(\p{L}+)(\W+\1\b){3,}/iu;
+/* Wortliste für das Modell: so schreibt es Essen richtig. Gerichte von heute und morgen zuerst, dann Typisches */
+const VPROMPT_BASE = ['Schinken-Käse-Toast', 'Leberkässemmel', 'Kornspitz', 'Semmel', 'Vollkornbrot', 'Banane', 'Apfel', 'Erdnüsse', 'Haferflocken', 'Topfencreme',
+  'Hühnerbrust', 'Hendl', 'Schnitzel', 'Reis', 'Erdäpfel', 'Spaghetti Bolognese', 'Faschiertes', 'Reiswaffeln', 'Cola', 'Bier', 'Gramm'];
+function vPrompt() {
+  // Typisches zuerst, die Gerichte von heute zuletzt (das Modell achtet am meisten auf das Ende)
+  const seen = new Set(), out = [];
+  const add = n => { n = String(n || '').replace(/\s*\(.*?\)\s*/g, ' ').replace(/\s+/g, ' ').trim(); const k = n.toLowerCase(); if (n.length > 2 && !seen.has(k)) { seen.add(k); out.push(n); } };
+  const mine = []; try { for (const sl of (todayPlan && todayPlan.slots) || []) if (sl.meal && sl.meal.n) mine.push(sl.meal.n); } catch (e) {}
+  VPROMPT_BASE.forEach(add); mine.slice(0, 8).forEach(add);
+  return out.join(', ') + '.';
+}
+/* Ist überhaupt etwas Lautes drin? Sonst erfindet das Modell gern Sätze */
+function vLoud(a) {
+  let peak = 0; for (let i = 0; i + 800 <= a.length; i += 400) { let q = 0; for (let j = i; j < i + 800; j++) q += a[j] * a[j]; peak = Math.max(peak, Math.sqrt(q / 800)); }
+  return peak;
+}
 const Voice = {
-  rec: null, holding: false, running: false, txt: '', acc: '', best: '', t0: 0, done: null, err: '', nRes: 0, denied: 0,
-  ok() { return !!(window.SpeechRecognition || window.webkitSpeechRecognition) && !this.blocked; },
+  holding: false, rec: null, stream: null, chunks: [], t0: 0, waiting: false, busy: false, offT: 0,
+  ok() { return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder && window.Worker && window.OfflineAudioContext); },
   bubble(msg, live) {
     let b = $('#vBubble');
     if (!b) { b = document.createElement('div'); b.id = 'vBubble'; b.className = 'vbub'; b.setAttribute('role', 'status'); b.setAttribute('aria-live', 'polite'); document.body.appendChild(b); }
     if (msg == null) { b.classList.remove('on'); return; }
     b.innerHTML = `<span class="vbub-dot"></span><div><b>${esc(msg)}</b>${live ? `<p>${esc(live)}</p>` : ''}</div>`; b.classList.add('on');
   },
-  shown() { const p = $('#vBubble p'); const t = p ? p.textContent.trim() : ''; return t === 'Sag, was du gegessen hast' ? '' : t; },
-  make() {
-    if (this.rec) return this.rec;
-    const R = window.SpeechRecognition || window.webkitSpeechRecognition, r = new R();
-    r.lang = 'de-AT'; r.continuous = true; r.interimResults = true; r.maxAlternatives = 1;
-    r.onstart = () => { if (r !== this.rec) return; this.running = true; this.started = true; };
-    r.onresult = e => {
-      if (r !== this.rec) return;
-      this.nRes++;
-      let sess = ''; for (let i = 0; i < e.results.length; i++) sess += (e.results[i][0] ? e.results[i][0].transcript : '') + ' ';
-      sess = sess.replace(/\s+/g, ' ').trim(); if (!sess) return;
-      this.txt = (this.acc ? this.acc + ' ' : '') + sess;
-      if (this.txt.length >= this.best.length) this.best = this.txt;
-      if (this.holding) this.bubble('Ich höre zu …', this.txt);
-    };
-    r.onerror = e => {
-      if (r !== this.rec) return;
-      this.err = e.error || 'fehler';
-      if (e.error === 'aborted' || e.error === 'no-speech') return;
-      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
-        this.denied++;
-        if (this.denied >= 2) { this.blocked = true; this.holding = false; this.bubble(null); this.fallback(true); }
-        else { this.holding = false; this.bubble(null); toast('Bitte das Mikrofon erlauben und nochmal gedrückt halten'); }
-      }
-    };
-    r.onend = () => {
-      if (r !== this.rec) return;
-      this.running = false;
-      if (this.pendingStart && this.holding) { this.pendingStart = false; try { r.start(); } catch (x) {} return; }
-      if (this.holding) { this.acc = this.best || this.txt; try { r.start(); } catch (x) {} return; }   // iPhone hört nach einer Pause auf: weiter zuhören, solange du drückst
-      const d = this.done; this.done = null; if (d) d();
-    };
-    return (this.rec = r);
-  },
-  start() {
+  async start() {
+    if (this.busy) { toast('Moment, ich verstehe noch das Letzte'); return; }
     if (!this.ok()) { this.fallback(); return; }
-    this.holding = true; this.txt = ''; this.acc = ''; this.best = ''; this.err = ''; this.nRes = 0; this.t0 = Date.now(); this.done = null;
-    const r = this.make(); this.started = false; this.pendingStart = false;
-    this.bubble('Ich höre zu …', 'Sag, was du gegessen hast');
-    // Läuft die Erkennung vom letzten Mal noch (das iPhone meldet das Ende nicht immer), erst beenden und dann neu starten
-    try { r.start(); } catch (x) { this.pendingStart = true; try { r.abort(); } catch (y) {} }
-    // Startet sie gar nicht, eine frische Erkennung nehmen
-    clearTimeout(this.kick);
-    this.kick = setTimeout(() => {
-      if (!this.holding || this.started) return;
-      const old = this.rec; this.rec = null; try { old && old.abort(); } catch (y) {}
-      this.running = false; this.pendingStart = false;
-      try { this.make().start(); } catch (y) { this.err = String(y && y.name || y); }
-    }, 900);
-    try { navigator.vibrate && navigator.vibrate(10); } catch (x) {}
+    this.holding = true; this.t0 = Date.now(); this.chunks = [];
+    if (!ASR.ready) ASR.preload();   // Modell schon laden, während du sprichst
+    this.bubble('Mikrofon …', '');
+    try {
+      clearTimeout(this.offT);
+      const live = this.stream && this.stream.getAudioTracks().some(t => t.readyState === 'live');
+      const st = live ? this.stream : await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true } });
+      this.stream = st;
+      if (!this.holding) { this.release(); this.bubble(null); return; }
+      const mt = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm'].find(t => MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) || '';
+      const r = new MediaRecorder(st, mt ? { mimeType: mt } : undefined); this.rec = r;
+      r.ondataavailable = e => { if (e.data && e.data.size) this.chunks.push(e.data); };
+      r.start(250);
+      this.bubble('Ich höre zu …', 'Sag, was du gegessen hast, dann loslassen');
+      try { navigator.vibrate && navigator.vibrate(10); } catch (x) {}
+    } catch (e) {
+      this.holding = false; this.bubble(null);
+      toast(e && e.name === 'NotAllowedError' ? 'Mikrofon ist nicht erlaubt. Du kannst es auch tippen.' : 'Mikrofon geht gerade nicht. Du kannst es auch tippen.');
+      this.fallback();
+    }
   },
-  stop() {
+  async stop() {
     if (!this.holding) return;
     this.holding = false;
-    const quick = Date.now() - this.t0 < 300, seen = this.shown();
-    const finish = () => {
-      if (this.done !== finish && this.done !== null) return;
-      this.done = null;
-      const t = (this.best || this.txt || seen || this.shown() || '').trim();
-      this.bubble(null);
-      if (!t) { toast(quick ? 'Knopf gedrückt halten, sprechen, dann loslassen' : `Nichts verstanden${this.err ? ' (' + this.err + ')' : ''}. Nochmal versuchen`); return; }
-      voiceHandle(t);
-    };
-    clearTimeout(this.kick);
-    this.done = finish; this.bubble('Moment …', this.best || this.txt || seen);
-    try { this.rec && (this.running || this.started) ? this.rec.stop() : finish(); } catch (x) { finish(); }
-    setTimeout(() => { if (this.done === finish) { finish(); this.running = false; } }, 1200);
+    const quick = Date.now() - this.t0 < 600, r = this.rec; this.rec = null;
+    if (!r) { this.bubble(null); if (quick) toast('Knopf gedrückt halten, sprechen, dann loslassen'); return; }
+    const stopped = new Promise(res => { r.onstop = res; });
+    try { r.stop(); } catch (e) {}
+    await Promise.race([stopped, new Promise(res => setTimeout(res, 1500))]);
+    this.release();
+    if (quick) { this.bubble(null); toast('Knopf gedrückt halten, sprechen, dann loslassen'); return; }
+    const blob = new Blob(this.chunks, { type: r.mimeType || 'audio/mp4' }); this.chunks = [];
+    this.busy = true; this.waiting = true;
+    this.bubble(ASR.ready ? 'Verstehe …' : 'Sprachmodell wird geladen …', ASR.ready ? '' : (ASR.pct != null ? `${ASR.pct} % · ` : '') + 'nur beim ersten Mal (ca. 80 MB)');
+    try {
+      const audio = await toPcm16k(blob);
+      if (audio.length < 16000 * .4) throw new Error('zu kurz');
+      if (vLoud(audio) < .004) { this.waiting = false; this.busy = false; this.bubble(null); toast('Nichts gehört. Halt den Knopf gedrückt und sprich etwas lauter.'); return; }
+      let text = await ASR.run(audio, vPrompt());
+      text = String(text || '').replace(/\s+/g, ' ').trim();
+      this.waiting = false; this.busy = false; this.bubble(null);
+      if (!text || ASR_JUNK.test(text) || !/[a-zäöüß0-9]/i.test(text)) { toast('Nichts verstanden. Halt den Knopf gedrückt und sprich etwas lauter.'); return; }
+      voiceHandle(text);
+    } catch (e) {
+      this.waiting = false; this.busy = false; this.bubble(null);
+      toast(`Erkennen ging nicht (${(e && e.message) || e}). Du kannst es auch tippen.`);
+      this.fallback();
+    }
   },
+  // Mikrofon noch kurz offen lassen: wer gleich noch etwas sagt, wird nicht nochmal gefragt
+  release() { clearTimeout(this.offT); this.offT = setTimeout(() => { if (this.holding) return; const st = this.stream; this.stream = null; if (st) st.getTracks().forEach(t => t.stop()); }, 120000); },
   fallback(denied) {
     S.vText = true; S.wz = null; S.vMiss = '';
     if (S.tab !== 'track') setTab('track'); else renderWizard();
     setTimeout(() => { renderWizard(); const t = $('#vIn'); if (t) t.focus(); }, 60);
-    if (denied) toast('Spracherkennung ist nicht erlaubt. Nutz das Mikrofon auf der Tastatur.');
   },
 };
+// Hat das Handy das Modell schon einmal geladen, im Hintergrund bereithalten (dann geht das Erkennen schneller)
+setTimeout(() => { try { if (localStorage.getItem('np:asr') === '1' && Voice.ok()) ASR.preload(); } catch (e) {} }, 5000);
 document.addEventListener('pointerdown', e => {
   const b = e.target.closest && e.target.closest('[data-voice]'); if (!b) return;
   e.preventDefault(); b.classList.add('holding'); try { b.setPointerCapture(e.pointerId); } catch (x) {}
@@ -9538,7 +9661,7 @@ function mealMoveSet(iso, slot, hhmm) {
   document.addEventListener('touchcancel', () => { if (D && !D.on) reset(); else if (D) end(); });
   document.addEventListener('contextmenu', e => { if (D) e.preventDefault(); });
 })();
-if (/[?&]dbg\b/.test(location.search)) window.__np = { get S() { return S; }, get plan() { return todayPlan; }, get rem() { return todayRem; }, calcTargets, MEALS, FOODS, mealNameOf, rankBadge, RANKS, planDay, planPr, shoppingCycle, addDays, isoDate, computeToday, shopSnapSync, rankCompute, shopAskList, availOn, voiceParse, voiceHandle, Voice };
+if (/[?&]dbg\b/.test(location.search)) window.__np = { get S() { return S; }, get plan() { return todayPlan; }, get rem() { return todayRem; }, calcTargets, MEALS, FOODS, mealNameOf, rankBadge, RANKS, planDay, planPr, shoppingCycle, addDays, isoDate, computeToday, shopSnapSync, rankCompute, shopAskList, availOn, voiceParse, voiceHandle, Voice, ASR, vMatches, vNear, vSplitWord, vPrompt, vLex };
 })();
 </script>
 
