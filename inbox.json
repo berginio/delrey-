@@ -11,6 +11,12 @@
    "id": "2026-11-15-mcdonalds",
    "d": "2026-11-15",
    "code": "DR+ McDonald's: Hot Chicken, 12 Nuggets, Pommes, Camembert Donuts, 2 Dips | 1895 kcal | E 79 | KH 165 | F 100 | 18:00"
+  },
+  {
+   "id": "2026-11-16-briespitzen",
+   "d": "2026-11-16",
+   "extra": true,
+   "code": "DR+ 6 gebackene Briespitzen | 450 kcal | E 15 | KH 38 | F 27 | 10:45"
   }
  ]
 }
