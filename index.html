@@ -5960,13 +5960,34 @@ async function inboxCheck(force) {
   try { const r = await fetch('inbox.json?t=' + Date.now(), { cache: 'no-store' }); if (r.ok) data = await r.json(); } catch (e) { return; }
   const items = (data && Array.isArray(data.items)) ? data.items : [];
   let done = []; try { done = JSON.parse(localStorage.getItem(INBOX_KEY) || '[]'); } catch (e) {}
-  const fresh = items.filter(it => it && it.id && !done.includes(it.id) && it.d === S.today);
-  const old = items.filter(it => it && it.id && !done.includes(it.id) && it.d < S.today).map(it => it.id);
+  // "fix": "<alte id>" berichtigt einen früheren Eintrag (z. B. falsche Uhrzeit): der alte wird zurückgenommen, der neue eingetragen.
+  // Das Datum darf hinten etwas angehängt haben ("2026-11-17!fix"), damit ältere App-Versionen solche Einträge übergehen.
+  const dOf = it => String(it.d || '').slice(0, 10), fixedBy = new Map(items.filter(it => it && it.fix).map(it => [it.fix, it]));
+  const fresh = items.filter(it => it && it.id && !done.includes(it.id) && dOf(it) === S.today && !fixedBy.has(it.id));
+  const old = items.filter(it => it && it.id && !done.includes(it.id) && (dOf(it) < S.today || fixedBy.has(it.id))).map(it => it.id);
   if (!fresh.length) { if (old.length) try { localStorage.setItem(INBOX_KEY, JSON.stringify(done.concat(old).slice(-200))); } catch (e) {} return; }
   // "extra": true heißt zusätzlich gegessen, ersetzt also keine geplante Mahlzeit
   const r = { add: [] };
   for (const it of fresh) parseChatCodes(it.code || '').add.forEach(e => r.add.push({ ...e, extra: !!it.extra }));
   if (!r.add.length) return;
+  const undo = fresh.filter(it => it.fix && done.includes(it.fix)).map(it => items.find(o => o.id === it.fix)).filter(Boolean)
+    .map(o => (parseChatCodes(o.code || '').add[0] || {}).n).filter(Boolean);
+  const moveTo = mv => {   // Mahlzeiten von heute in der Zeitleiste verschieben (ohne Meldung)
+    const all = JSON.parse(JSON.stringify(S.profile.mealMove || {})), d = all[S.today] || (all[S.today] = {});
+    for (const [k, t] of mv) { if (t) d[k] = t; else delete d[k]; }
+    if (!Object.keys(d).length) delete all[S.today];
+    S.profile = { ...S.profile, mealMove: all }; Store.saveProfileSoon(); shopCache = null; try { computeToday(); } catch (e) {}
+  };
+  if (undo.length) {
+    const back = [];
+    mutateLog(l => {
+      for (const n of undo) {
+        for (const [k, m] of Object.entries(l.meals || {})) if (m && m.edited && m.dish === n) { delete l.meals[k]; back.push([k, null]); }
+        l.extras = (l.extras || []).filter(x => !(x.src === 'claude' && x.name === n));
+      }
+    });
+    if (back.length) moveTo(back);
+  }
   const taken = new Set(), base = Date.now().toString(36);
   const entries = r.add.map((e, i) => ({ id: base + i + Math.random().toString(36).slice(2, 5), name: e.n, time: e.time || toHHMM(nowMin()), kcal: e.kcal, p: e.p, c: e.c, f: e.f, fib: 0,
     leu: Math.round(e.p * LEU_PER_P * 10) / 10, src: 'claude', replaces: null }));
@@ -5978,6 +5999,9 @@ async function inboxCheck(force) {
     if (sid && !taken.has(sid)) { en.replaces = sid; taken.add(sid); }
   });
   try { localStorage.setItem(INBOX_KEY, JSON.stringify(done.concat(fresh.map(it => it.id), old).slice(-200))); } catch (e) {}
+  // Zu einer anderen Zeit gegessen als geplant: die Mahlzeit in der Zeitleiste dorthin schieben
+  const mv = entries.map(en => { const sl = en.replaces && todayPlan && todayPlan.slots.find(x => x.id === en.replaces); return sl && Math.abs(toMin(en.time) - sl.t) >= 20 ? [en.replaces, en.time] : null; }).filter(Boolean);
+  if (mv.length) moveTo(mv);
   mutateLog(l => { for (const en of entries) if (!(en.replaces && dishAsSlot(l, en.replaces, en))) l.extras = (l.extras || []).concat(en); },
     `Von Claude eingetragen: ${entries.map(e => e.name).join(', ')}`);
 }

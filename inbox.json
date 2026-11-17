@@ -27,6 +27,12 @@
    "id": "2026-11-17-gulasch",
    "d": "2026-11-17",
    "code": "DR+ Rindsgulasch mit Nudeln und Kartoffeln (bei Mama) | 740 kcal | E 54 | KH 72 | F 25 | 16:45"
+  },
+  {
+   "id": "2026-11-17-gulasch-15",
+   "d": "2026-11-17!fix",
+   "fix": "2026-11-17-gulasch",
+   "code": "DR+ Rindsgulasch mit Nudeln und Kartoffeln (bei Mama) | 740 kcal | E 54 | KH 72 | F 25 | 15:00"
   }
  ]
 }
