@@ -17,6 +17,16 @@
    "d": "2026-11-16",
    "extra": true,
    "code": "DR+ 6 gebackene Briespitzen | 450 kcal | E 15 | KH 38 | F 27 | 10:45"
+  },
+  {
+   "id": "2026-11-17-kebab",
+   "d": "2026-11-17",
+   "code": "DR+ Kebab mit Fleisch und Schafkäse (ohne Salat & Soße) | 755 kcal | E 41 | KH 72 | F 34 | 10:30"
+  },
+  {
+   "id": "2026-11-17-gulasch",
+   "d": "2026-11-17",
+   "code": "DR+ Rindsgulasch mit Nudeln und Kartoffeln (bei Mama) | 740 kcal | E 54 | KH 72 | F 25 | 16:45"
   }
  ]
 }
