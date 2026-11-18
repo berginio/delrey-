@@ -5951,6 +5951,30 @@ function chatRepFor(e) {
    von heute ein, jede nur einmal. Das größte Essen ersetzt die passende Mahlzeit, der Rest kommt als Extra dazu. */
 const INBOX_KEY = 'np:inboxDone';
 let inboxLast = 0;
+/* Einträge für vergangene Tage (App an dem Tag nicht mehr geöffnet): nachträglich in den Tag schreiben, als zusätzliches Essen.
+   Steht an dem Tag schon ein Eintrag mit dem Namen, war er schon drin. */
+function inboxRetro(items, fixedBy, dOf) {
+  let rd = []; try { rd = JSON.parse(localStorage.getItem('np:inboxRetro') || '[]'); } catch (e) {}
+  const from = isoDate(addDays(new Date(S.today + 'T12:00'), -21)), byDay = {};
+  for (const it of items) { const d = dOf(it); if (it && it.id && d < S.today && d >= from && !rd.includes(it.id) && !fixedBy.has(it.id)) (byDay[d] = byDay[d] || []).push(it); }
+  const days = Object.keys(byDay); if (!days.length) return;
+  const td = new Set(S.prefs.trackDays || []), base = Date.now().toString(36);
+  let n = 0;
+  for (const d of days) {
+    const l = { ...emptyLog(), ...(Store.ls('day:' + d) || {}) }, names = new Set([...Object.values(l.meals || {}).map(m => m && m.dish), ...(l.extras || []).map(x => x && x.name)].filter(Boolean));
+    let ch = false;
+    byDay[d].forEach((it, j) => parseChatCodes(it.code || '').add.forEach((e, i) => {
+      if (names.has(e.n)) return;
+      l.extras = (l.extras || []).concat({ id: base + j + i + Math.random().toString(36).slice(2, 5), name: e.n, time: e.time || '12:00', kcal: e.kcal, p: e.p, c: e.c, f: e.f, fib: 0,
+        leu: Math.round(e.p * LEU_PER_P * 10) / 10, src: 'claude', replaces: null });
+      names.add(e.n); ch = true; n++;
+    }));
+    if (ch) { Store.ls('day:' + d, l); td.add(d); }
+    rd = rd.concat(byDay[d].map(it => it.id));
+  }
+  try { localStorage.setItem('np:inboxRetro', JSON.stringify(rd.slice(-300))); } catch (e) {}
+  if (n) { S.prefs = { ...S.prefs, trackDays: [...td].sort().slice(-400) }; Store.savePrefs(); toast(`Nachgetragen: ${n} ${n === 1 ? 'Eintrag' : 'Einträge'} von Claude für frühere Tage`); }
+}
 async function inboxCheck(force) {
   if (Store.mode === 'db' || !/^https?:$/.test(location.protocol)) return;
   if (!(Store.got && Store.got.has('profile') && Store.got.has('log'))) return;
@@ -5965,6 +5989,7 @@ async function inboxCheck(force) {
   const dOf = it => String(it.d || '').slice(0, 10), fixedBy = new Map(items.filter(it => it && it.fix).map(it => [it.fix, it]));
   const fresh = items.filter(it => it && it.id && !done.includes(it.id) && dOf(it) === S.today && !fixedBy.has(it.id));
   const old = items.filter(it => it && it.id && !done.includes(it.id) && (dOf(it) < S.today || fixedBy.has(it.id))).map(it => it.id);
+  inboxRetro(items, fixedBy, dOf);
   if (!fresh.length) { if (old.length) try { localStorage.setItem(INBOX_KEY, JSON.stringify(done.concat(old).slice(-200))); } catch (e) {} return; }
   // "extra": true heißt zusätzlich gegessen, ersetzt also keine geplante Mahlzeit
   const r = { add: [] };
