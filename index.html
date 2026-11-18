@@ -2987,9 +2987,11 @@ function targetFromBurned(pr, type, burned, at) {
   const T = calcTargets(pr).per[type], g = GOALS[pr.goal] || GOALS.recomp;
   const total = projectBurned(pr, burned, at);
   if (total < calcTargets(pr).bmr * 1.15) return T; // unplausibel (z. B. Wert von mittags): normales Ziel behalten
-  const kcal = Math.round(total * (1 + g.adj));
+  // Garmin unterschätzt Krafttraining oft deutlich. Darum zählt beides zur Hälfte: der Garmin-Wert und das Ziel für die Art des Tages
+  // (so ändert sich das Ziel auch mit Garmin, wenn du einen Ruhetag zum Gym-Tag machst)
+  const garminK = Math.round(total * (1 + g.adj)), kcal = Math.round((garminK + T.kcal) / 2);
   const c = Math.max(60, (kcal - 4*T.p - 9*T.f - 2*T.fib) / 4);
-  return { ...T, kcal, c: Math.round(c), burned: +burned, burnedTotal: total };
+  return { ...T, kcal, c: Math.round(c), burned: +burned, burnedTotal: total, garminK, typeK: T.kcal };
 }
 function planDay(d, pr, typeOverride, opts) {
   // Phasen-Plan: kommende Phasen bringen ihr eigenes Ziel mit (z. B. Mini Cut ab Februar)
@@ -3996,7 +3998,7 @@ function renderGarmin() {
     body = `<div class="note warn" style="margin-top:10px">${icon('warning-circle')}<p>${fmt(burned)} kcal ist weniger als dein Körper schon in Ruhe verbraucht. Das ist wohl ein Wert von untertags. Trag am Abend die Kalorien gesamt ein, bis dahin rechnet die App mit dem normalen Ziel.</p></div>`;
   } else if (burned) {
     body = `<div class="gm-flow"><div><small>Hochgerechnet auf heute</small><b>${fmt(P.target.burnedTotal)}</b></div>${icon('caret-right')}<div><small>Ziel heute (${g.adj < 0 ? '−' : '+'}${pct} %)</small><b>${fmt(P.target.kcal)}</b></div></div>
-      <p class="muted" style="margin:10px 0 0;font-size:13.5px">${open ? `Die restlichen Mahlzeiten sind darauf angepasst.` : ''} ${left > 90 ? `Es sind noch etwa <b style="color:var(--ink)">${fmt(left)} kcal</b> offen.` : left < -90 ? `Du liegst etwa ${fmt(-left)} kcal drüber, heute lieber nichts mehr.` : 'Du liegst genau im Ziel.'}</p>`;
+      <p class="muted" style="margin:10px 0 0;font-size:13.5px">Mittel aus Garmin (${g.adj < 0 ? '−' : '+'}${pct} % = ${fmt(P.target.garminK)} kcal) und deinem ${esc(TYPES[P.type].n)} (${fmt(P.target.typeK)} kcal), weil Garmin Krafttraining oft zu niedrig schätzt. ${open ? `Die restlichen Mahlzeiten sind darauf angepasst.` : ''} ${left > 90 ? `Es sind noch etwa <b style="color:var(--ink)">${fmt(left)} kcal</b> offen.` : left < -90 ? `Du liegst etwa ${fmt(-left)} kcal drüber, heute lieber nichts mehr.` : 'Du liegst genau im Ziel.'}</p>`;
   } else {
     body = `<p class="muted" style="margin:6px 0 0;font-size:13.5px">Trag ein, wie viele Kalorien deine Garmin für heute anzeigt (Kalorien gesamt). Die Ruheenergie bis Mitternacht rechnet die App dazu.</p>`;
   }
