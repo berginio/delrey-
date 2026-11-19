@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -80,6 +80,7 @@ body{
 *,*::before,*::after{box-sizing:border-box}
 button,input,select,textarea{font:inherit;color:inherit}
 button,.btn,label.btn{cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:10px}
 .num{font-variant-numeric:tabular-nums}
 .ico{width:1.15em;height:1.15em;flex:none;fill:currentColor;vertical-align:-.2em}
@@ -186,11 +187,14 @@ h3{margin:0;font-family:var(--font-display);font-weight:650;font-size:18px;lette
 .ings{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:0}
 .ings li{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:14px}
 .ings li:last-child{border-bottom:0}
-.ings li span:last-child{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap;text-align:right;max-width:58%}
-.ings li span:last-child small{white-space:normal}
-.ings li > span:first-child{min-width:0}
+.ings li > span:last-child{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap;text-align:right;max-width:50%;min-width:0;flex:0 1 auto}
+.ings li > span:last-child:has(small){white-space:normal}
+.ings li > span:last-child small{white-space:normal}
+.ings li > span:first-child{min-width:0;flex:1 1 0}
+.ings li > span:first-child .ing-btn{white-space:normal}
+.ing-n{overflow-wrap:break-word;-webkit-hyphens:auto;hyphens:auto}
 .ings li small{display:block;font-weight:500;color:var(--muted);font-size:11.5px}
-.ings li.up span:last-child{color:var(--accent)}
+.ings li.up > span:last-child{color:var(--accent)}
 .macros{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-size:12.5px;color:var(--muted)}
 .macros b{color:var(--ink);font-weight:650;font-variant-numeric:tabular-nums}
 .macros .leu{display:inline-flex;align-items:center;gap:4px}
@@ -3466,7 +3470,7 @@ function ingList(items, prev, mealKey) {
     const up = p && Math.abs(p.g - it.g) > Math.max(5, p.g * .1);
     const sub = amountSub(it);
     const love = tasteOf(S.prefs.taste, it.food) === 'love';
-    return `<li class="${up ? 'up' : ''}"><span>${!GROUPS[FOODS[it.food].grp] ? `<span class="ing-btn">${esc(FOODS[it.food].n)}</span>` : `<button class="ing-btn" data-act="taste-food" data-food="${it.food}"${mealKey ? ` data-meal="${mealKey}"` : ''} aria-label="${esc(FOODS[it.food].n)} bewerten">${esc(FOODS[it.food].n)}${love ? icon('heart-fill') : ''}</button>`}${it.from ? `<small class="swap">statt ${esc(FOODS[it.from].n)}</small>` : ''}</span><span>${amount(it)}${sub ? `<small>${esc(sub)}</small>` : ''}</span></li>`;
+    return `<li class="${up ? 'up' : ''}"><span>${!GROUPS[FOODS[it.food].grp] ? `<span class="ing-n">${esc(FOODS[it.food].n)}</span>` : `<button class="ing-btn" data-act="taste-food" data-food="${it.food}"${mealKey ? ` data-meal="${mealKey}"` : ''} aria-label="${esc(FOODS[it.food].n)} bewerten">${esc(FOODS[it.food].n)}${love ? icon('heart-fill') : ''}</button>`}${it.from ? `<small class="swap">statt ${esc(FOODS[it.from].n)}</small>` : ''}</span><span>${amount(it)}${sub ? `<small>${esc(sub)}</small>` : ''}</span></li>`;
   }).join('')}</ul>`;
 }
 const cookBtn = (meal, date, slotId) => {
@@ -7385,6 +7389,9 @@ function mutateLog(fn, msg) {
   if (msg) toast(msg);
 }
 
+/* Kein Zoomen in der App: Zwei-Finger-Zoom (iPhone) abfangen; Doppeltippen ist per CSS aus, Zoom beim Tippen in Felder über den Viewport */
+['gesturestart', 'gesturechange', 'gestureend'].forEach(t => document.addEventListener(t, e => e.preventDefault(), { passive: false }));
+document.addEventListener('touchmove', e => { if (e.touches && e.touches.length > 1) e.preventDefault(); }, { passive: false });
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-act]'); if (!b) return;
   const a = b.dataset.act;
