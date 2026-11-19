@@ -2970,8 +2970,27 @@ function slotsFor(d, type, pr, hist) {
     const orig = sl.key;
     sl.meal = { ...m, lazy: true, orig, replaced: null, awayLock: !!sl.away }; sl.key = m.key; usedMeals.add(m.key);
   }
+  // Von dir eingeplante Gerichte (z. B. abends Ofenkäse): feste Mengen, die anderen Mahlzeiten passen sich daran an
+  for (const sl of slots) {
+    const pl = pr.swaps && pr.swaps[dkey + ':' + sl.id]; if (!pl || !pl.plan || sl.buy) continue;
+    const items = (pl.plan.items || []).filter(x => planFood(x.k, pr.planFoods)).map(x => [x.k, x.g, 0]);
+    if (!items.length) continue;
+    const k = 'pl_' + dkey.replace(/-/g, '') + '_' + sl.id;
+    MEALS[k] = { n: pl.plan.n, icon: 'calendar-dots', items, portion: true, planned: true,
+      how: 'Von dir eingeplant. Hak es ab, sobald du es gegessen hast. Die anderen Mahlzeiten sind schon darauf abgestimmt.' };
+    sl.meal = { ...MEALS[k], key: k, replaced: MEALS[sl.key] ? sl.key : null, from: (sl.meal.items || []).map(([f, g]) => [f, g]) };
+    sl.key = k;
+  }
   for (const s of slots) s.time = toHHMM(s.t);
   return slots;
+}
+/* Zutaten aus eingeplanten Gerichten als eigene, feste Lebensmittel (kommen nicht auf die Einkaufsliste) */
+function planFood(k, defs) {
+  if (FOODS[k]) return true;
+  const d = defs && defs[k]; if (!d) return false;
+  FOODS[k] = { n: d.n, nom: d.n, dat: d.n, kcal: +d.kcal || 0, p: +d.p || 0, c: +d.c || 0, f: +d.f || 0, fib: 0, cat: 'none', portion: true, unit: d.u === 'ml' ? 'ml' : 'g' };
+  FOODS[k].leu = FOODS[k].p * LEU_PER_P;
+  return true;
 }
 
 const LIM_PLAN = {P:[0.5, 1.8], C:[0.3, 2.2], F:[0, 2.5]};
@@ -3034,6 +3053,8 @@ function planDay(d, pr, typeOverride, opts) {
   }
   // Mehr Eiweiß als nötig (Shakes, Kantine): dafür weniger Kohlenhydrate, damit die Kalorien stimmen
   if (tot.p - T.p > 6) { T2 = { ...T, c: Math.max(60, T.c - (tot.p - T.p)) }; tot = solve(T2); }
+  // Viel Fett, das sich nicht kleiner rechnen lässt (z. B. eingeplanter Ofenkäse): dafür weniger Kohlenhydrate, damit die Kalorien stimmen
+  if (slots.some(sl => sl.meal && sl.meal.planned) && tot.f - T2.f > 8) { T2 = { ...T2, c: Math.max(60, Math.round(T2.c - (tot.f - T2.f) * 9 / 4)) }; tot = solve(T2); }
   // Portionen am Limit und trotzdem zu wenig Kohlenhydrate: Extra-Snack einplanen
   // Im Bulk dürfen es zwei Extra-Snacks werden, sonst einer
   for (let k = 0; k < (pr.goal === 'mass' ? 2 : 1) && T2.c - tot.c > 22; k++) {
@@ -3275,9 +3296,9 @@ const S = {
   profile: { ...DEFAULT_PROFILE, week: DEFAULT_PROFILE.week.slice() },
   today: isoDate(new Date()), log: emptyLog(), weights: [], shop: {}, tab: 'heute',
   planDow: dow(new Date()), est: null, sample: null, sampleImages: false, photo: null,
-  prefs: { taste: { foods: {}, meals: {} }, challenge: null, challenges: [], spiceMiss: [], nut: {}, pantry: [], shopSnap: {}, beer: {} }, userName: '', chEdit: null, chDel: null,
+  prefs: { taste: { foods: {}, meals: {} }, challenge: null, challenges: [], spiceMiss: [], nut: {}, pantry: [], shopSnap: {}, beer: {}, planFoods: {} }, userName: '', chEdit: null, chDel: null,
 };
-const planPr = () => ({ ...S.profile, taste: S.prefs.taste, pantry: S.prefs.pantry || [], shopSnap: S.prefs.shopSnap || {}, shopChk: S.shop || {}, beer: S.prefs.beer || {}, swaps: S.prefs.swaps || {}, events: S.prefs.events || [], phaseList: typeof phaseListAll === 'function' ? phaseListAll() : [] });
+const planPr = () => ({ ...S.profile, taste: S.prefs.taste, pantry: S.prefs.pantry || [], shopSnap: S.prefs.shopSnap || {}, shopChk: S.shop || {}, beer: S.prefs.beer || {}, swaps: S.prefs.swaps || {}, planFoods: S.prefs.planFoods || {}, events: S.prefs.events || [], phaseList: typeof phaseListAll === 'function' ? phaseListAll() : [] });
 
 /* ================= Speicher: claude db (privat pro Person), sonst Browser ================= */
 const Store = {
@@ -3300,7 +3321,7 @@ const Store = {
     S.train = { ...emptyTrain(), ...(this.ls('train') || {}) };
     S.shop = this.ls('shop') || {};
     this.got = new Set(['prefs', 'train', 'profile', 'log']);
-    const pf = this.ls('prefs'); if (pf) S.prefs = { taste: { foods: {}, meals: {}, ...(pf.taste || {}) }, challenge: pf.challenge || null, challenges: migrateCh(pf), swaps: pf.swaps || {}, creaDays: pf.creaDays || [], dishes: pf.dishes || [], recent: pf.recent || [], favs: pf.favs || [], events: pf.events || [], trackDays: pf.trackDays || [], phasePlan: pf.phasePlan || null, spiceMiss: pf.spiceMiss || [], pantry: pf.pantry || [], beer: pf.beer || {}, shopSnap: pf.shopSnap || {}, nut: pf.nut || {}, kantine: pf.kantine || [] };
+    const pf = this.ls('prefs'); if (pf) S.prefs = { taste: { foods: {}, meals: {}, ...(pf.taste || {}) }, challenge: pf.challenge || null, challenges: migrateCh(pf), swaps: pf.swaps || {}, creaDays: pf.creaDays || [], dishes: pf.dishes || [], recent: pf.recent || [], favs: pf.favs || [], events: pf.events || [], trackDays: pf.trackDays || [], phasePlan: pf.phasePlan || null, spiceMiss: pf.spiceMiss || [], pantry: pf.pantry || [], beer: pf.beer || {}, planFoods: pf.planFoods || {}, shopSnap: pf.shopSnap || {}, nut: pf.nut || {}, kantine: pf.kantine || [] };
     backfillTracked();
     renderAll(true); renderChallenge(true);
   },
@@ -3323,7 +3344,7 @@ const Store = {
     this.subShop();
     this.unsub.prefs = db.doc(this.base).collection('prefs').doc('main').onSnapshot(snap => {
       const d = snap.exists ? snap.data() : {}; this.got.add('prefs');
-      S.prefs = { taste: { foods: {}, meals: {}, ...(d.taste || {}) }, challenge: d.challenge || null, challenges: migrateCh(d), swaps: d.swaps || {}, creaDays: d.creaDays || [], dishes: d.dishes || [], recent: d.recent || [], favs: d.favs || [], events: d.events || [], trackDays: d.trackDays || [], phasePlan: d.phasePlan || null, spiceMiss: d.spiceMiss || [], pantry: d.pantry || [], beer: d.beer || {}, shopSnap: d.shopSnap || {}, nut: d.nut || {}, kantine: d.kantine || [] };
+      S.prefs = { taste: { foods: {}, meals: {}, ...(d.taste || {}) }, challenge: d.challenge || null, challenges: migrateCh(d), swaps: d.swaps || {}, creaDays: d.creaDays || [], dishes: d.dishes || [], recent: d.recent || [], favs: d.favs || [], events: d.events || [], trackDays: d.trackDays || [], phasePlan: d.phasePlan || null, spiceMiss: d.spiceMiss || [], pantry: d.pantry || [], beer: d.beer || {}, planFoods: d.planFoods || {}, shopSnap: d.shopSnap || {}, nut: d.nut || {}, kantine: d.kantine || [] };
       renderAll(false); renderChallenge(true);
     }, () => {});
   },
@@ -3378,7 +3399,7 @@ const Store = {
     const swaps = Object.fromEntries(Object.entries(S.prefs.swaps || {}).filter(([k]) => k.slice(0, 10) >= old));
     const chs = S.prefs.challenges || [];
     const main = chs.slice().filter(c => c.date >= S.today).sort((a, b) => a.date.localeCompare(b.date))[0] || null;
-    const d = { taste: S.prefs.taste, challenges: chs, challenge: main ? { title: main.title, with: main.with, date: main.date, start: main.start } : null, swaps, creaDays: (S.prefs.creaDays || []).slice(-120), dishes: S.prefs.dishes || [], recent: S.prefs.recent || [], favs: S.prefs.favs || [], events: (S.prefs.events || []).filter(e => e.date >= isoDate(addDays(new Date(), -2))), trackDays: (S.prefs.trackDays || []).slice(-400), phasePlan: S.prefs.phasePlan || null, spiceMiss: S.prefs.spiceMiss || [], pantry: S.prefs.pantry || [], shopSnap: S.prefs.shopSnap || {}, beer: S.prefs.beer || {}, nut: S.prefs.nut || {}, kantine: (S.prefs.kantine || []).filter(k => k.d >= isoDate(addDays(new Date(), -3))), updatedAt: Date.now() };
+    const d = { taste: S.prefs.taste, challenges: chs, challenge: main ? { title: main.title, with: main.with, date: main.date, start: main.start } : null, swaps, creaDays: (S.prefs.creaDays || []).slice(-120), dishes: S.prefs.dishes || [], recent: S.prefs.recent || [], favs: S.prefs.favs || [], events: (S.prefs.events || []).filter(e => e.date >= isoDate(addDays(new Date(), -2))), trackDays: (S.prefs.trackDays || []).slice(-400), phasePlan: S.prefs.phasePlan || null, spiceMiss: S.prefs.spiceMiss || [], pantry: S.prefs.pantry || [], shopSnap: S.prefs.shopSnap || {}, beer: S.prefs.beer || {}, planFoods: S.prefs.planFoods || {}, nut: S.prefs.nut || {}, kantine: (S.prefs.kantine || []).filter(k => k.d >= isoDate(addDays(new Date(), -3))), updatedAt: Date.now() };
     if (this.mode === 'db') this.write(this.base + '/prefs/main', d); else this.ls('prefs', d);
   },
   saveTrain() { if (this.mode === 'db') this.write(this.base + '/train/main', { ...S.train, updatedAt: Date.now() }); else this.ls('train', S.train); },
@@ -3431,15 +3452,16 @@ function ingList(items, prev, mealKey) {
     const up = p && Math.abs(p.g - it.g) > Math.max(5, p.g * .1);
     const sub = amountSub(it);
     const love = tasteOf(S.prefs.taste, it.food) === 'love';
-    return `<li class="${up ? 'up' : ''}"><span><button class="ing-btn" data-act="taste-food" data-food="${it.food}"${mealKey ? ` data-meal="${mealKey}"` : ''} aria-label="${esc(FOODS[it.food].n)} bewerten">${esc(FOODS[it.food].n)}${love ? icon('heart-fill') : ''}</button>${it.from ? `<small class="swap">statt ${esc(FOODS[it.from].n)}</small>` : ''}</span><span>${amount(it)}${sub ? `<small>${esc(sub)}</small>` : ''}</span></li>`;
+    return `<li class="${up ? 'up' : ''}"><span>${!GROUPS[FOODS[it.food].grp] ? `<span class="ing-btn">${esc(FOODS[it.food].n)}</span>` : `<button class="ing-btn" data-act="taste-food" data-food="${it.food}"${mealKey ? ` data-meal="${mealKey}"` : ''} aria-label="${esc(FOODS[it.food].n)} bewerten">${esc(FOODS[it.food].n)}${love ? icon('heart-fill') : ''}</button>`}${it.from ? `<small class="swap">statt ${esc(FOODS[it.from].n)}</small>` : ''}</span><span>${amount(it)}${sub ? `<small>${esc(sub)}</small>` : ''}</span></li>`;
   }).join('')}</ul>`;
 }
 const cookBtn = (meal, date, slotId) => {
+  if (meal.planned) return `<button class="taste-btn" data-act="plan-undo" data-key="${date}:${slotId}">${icon('x')}Planung entfernen</button>`;
   if (meal.lazy) return S.profile.cook === 'no' || meal.awayLock ? '' : `<button class="taste-btn" data-act="cook" data-key="${date}:${slotId}">${icon('cooking-pot')}Doch kochen</button>`;
   return meal.cook ? `<button class="taste-btn" data-act="nocook" data-key="${date}:${slotId}">${icon('clock')}Keine Lust zu kochen?</button>` : '';
 };
 const lazyChip = meal => meal.lazy ? `<span class="chip">${icon('clock')}Ohne Kochen</span>` : '';
-const tasteBtn = key => key === 'kantine' ? '' : `<button class="taste-btn" data-act="taste-meal" data-meal="${key}">${icon('thumbs-down')}Schmeckt mir nicht</button>`;
+const tasteBtn = key => key === 'kantine' || (MEALS[key] && MEALS[key].planned) ? '' : `<button class="taste-btn" data-act="taste-meal" data-meal="${key}">${icon('thumbs-down')}Schmeckt mir nicht</button>`;
 function mealNameOf(key) { const M = MEALS[key]; return fillName(M.n, M.items.map(([food, g], idx) => ({ idx, food, g }))); }
 const dec = n => (Math.round((+n || 0) * 10) / 10).toString().replace('.', ',');
 const leuMeal = () => calcTargets(S.profile).leuMeal;
@@ -4079,7 +4101,7 @@ function renderTimeline() {
         <span class="tl-time">${s.time}</span><span class="tl-dot"></span>
         <div class="tl-body">
           <div class="tl-head"><span class="tl-name">${s.buy ? 'Unterwegs kaufen' : esc(s.meal.n)}</span><span class="tl-kcal">${state === 'skipped' ? 'ausgelassen' : fmt(tot.kcal) + ' kcal'}</span></div>
-          <div class="tl-sub"><span>${esc(s.label)}</span>${adj && adj.skip ? `<span class="chip">${icon('check')}Heute nicht nötig, Eiweiß ist voll</span>` : ''}${adj && adj.carbUp ? `<span class="chip">${icon('plus')}mehr ${esc(FOODS[adj.carbUp.food].nom || FOODS[adj.carbUp.food].n)} für deine Kohlenhydrate</span>` : ''}${s.atWork ? `<span class="chip">${icon('briefcase')}Arbeit</span>` : ''}${s.away ? `<span class="chip warn">${icon('package')}Unterwegs</span>` : ''}${s.buy ? `<span class="chip warn">${icon('storefront')}Kaufen</span>` : ''}${s.moved ? `<span class="chip warn">${icon('clock')}verschoben</span>` : ''}${s.breakEnd ? `<span class="chip">${icon('clock')}Pause bis ${s.breakEnd}</span>` : ''}${state !== 'skipped' && leuHit(tot) ? `<span class="chip">${icon('dna')}Leucin ${dec(tot.leu)} g</span>` : ''}${adj && adj.changed ? `<span class="chip">${icon('arrow-clockwise')}angepasst</span>` : ''}${lazyChip(s.meal)}${st && st.by ? `<span class="chip warn">ersetzt</span>` : ''}</div>
+          <div class="tl-sub"><span>${esc(s.label)}</span>${s.meal && s.meal.planned && state === 'open' ? `<span class="chip">${icon('calendar-dots')}eingeplant</span>` : ''}${adj && adj.skip ? `<span class="chip">${icon('check')}Heute nicht nötig, Eiweiß ist voll</span>` : ''}${adj && adj.carbUp ? `<span class="chip">${icon('plus')}mehr ${esc(FOODS[adj.carbUp.food].nom || FOODS[adj.carbUp.food].n)} für deine Kohlenhydrate</span>` : ''}${s.atWork ? `<span class="chip">${icon('briefcase')}Arbeit</span>` : ''}${s.away ? `<span class="chip warn">${icon('package')}Unterwegs</span>` : ''}${s.buy ? `<span class="chip warn">${icon('storefront')}Kaufen</span>` : ''}${s.moved ? `<span class="chip warn">${icon('clock')}verschoben</span>` : ''}${s.breakEnd ? `<span class="chip">${icon('clock')}Pause bis ${s.breakEnd}</span>` : ''}${state !== 'skipped' && leuHit(tot) ? `<span class="chip">${icon('dna')}Leucin ${dec(tot.leu)} g</span>` : ''}${adj && adj.changed ? `<span class="chip">${icon('arrow-clockwise')}angepasst</span>` : ''}${lazyChip(s.meal)}${st && st.by ? `<span class="chip warn">ersetzt</span>` : ''}</div>
           ${state === 'open' && s.buy ? `<details class="how" open><summary>Was kaufen? ${icon('caret-down')}</summary>${buyBlock(s, tot, true)}</details>` : ''}
           ${state === 'open' && !s.buy ? `<details class="how"><summary>Zutaten ${icon('caret-down')}</summary>${ingList(items, adj && adj.changed ? s.items : null, s.key)}${carbUpNote(adj && adj.carbUp)}<div class="row">${tasteBtn(s.key)}${cookBtn(s.meal, P.date, s.id)}</div></details>` : ''}
           <div class="tl-acts">${state === 'open'
@@ -4194,7 +4216,7 @@ function planDayList(p, R, isToday) {
     const items = st && st.items ? st.items : (adj ? adj.items : s.items);
     const key = p.date + ':' + s.id, isNext = s.id === nextId;
     const open = S.slotEdit && S.slotEdit.id === s.id && isToday ? true : S.rowOpen[key] != null ? S.rowOpen[key] : isNext;
-    const chips = [isNext ? `<span class="chip nxc">${icon('lightning')}Als Nächstes</span>` : '', `<span>${esc(s.label)}</span>`,
+    const chips = [isNext ? `<span class="chip nxc">${icon('lightning')}Als Nächstes</span>` : '', `<span>${esc(s.label)}</span>`, s.meal && s.meal.planned && state === 'open' ? `<span class="chip">${icon('calendar-dots')}eingeplant</span>` : '',
       adj && adj.skip ? `<span class="chip">${icon('check')}Heute nicht nötig</span>` : '',
       s.atWork ? `<span class="chip">${icon('briefcase')}Arbeit</span>` : '', s.away ? `<span class="chip warn">${icon('package')}Unterwegs</span>` : '',
       s.buy ? `<span class="chip warn">${icon('storefront')}Kaufen</span>` : '', s.moved || s.userMoved ? `<span class="chip warn">${icon('clock')}verschoben</span>` : '',
@@ -4321,6 +4343,13 @@ function pantrySync() {
   const add = [];
   for (const sl of todayPlan.slots) {
     if (sl.buy || sl.key === 'kantine' || !sl.items) continue;
+    if (sl.meal && sl.meal.planned) {   // statt des geplanten Gerichts etwas Eigenes eingeplant: dessen Zutaten bleiben zuhause
+      const left = {};
+      for (const [food, g] of sl.meal.from || []) if (FOODS[food] && freshFood(food)) left[food] = (left[food] || 0) + g;
+      const items = Object.entries(left).map(([food, g]) => ({ food, g: Math.round(g) })).filter(it => it.g >= (FOODS[it.food].piece ? FOODS[it.food].piece * .5 : 10));
+      if (items.length) { const k = S.today + ':' + sl.id, prev = old.find(e => e.k === k); add.push({ k, d: S.today, src: sl.label, from: mainAfter(S.today, pr), items, gone: (prev && prev.gone) || [] }); }
+      continue;
+    }
     const st = meals[sl.id]; if (!st) continue;
     const ate = {};
     if (st.state === 'eaten' && !st.dish) { if (!st.items) continue; for (const it of st.items) ate[it.food] = (ate[it.food] || 0) + it.g; }
@@ -4486,7 +4515,7 @@ const gymHint = p => {
   return parts.length ? `Startet 15 Minuten nach Feierabend${loopOf(p) ? ', diese Woche' : ''}: ${parts.join(' · ')}. An freien Tagen wie an einem normalen Arbeitstag.` : 'Kein Gym-Tag eingeplant.';
 };
 function exportCode() {
-  const d = { v: 1, profile: { ...S.profile, example: false }, prefs: { taste: S.prefs.taste, challenges: S.prefs.challenges || [], creaDays: S.prefs.creaDays || [], dishes: S.prefs.dishes || [], recent: S.prefs.recent || [], favs: S.prefs.favs || [], events: S.prefs.events || [], trackDays: S.prefs.trackDays || [], phasePlan: S.prefs.phasePlan || null, spiceMiss: S.prefs.spiceMiss || [], pantry: S.prefs.pantry || [], shopSnap: S.prefs.shopSnap || {}, beer: S.prefs.beer || {}, nut: S.prefs.nut || {} }, weights: S.weights || [], train: S.train || emptyTrain(), today: { date: S.today, log: S.log } };
+  const d = { v: 1, profile: { ...S.profile, example: false }, prefs: { taste: S.prefs.taste, challenges: S.prefs.challenges || [], creaDays: S.prefs.creaDays || [], dishes: S.prefs.dishes || [], recent: S.prefs.recent || [], favs: S.prefs.favs || [], events: S.prefs.events || [], trackDays: S.prefs.trackDays || [], phasePlan: S.prefs.phasePlan || null, spiceMiss: S.prefs.spiceMiss || [], pantry: S.prefs.pantry || [], shopSnap: S.prefs.shopSnap || {}, beer: S.prefs.beer || {}, planFoods: S.prefs.planFoods || {}, nut: S.prefs.nut || {} }, weights: S.weights || [], train: S.train || emptyTrain(), today: { date: S.today, log: S.log } };
   return 'DELREY1:' + btoa(unescape(encodeURIComponent(JSON.stringify(d))));
 }
 function importCode(code) {
@@ -4496,7 +4525,7 @@ function importCode(code) {
   if (!d || !d.profile) throw new Error('leer');
   S.profile = { ...DEFAULT_PROFILE, ...d.profile, example: false };
   const pf = d.prefs || {};
-  S.prefs = { taste: { foods: {}, meals: {}, ...(pf.taste || {}) }, challenge: null, challenges: pf.challenges || [], swaps: {}, creaDays: pf.creaDays || [], dishes: pf.dishes || [], recent: pf.recent || [], favs: pf.favs || [], events: pf.events || [], trackDays: pf.trackDays || [], phasePlan: pf.phasePlan || null, spiceMiss: pf.spiceMiss || [], pantry: pf.pantry || [], beer: pf.beer || {}, shopSnap: pf.shopSnap || {}, nut: pf.nut || {}, kantine: pf.kantine || [] };
+  S.prefs = { taste: { foods: {}, meals: {}, ...(pf.taste || {}) }, challenge: null, challenges: pf.challenges || [], swaps: {}, creaDays: pf.creaDays || [], dishes: pf.dishes || [], recent: pf.recent || [], favs: pf.favs || [], events: pf.events || [], trackDays: pf.trackDays || [], phasePlan: pf.phasePlan || null, spiceMiss: pf.spiceMiss || [], pantry: pf.pantry || [], beer: pf.beer || {}, planFoods: pf.planFoods || {}, shopSnap: pf.shopSnap || {}, nut: pf.nut || {}, kantine: pf.kantine || [] };
   S.weights = (d.weights || []).filter(w => w && w.date && +w.kg > 0).sort((a, b) => a.date < b.date ? -1 : 1);
   if (d.today && d.today.date === S.today && d.today.log) S.log = { ...emptyLog(), ...d.today.log };
   if (d.train) { S.train = { ...emptyTrain(), ...d.train }; Store.saveTrain(); }
@@ -5021,7 +5050,7 @@ function renderSheet() {
   if (sheetCtx.food) {
     const f = sheetCtx.food, F = FOODS[f], v = tasteOf(S.prefs.taste, f);
     const subs = substitutes(f, S.prefs.taste, null);
-    $('#sheetBody').innerHTML = `<span class="label">${esc(GROUPS[F.grp].n)}</span><h3 id="sheetTitle" style="margin-top:4px">${esc(F.n)}</h3>
+    $('#sheetBody').innerHTML = `<span class="label">${esc(GROUPS[F.grp] ? GROUPS[F.grp].n : 'Lebensmittel')}</span><h3 id="sheetTitle" style="margin-top:4px">${esc(F.n)}</h3>
       <p class="muted" style="margin:6px 0 0;font-size:13.5px">${v === 'no' || v === 'meh' ? esc(replacementText(f)) + '.' : 'Wie sehr magst du das?'}</p>
       <div class="choice">${TASTE_OPTS.map(([k, ic, lbl, sub]) => `<button data-act="rate" data-food="${f}" data-v="${k}" aria-pressed="${v === k}"><span class="ic">${icon(ic)}</span><span><b>${lbl}</b><small>${sub}</small></span></button>`).join('')}</div>
       ${sheetCtx.meal ? `<button class="taste-btn" style="margin-top:14px" data-act="taste-meal" data-meal="${sheetCtx.meal}">${icon('fork-knife')}Ganzes Gericht bewerten</button>` : ''}`;
@@ -6703,6 +6732,24 @@ function wzFinish() {
   W.time = toHHMM(nowMin());
   renderWizard();
 }
+/* Im Voraus einplanen: ersetzt eine noch offene Mahlzeit von heute, zählt aber erst, wenn du sie abhakst */
+function wzPlan() {
+  const W = S.wz; if (!W || !W.items) return;
+  const items = W.items.filter(i => i.g > 0); if (!items.length) { toast('Mindestens eine Zutat eintragen'); return; }
+  const rep = ($('#wzRep') || {}).value || '', sl = rep && todayPlan && todayPlan.slots.find(s => s.id === rep);
+  if (!sl || (S.log.meals || {})[rep] && S.log.meals[rep].state === 'eaten') { toast('Wähl oben die Mahlzeit, die es ersetzen soll'); const r = $('#wzRep'); if (r) r.focus(); return; }
+  const defs = items.map(i => { const w = wcGet(i.id); if (!w) return null; return { k: 'pl_' + String(i.id).replace(/[^a-z0-9]/gi, '_'), g: i.g, n: w[0], kcal: w[1], p: w[2], c: w[3], f: w[4], u: wzUnit(i.id) }; }).filter(Boolean);
+  if (!defs.length) return;
+  const pf = { ...(S.prefs.planFoods || {}) };
+  for (const d of defs) { pf[d.k] = { n: d.n, kcal: d.kcal, p: d.p, c: d.c, f: d.f, u: d.u }; delete FOODS[d.k]; }
+  const sw = { ...(S.prefs.swaps || {}) }; sw[S.today + ':' + rep] = { plan: { n: W.name, items: defs.map(d => ({ k: d.k, g: d.g })) } };
+  const keys = Object.keys(pf); if (keys.length > 80) for (const k of keys.slice(0, keys.length - 80)) delete pf[k];
+  S.prefs = { ...S.prefs, swaps: sw, planFoods: pf }; Store.savePrefs();
+  S.wz = null; S.kantineSlot = null; S.wzPath = []; S.wzQ = '';
+  mutateLog(l => { if (l.meals && l.meals[rep] && l.meals[rep].state === 'skipped') delete l.meals[rep]; }, `${W.name} als ${sl.label} eingeplant. Hak es ab, wenn du es gegessen hast.`);
+  afterTaste(); renderWizard();
+  if (S.tab === 'track') setTimeout(() => setTab('tag', -1), 300);
+}
 function wzSave() {
   const W = S.wz; if (!W || !W.items) return;
   const items = W.items.filter(i => i.g > 0); if (!items.length) { toast('Mindestens eine Zutat eintragen'); return; }
@@ -7236,7 +7283,9 @@ function renderWizard() {
       <p class="fhint" style="margin:0">Die Mengen sind geschätzt. Wenn du es genauer weißt, ändere sie einfach.</p>
       <div class="wz-two ${W.rep ? 'one' : ''}"><div class="field" style="margin:0"><label for="wzRep">Welche Mahlzeit war das?</label><select id="wzRep"><option value="">Etwas zusätzlich</option>${open.map(s => `<option value="${s.id}" ${W.rep === s.id ? 'selected' : ''}>${esc(s.label)} (${s.time})${(S.log.meals || {})[s.id] ? ', ausgelassen' : ''}</option>`).join('')}</select></div>
       ${W.rep ? '' : `<div class="field" style="margin:0"><label for="wzTime">Uhrzeit</label><input id="wzTime" type="time" value="${W.time}"></div>`}</div>
-      <button class="btn" data-act="wz-save" style="width:100%">${icon('check')}Eintragen</button>`;
+      <button class="btn" data-act="wz-save" style="width:100%">${icon('check')}Eintragen</button>
+      ${open.some(s => !(S.log.meals || {})[s.id]) ? `<button class="btn ghost" data-act="wz-plan" style="width:100%;margin-top:8px">${icon('calendar-dots')}Nur einplanen, abhaken wenn gegessen</button>
+      <p class="fhint" style="margin:0">Einplanen ersetzt die gewählte Mahlzeit im Plan. Die anderen Mahlzeiten passen sich sofort an, gezählt wird erst beim Abhaken.</p>` : ''}`;
     return;
   }
   const Q = wzQs(W), q = Q[W.step], A = W.A, v = A[q.k];
@@ -7292,6 +7341,7 @@ function wzAct(a, b) {
     const inp = document.querySelector(`[data-wz="${b.dataset.i}"]`); if (inp) inp.value = it.g; wzSumUpdate(); return true; }
   if (a === 'wz-del') { W.items.splice(+b.dataset.i, 1); renderWizard(); return true; }
   if (a === 'wz-save') { wzSave(); return true; }
+  if (a === 'wz-plan') { wzPlan(); return true; }
   return false;
 }
 
@@ -7506,6 +7556,11 @@ document.addEventListener('click', e => {
       p.days += d; nx.days -= d;
     }
     renderPhasen(); return;
+  }
+  if (a === 'plan-undo') {
+    const sw = { ...(S.prefs.swaps || {}) }; delete sw[b.dataset.key];
+    S.prefs = { ...S.prefs, swaps: sw }; Store.savePrefs(); afterTaste(); try { pantrySync(); } catch (e) {}
+    toast('Planung entfernt, wieder das ursprüngliche Gericht'); return;
   }
   if (a === 'nocook' || a === 'cook') {
     const sw = { ...(S.prefs.swaps || {}) };
