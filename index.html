@@ -66,7 +66,7 @@
 @property --on{syntax:'<color>';inherits:true;initial-value:#F7F9FB}
 :root{transition:--bg .7s var(--ease),--surface .7s var(--ease),--tint .7s var(--ease),--line .7s var(--ease),--ink .7s var(--ease),--muted .7s var(--ease),--accent .7s var(--ease),--accent2 .7s var(--ease),--ring3 .7s var(--ease),--on .7s var(--ease)}
 
-html,body{min-height:100%}
+html,body{min-height:100%;overscroll-behavior-y:none}
 html{scroll-padding-bottom:calc(112px + env(safe-area-inset-bottom,0px))}
 body{
   background:
@@ -85,7 +85,7 @@ html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:10
 .num{font-variant-numeric:tabular-nums}
 .ico{width:1.15em;height:1.15em;flex:none;fill:currentColor;vertical-align:-.2em}
 
-.app{overflow-x:clip;max-width:480px;margin:0 auto;padding-inline:16px;padding-block:calc(14px + env(safe-area-inset-top,0px)) calc(108px + env(safe-area-inset-bottom,0px))}
+.app{overflow-x:clip;max-width:480px;margin:0 auto;min-height:100vh;min-height:100dvh;box-sizing:border-box;padding-inline:16px;padding-block:calc(14px + env(safe-area-inset-top,0px)) calc(108px + env(safe-area-inset-bottom,0px))}
 
 /* ---------- Kopf ---------- */
 .top{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;column-gap:12px;padding:6px 2px 14px}
@@ -5759,6 +5759,8 @@ function setTab(tab, dir) {
   if (tab === 'tag') tab = 'plan';
   if (!VIEWS.includes(tab)) return;
   const prev = S.tab; S.tab = tab;
+  // Sofort nach oben, bevor die neue Seite kürzer wird: sonst rutscht auf dem iPhone die untere Leiste kurz mit
+  if (prev !== tab) window.scrollTo(0, 0);
   document.documentElement.dataset.tabn = tab;
   for (const t of VIEWS) {
     const v = $('#v-' + t); v.hidden = t !== tab;
@@ -5783,7 +5785,7 @@ function setTab(tab, dir) {
   $('#hdrTaste').hidden = tab !== 'einkauf';
   $('#hdrTrack').hidden = tab !== 'plan';
   if (tab === 'track') { if (prev !== 'track') { S.dishCat = null; if (!S.bld) { S.dishOpen = null; const q = $('#dishQ'); if (q) q.value = ''; } } renderTrack(); }
-  if (prev !== tab) window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+  if (prev !== tab) window.scrollTo(0, 0);
   try { history.replaceState(null, '', '#' + tab); } catch (e) {}
 }
 
