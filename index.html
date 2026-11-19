@@ -6510,7 +6510,7 @@ Object.assign(WC, {
   // Nudeln, International, Imbiss
   nd_schinkenfleckerl: ['Schinkenfleckerl', 190, 10, 22, 7], nd_krautfleckerl: ['Krautfleckerl', 150, 4, 22, 5], nd_mac: ['Mac & Cheese', 200, 8, 22, 9], nd_auflauf: ['Nudelauflauf', 170, 8, 18, 7],
   in_sushi: ['Sushi', 150, 6, 28, 1.5], in_burrito: ['Burrito', 210, 10, 25, 8], in_bowl: ['Poke Bowl', 150, 9, 18, 4.5], in_tacos: ['Tacos', 220, 10, 20, 11],
-  im_hotdog: ['Hot Dog', 250, 10, 24, 13], im_toast: ['Schinken-Käse-Toast', 260, 14, 26, 11], im_brie: ['Gebackene Briespitzen', 300, 10, 25, 18],
+  im_hotdog: ['Hot Dog', 250, 10, 24, 13], im_toast: ['Schinken-Käse-Toast', 260, 14, 26, 11], im_brie: ['Gebackene Briespitzen', 300, 10, 25, 18], im_ofenk: ['Ofenkäse', 354, 16, 0.5, 32],
   // Gebäck
   bw_pizzaweckerl: ['Pizzaweckerl', 290, 11, 38, 10], bw_mohnflesserl: ['Mohnflesserl', 300, 10, 50, 6], bw_salzstangerl: ['Salzstangerl', 280, 9, 53, 3],
   bw_laugenstangerl: ['Laugenstangerl', 275, 8.5, 52, 3.5], bw_baguette: ['Baguette', 260, 8.5, 52, 1.5], bw_weckerl: ['Weckerl', 260, 9, 50, 2],
@@ -6558,7 +6558,7 @@ const TREE = [
     trP('Gnocchi', [['f:gnocchi', 250], ['s_tomate', 100]]), { n: 'Selbst zusammenstellen', d: 'nudeln' }] },
   { n: 'Fast Food & Imbiss', ic: 'storefront', sub: 'Pizza, Burger, Kebap …', kids: [
     { n: 'Pizza', d: 'pizza' }, { n: 'Burger', d: 'burger' }, { n: 'Kebap & Dürüm', d: 'kebap' }, { n: 'Hendl & Nuggets', d: 'hendl' }, { n: 'Leberkäse', d: 'leberkaese' },
-    trI('Hot Dog', 'im_hotdog', 150, ['Hot Dog', 'Hot Dogs', 150]), trI('Schinken-Käse-Toast', 'im_toast', 130, ['Toast', 'Toasts', 130]), trI('Gebackene Briespitzen', 'im_brie', 150, ['Stück', 'Stück', 25]), trM('Würstel', 'ws_frank', 100), trP('Pommes', [['pommes', 150], ['ketchup', 30]])] },
+    trI('Hot Dog', 'im_hotdog', 150, ['Hot Dog', 'Hot Dogs', 150]), trI('Schinken-Käse-Toast', 'im_toast', 130, ['Toast', 'Toasts', 130]), trI('Gebackene Briespitzen', 'im_brie', 150, ['Stück', 'Stück', 25]), trI('Ofenkäse', 'im_ofenk', 180, ['Ofenkäse', 'Ofenkäse', 180]), trM('Würstel', 'ws_frank', 100), trP('Pommes', [['pommes', 150], ['ketchup', 30]])] },
   { n: 'International', ic: 'flame', sub: 'Curry, Sushi, Burrito …', kids: [
     trM('Hühnercurry', 'as_curry', 300), trM('Hendl süß-sauer', 'as_suesssauer', 300), trP('Gebratener Reis', [['as_reis', 400]]), trP('Gebratene Nudeln', [['as_nudeln', 400]]),
     trI('Sushi', 'in_sushi', 250, ['Stück', 'Stück', 25]), trI('Burrito', 'in_burrito', 350, ['Burrito', 'Burritos', 350]), trI('Tacos', 'in_tacos', 270, ['Taco', 'Tacos', 90]), trP('Poke Bowl', [['in_bowl', 450]]), trM('Chili con Carne', 'ri_chili', 350)] },
@@ -6774,6 +6774,7 @@ const VSTOP = new Set(['ich', 'hab', 'habe', 'hatte', 'heute', 'gegessen', 'getr
   'gab', 'es', 'war', 'waren', 'gibt', 'gemacht', 'gekocht', 'gegessen.', 'also', 'und', 'mit', 'von', 'vom', 'fur', 'oder', 'aber', 'ja', 'nein', 'sehr', 'ganz', 'alles', 'davon', 'dazu', 'ein', 'eine', 'stuck']);
 /* Gesprochene Wörter → Gerichte und Beilagen aus dem Fragebogen (gekocht, pro 100 g), [Wörter, id, Gramm pro Stück/Portion, 'pc' = zählbar] */
 const VALIAS = [
+  ['ofenkase|ofenkaese|ofen kase|ofenkas|ofenkasl|ofencamembert|ofen camembert|backofenkase', 'im_ofenk', 180, 'pc'],
   ['briespitzen|briespitze|brie spitzen|gebackene briespitzen|backbrie|back brie|gebackener brie|brieecken|brie ecken', 'im_brie', 25, 'pc'],
   ['schnitzel|wiener schnitzel|schweinsschnitzel|schweineschnitzel', 'sch_schwein_pan', 140, 'pc'], ['putenschnitzel', 'sch_pute_pan', 140, 'pc'],
   ['huhnerschnitzel|hendlschnitzel|hahnchenschnitzel|chickenschnitzel', 'sch_hendl_pan', 140, 'pc'], ['kalbsschnitzel', 'sch_kalb_pan', 140, 'pc'],
