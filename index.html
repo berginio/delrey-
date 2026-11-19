@@ -2981,6 +2981,16 @@ function slotsFor(d, type, pr, hist) {
     sl.meal = { ...MEALS[k], key: k, replaced: MEALS[sl.key] ? sl.key : null, from: (sl.meal.items || []).map(([f, g]) => [f, g]) };
     sl.key = k;
   }
+  // Zusätzlich eingeplant (eigene Uhrzeit, z. B. 19:00 Ofenkäse neben dem normalen Essen): die anderen Mahlzeiten werden dafür kleiner
+  for (const x of ((pr.planExtra || {})[dkey] || [])) {
+    const items = (x.items || []).filter(i => planFood(i.k, pr.planFoods)).map(i => [i.k, i.g, 0]);
+    if (!items.length || !x.id) continue;
+    const k = 'pl_' + dkey.replace(/-/g, '') + '_' + x.id;
+    MEALS[k] = { n: x.n, icon: 'calendar-dots', items, portion: true, planned: true,
+      how: 'Von dir zusätzlich eingeplant. Hak es ab, sobald du es gegessen hast. Die anderen Mahlzeiten sind schon darauf abgestimmt.' };
+    slots.push({ id: x.id, label: 'Zusätzlich', t: toMin(x.t || '19:00'), atWork: false, meal: { ...MEALS[k], key: k, replaced: null, from: [] }, key: k, spec: { pref: k, pool: null }, planExtra: true });
+  }
+  slots.sort((a, b) => a.t - b.t);
   for (const s of slots) s.time = toHHMM(s.t);
   return slots;
 }
@@ -3054,7 +3064,11 @@ function planDay(d, pr, typeOverride, opts) {
   // Mehr Eiweiß als nötig (Shakes, Kantine): dafür weniger Kohlenhydrate, damit die Kalorien stimmen
   if (tot.p - T.p > 6) { T2 = { ...T, c: Math.max(60, T.c - (tot.p - T.p)) }; tot = solve(T2); }
   // Viel Fett, das sich nicht kleiner rechnen lässt (z. B. eingeplanter Ofenkäse): dafür weniger Kohlenhydrate, damit die Kalorien stimmen
-  if (slots.some(sl => sl.meal && sl.meal.planned) && tot.f - T2.f > 8) { T2 = { ...T2, c: Math.max(60, Math.round(T2.c - (tot.f - T2.f) * 9 / 4)) }; tot = solve(T2); }
+  if (slots.some(sl => sl.meal && sl.meal.planned) && tot.f - T2.f > 8) {
+    T2 = { ...T2, c: Math.max(60, Math.round(T2.c - (tot.f - T2.f) * 9 / 4)) }; tot = solve(T2);
+    // nachjustieren, damit die Kalorien trotzdem ins Ziel kommen (im Aufbau nicht zu wenig)
+    for (let i = 0; i < 2 && Math.abs(T.kcal - tot.kcal) > 80; i++) { T2 = { ...T2, c: Math.max(60, Math.round(T2.c + (T.kcal - tot.kcal) / 4)) }; tot = solve(T2); }
+  }
   // Portionen am Limit und trotzdem zu wenig Kohlenhydrate: Extra-Snack einplanen
   // Im Bulk dürfen es zwei Extra-Snacks werden, sonst einer
   for (let k = 0; k < (pr.goal === 'mass' ? 2 : 1) && T2.c - tot.c > 22; k++) {
@@ -3296,9 +3310,9 @@ const S = {
   profile: { ...DEFAULT_PROFILE, week: DEFAULT_PROFILE.week.slice() },
   today: isoDate(new Date()), log: emptyLog(), weights: [], shop: {}, tab: 'heute',
   planDow: dow(new Date()), est: null, sample: null, sampleImages: false, photo: null,
-  prefs: { taste: { foods: {}, meals: {} }, challenge: null, challenges: [], spiceMiss: [], nut: {}, pantry: [], shopSnap: {}, beer: {}, planFoods: {} }, userName: '', chEdit: null, chDel: null,
+  prefs: { taste: { foods: {}, meals: {} }, challenge: null, challenges: [], spiceMiss: [], nut: {}, pantry: [], shopSnap: {}, beer: {}, planFoods: {}, planExtra: {} }, userName: '', chEdit: null, chDel: null,
 };
-const planPr = () => ({ ...S.profile, taste: S.prefs.taste, pantry: S.prefs.pantry || [], shopSnap: S.prefs.shopSnap || {}, shopChk: S.shop || {}, beer: S.prefs.beer || {}, swaps: S.prefs.swaps || {}, planFoods: S.prefs.planFoods || {}, events: S.prefs.events || [], phaseList: typeof phaseListAll === 'function' ? phaseListAll() : [] });
+const planPr = () => ({ ...S.profile, taste: S.prefs.taste, pantry: S.prefs.pantry || [], shopSnap: S.prefs.shopSnap || {}, shopChk: S.shop || {}, beer: S.prefs.beer || {}, swaps: S.prefs.swaps || {}, planFoods: S.prefs.planFoods || {}, planExtra: S.prefs.planExtra || {}, events: S.prefs.events || [], phaseList: typeof phaseListAll === 'function' ? phaseListAll() : [] });
 
 /* ================= Speicher: claude db (privat pro Person), sonst Browser ================= */
 const Store = {
@@ -3321,7 +3335,7 @@ const Store = {
     S.train = { ...emptyTrain(), ...(this.ls('train') || {}) };
     S.shop = this.ls('shop') || {};
     this.got = new Set(['prefs', 'train', 'profile', 'log']);
-    const pf = this.ls('prefs'); if (pf) S.prefs = { taste: { foods: {}, meals: {}, ...(pf.taste || {}) }, challenge: pf.challenge || null, challenges: migrateCh(pf), swaps: pf.swaps || {}, creaDays: pf.creaDays || [], dishes: pf.dishes || [], recent: pf.recent || [], favs: pf.favs || [], events: pf.events || [], trackDays: pf.trackDays || [], phasePlan: pf.phasePlan || null, spiceMiss: pf.spiceMiss || [], pantry: pf.pantry || [], beer: pf.beer || {}, planFoods: pf.planFoods || {}, shopSnap: pf.shopSnap || {}, nut: pf.nut || {}, kantine: pf.kantine || [] };
+    const pf = this.ls('prefs'); if (pf) S.prefs = { taste: { foods: {}, meals: {}, ...(pf.taste || {}) }, challenge: pf.challenge || null, challenges: migrateCh(pf), swaps: pf.swaps || {}, creaDays: pf.creaDays || [], dishes: pf.dishes || [], recent: pf.recent || [], favs: pf.favs || [], events: pf.events || [], trackDays: pf.trackDays || [], phasePlan: pf.phasePlan || null, spiceMiss: pf.spiceMiss || [], pantry: pf.pantry || [], beer: pf.beer || {}, planFoods: pf.planFoods || {}, planExtra: pf.planExtra || {}, shopSnap: pf.shopSnap || {}, nut: pf.nut || {}, kantine: pf.kantine || [] };
     backfillTracked();
     renderAll(true); renderChallenge(true);
   },
@@ -3344,7 +3358,7 @@ const Store = {
     this.subShop();
     this.unsub.prefs = db.doc(this.base).collection('prefs').doc('main').onSnapshot(snap => {
       const d = snap.exists ? snap.data() : {}; this.got.add('prefs');
-      S.prefs = { taste: { foods: {}, meals: {}, ...(d.taste || {}) }, challenge: d.challenge || null, challenges: migrateCh(d), swaps: d.swaps || {}, creaDays: d.creaDays || [], dishes: d.dishes || [], recent: d.recent || [], favs: d.favs || [], events: d.events || [], trackDays: d.trackDays || [], phasePlan: d.phasePlan || null, spiceMiss: d.spiceMiss || [], pantry: d.pantry || [], beer: d.beer || {}, planFoods: d.planFoods || {}, shopSnap: d.shopSnap || {}, nut: d.nut || {}, kantine: d.kantine || [] };
+      S.prefs = { taste: { foods: {}, meals: {}, ...(d.taste || {}) }, challenge: d.challenge || null, challenges: migrateCh(d), swaps: d.swaps || {}, creaDays: d.creaDays || [], dishes: d.dishes || [], recent: d.recent || [], favs: d.favs || [], events: d.events || [], trackDays: d.trackDays || [], phasePlan: d.phasePlan || null, spiceMiss: d.spiceMiss || [], pantry: d.pantry || [], beer: d.beer || {}, planFoods: d.planFoods || {}, planExtra: d.planExtra || {}, shopSnap: d.shopSnap || {}, nut: d.nut || {}, kantine: d.kantine || [] };
       renderAll(false); renderChallenge(true);
     }, () => {});
   },
@@ -3399,7 +3413,7 @@ const Store = {
     const swaps = Object.fromEntries(Object.entries(S.prefs.swaps || {}).filter(([k]) => k.slice(0, 10) >= old));
     const chs = S.prefs.challenges || [];
     const main = chs.slice().filter(c => c.date >= S.today).sort((a, b) => a.date.localeCompare(b.date))[0] || null;
-    const d = { taste: S.prefs.taste, challenges: chs, challenge: main ? { title: main.title, with: main.with, date: main.date, start: main.start } : null, swaps, creaDays: (S.prefs.creaDays || []).slice(-120), dishes: S.prefs.dishes || [], recent: S.prefs.recent || [], favs: S.prefs.favs || [], events: (S.prefs.events || []).filter(e => e.date >= isoDate(addDays(new Date(), -2))), trackDays: (S.prefs.trackDays || []).slice(-400), phasePlan: S.prefs.phasePlan || null, spiceMiss: S.prefs.spiceMiss || [], pantry: S.prefs.pantry || [], shopSnap: S.prefs.shopSnap || {}, beer: S.prefs.beer || {}, planFoods: S.prefs.planFoods || {}, nut: S.prefs.nut || {}, kantine: (S.prefs.kantine || []).filter(k => k.d >= isoDate(addDays(new Date(), -3))), updatedAt: Date.now() };
+    const d = { taste: S.prefs.taste, challenges: chs, challenge: main ? { title: main.title, with: main.with, date: main.date, start: main.start } : null, swaps, creaDays: (S.prefs.creaDays || []).slice(-120), dishes: S.prefs.dishes || [], recent: S.prefs.recent || [], favs: S.prefs.favs || [], events: (S.prefs.events || []).filter(e => e.date >= isoDate(addDays(new Date(), -2))), trackDays: (S.prefs.trackDays || []).slice(-400), phasePlan: S.prefs.phasePlan || null, spiceMiss: S.prefs.spiceMiss || [], pantry: S.prefs.pantry || [], shopSnap: S.prefs.shopSnap || {}, beer: S.prefs.beer || {}, planFoods: S.prefs.planFoods || {}, planExtra: S.prefs.planExtra || {}, nut: S.prefs.nut || {}, kantine: (S.prefs.kantine || []).filter(k => k.d >= isoDate(addDays(new Date(), -3))), updatedAt: Date.now() };
     if (this.mode === 'db') this.write(this.base + '/prefs/main', d); else this.ls('prefs', d);
   },
   saveTrain() { if (this.mode === 'db') this.write(this.base + '/train/main', { ...S.train, updatedAt: Date.now() }); else this.ls('train', S.train); },
@@ -4515,7 +4529,7 @@ const gymHint = p => {
   return parts.length ? `Startet 15 Minuten nach Feierabend${loopOf(p) ? ', diese Woche' : ''}: ${parts.join(' · ')}. An freien Tagen wie an einem normalen Arbeitstag.` : 'Kein Gym-Tag eingeplant.';
 };
 function exportCode() {
-  const d = { v: 1, profile: { ...S.profile, example: false }, prefs: { taste: S.prefs.taste, challenges: S.prefs.challenges || [], creaDays: S.prefs.creaDays || [], dishes: S.prefs.dishes || [], recent: S.prefs.recent || [], favs: S.prefs.favs || [], events: S.prefs.events || [], trackDays: S.prefs.trackDays || [], phasePlan: S.prefs.phasePlan || null, spiceMiss: S.prefs.spiceMiss || [], pantry: S.prefs.pantry || [], shopSnap: S.prefs.shopSnap || {}, beer: S.prefs.beer || {}, planFoods: S.prefs.planFoods || {}, nut: S.prefs.nut || {} }, weights: S.weights || [], train: S.train || emptyTrain(), today: { date: S.today, log: S.log } };
+  const d = { v: 1, profile: { ...S.profile, example: false }, prefs: { taste: S.prefs.taste, challenges: S.prefs.challenges || [], creaDays: S.prefs.creaDays || [], dishes: S.prefs.dishes || [], recent: S.prefs.recent || [], favs: S.prefs.favs || [], events: S.prefs.events || [], trackDays: S.prefs.trackDays || [], phasePlan: S.prefs.phasePlan || null, spiceMiss: S.prefs.spiceMiss || [], pantry: S.prefs.pantry || [], shopSnap: S.prefs.shopSnap || {}, beer: S.prefs.beer || {}, planFoods: S.prefs.planFoods || {}, planExtra: S.prefs.planExtra || {}, nut: S.prefs.nut || {} }, weights: S.weights || [], train: S.train || emptyTrain(), today: { date: S.today, log: S.log } };
   return 'DELREY1:' + btoa(unescape(encodeURIComponent(JSON.stringify(d))));
 }
 function importCode(code) {
@@ -4525,7 +4539,7 @@ function importCode(code) {
   if (!d || !d.profile) throw new Error('leer');
   S.profile = { ...DEFAULT_PROFILE, ...d.profile, example: false };
   const pf = d.prefs || {};
-  S.prefs = { taste: { foods: {}, meals: {}, ...(pf.taste || {}) }, challenge: null, challenges: pf.challenges || [], swaps: {}, creaDays: pf.creaDays || [], dishes: pf.dishes || [], recent: pf.recent || [], favs: pf.favs || [], events: pf.events || [], trackDays: pf.trackDays || [], phasePlan: pf.phasePlan || null, spiceMiss: pf.spiceMiss || [], pantry: pf.pantry || [], beer: pf.beer || {}, planFoods: pf.planFoods || {}, shopSnap: pf.shopSnap || {}, nut: pf.nut || {}, kantine: pf.kantine || [] };
+  S.prefs = { taste: { foods: {}, meals: {}, ...(pf.taste || {}) }, challenge: null, challenges: pf.challenges || [], swaps: {}, creaDays: pf.creaDays || [], dishes: pf.dishes || [], recent: pf.recent || [], favs: pf.favs || [], events: pf.events || [], trackDays: pf.trackDays || [], phasePlan: pf.phasePlan || null, spiceMiss: pf.spiceMiss || [], pantry: pf.pantry || [], beer: pf.beer || {}, planFoods: pf.planFoods || {}, planExtra: pf.planExtra || {}, shopSnap: pf.shopSnap || {}, nut: pf.nut || {}, kantine: pf.kantine || [] };
   S.weights = (d.weights || []).filter(w => w && w.date && +w.kg > 0).sort((a, b) => a.date < b.date ? -1 : 1);
   if (d.today && d.today.date === S.today && d.today.log) S.log = { ...emptyLog(), ...d.today.log };
   if (d.train) { S.train = { ...emptyTrain(), ...d.train }; Store.saveTrain(); }
@@ -6737,16 +6751,25 @@ function wzPlan() {
   const W = S.wz; if (!W || !W.items) return;
   const items = W.items.filter(i => i.g > 0); if (!items.length) { toast('Mindestens eine Zutat eintragen'); return; }
   const rep = ($('#wzRep') || {}).value || '', sl = rep && todayPlan && todayPlan.slots.find(s => s.id === rep);
-  if (!sl || (S.log.meals || {})[rep] && S.log.meals[rep].state === 'eaten') { toast('Wähl oben die Mahlzeit, die es ersetzen soll'); const r = $('#wzRep'); if (r) r.focus(); return; }
+  const time = ($('#wzTime') || {}).value || W.time || '19:00';
+  if (rep && (!sl || (S.log.meals || {})[rep] && S.log.meals[rep].state === 'eaten')) { toast('Wähl oben die Mahlzeit, die es ersetzen soll'); const r = $('#wzRep'); if (r) r.focus(); return; }
   const defs = items.map(i => { const w = wcGet(i.id); if (!w) return null; return { k: 'pl_' + String(i.id).replace(/[^a-z0-9]/gi, '_'), g: i.g, n: w[0], kcal: w[1], p: w[2], c: w[3], f: w[4], u: wzUnit(i.id) }; }).filter(Boolean);
   if (!defs.length) return;
   const pf = { ...(S.prefs.planFoods || {}) };
   for (const d of defs) { pf[d.k] = { n: d.n, kcal: d.kcal, p: d.p, c: d.c, f: d.f, u: d.u }; delete FOODS[d.k]; }
-  const sw = { ...(S.prefs.swaps || {}) }; sw[S.today + ':' + rep] = { plan: { n: W.name, items: defs.map(d => ({ k: d.k, g: d.g })) } };
   const keys = Object.keys(pf); if (keys.length > 80) for (const k of keys.slice(0, keys.length - 80)) delete pf[k];
-  S.prefs = { ...S.prefs, swaps: sw, planFoods: pf }; Store.savePrefs();
+  const plan = { n: W.name, items: defs.map(d => ({ k: d.k, g: d.g })) };
+  if (rep) { const sw = { ...(S.prefs.swaps || {}) }; sw[S.today + ':' + rep] = { plan }; S.prefs = { ...S.prefs, swaps: sw, planFoods: pf }; }
+  else {
+    const all = JSON.parse(JSON.stringify(S.prefs.planExtra || {})), keep = isoDate(addDays(new Date(S.today + 'T12:00'), -2));
+    for (const d of Object.keys(all)) if (d < keep) delete all[d];
+    all[S.today] = (all[S.today] || []).concat({ id: 'px' + Date.now().toString(36), t: time, ...plan });
+    S.prefs = { ...S.prefs, planExtra: all, planFoods: pf };
+  }
+  Store.savePrefs();
   S.wz = null; S.kantineSlot = null; S.wzPath = []; S.wzQ = '';
-  mutateLog(l => { if (l.meals && l.meals[rep] && l.meals[rep].state === 'skipped') delete l.meals[rep]; }, `${W.name} als ${sl.label} eingeplant. Hak es ab, wenn du es gegessen hast.`);
+  mutateLog(l => { if (rep && l.meals && l.meals[rep] && l.meals[rep].state === 'skipped') delete l.meals[rep]; },
+    rep ? `${W.name} als ${sl.label} eingeplant. Hak es ab, wenn du es gegessen hast.` : `${W.name} um ${time} eingeplant. Die anderen Mahlzeiten sind angepasst, abhaken, wenn du es gegessen hast.`);
   afterTaste(); renderWizard();
   if (S.tab === 'track') setTimeout(() => setTab('tag', -1), 300);
 }
@@ -7281,11 +7304,11 @@ function renderWizard() {
       ${true ? `<div class="field" style="margin:0"><label for="wzAddQ">Etwas anderes dazu</label><input id="wzAddQ" type="search" autocomplete="off" placeholder="z. B. Ketchup, Cola, Semmel"></div><div class="se-hits" id="wzAddHits"></div>` : ''}
       <p class="sedit-sum" id="wzSum"><b>${fmt(t.kcal)} kcal</b> · Eiweiß ${fmt(t.p)} g · KH ${fmt(t.c)} g · Fett ${fmt(t.f)} g</p>
       <p class="fhint" style="margin:0">Die Mengen sind geschätzt. Wenn du es genauer weißt, ändere sie einfach.</p>
-      <div class="wz-two ${W.rep ? 'one' : ''}"><div class="field" style="margin:0"><label for="wzRep">Welche Mahlzeit war das?</label><select id="wzRep"><option value="">Etwas zusätzlich</option>${open.map(s => `<option value="${s.id}" ${W.rep === s.id ? 'selected' : ''}>${esc(s.label)} (${s.time})${(S.log.meals || {})[s.id] ? ', ausgelassen' : ''}</option>`).join('')}</select></div>
+      <div class="wz-two ${W.rep ? 'one' : ''}"><div class="field" style="margin:0"><label for="wzRep">Welche Mahlzeit ist das?</label><select id="wzRep"><option value="">Zusätzlich, eigene Uhrzeit</option>${open.map(s => `<option value="${s.id}" ${W.rep === s.id ? 'selected' : ''}>${esc(s.label)} (${s.time})${(S.log.meals || {})[s.id] ? ', ausgelassen' : ''}</option>`).join('')}</select></div>
       ${W.rep ? '' : `<div class="field" style="margin:0"><label for="wzTime">Uhrzeit</label><input id="wzTime" type="time" value="${W.time}"></div>`}</div>
       <button class="btn" data-act="wz-save" style="width:100%">${icon('check')}Eintragen</button>
-      ${open.some(s => !(S.log.meals || {})[s.id]) ? `<button class="btn ghost" data-act="wz-plan" style="width:100%;margin-top:8px">${icon('calendar-dots')}Nur einplanen, abhaken wenn gegessen</button>
-      <p class="fhint" style="margin:0">Einplanen ersetzt die gewählte Mahlzeit im Plan. Die anderen Mahlzeiten passen sich sofort an, gezählt wird erst beim Abhaken.</p>` : ''}`;
+      ${!W.rep || open.some(s => !(S.log.meals || {})[s.id]) ? `<button class="btn ghost" data-act="wz-plan" style="width:100%;margin-top:8px">${icon('calendar-dots')}Nur einplanen, abhaken wenn gegessen</button>
+      <p class="fhint" style="margin:0">${W.rep ? 'Einplanen ersetzt die gewählte Mahlzeit im Plan.' : 'Einplanen fügt es zur gewählten Uhrzeit dazu, die anderen Mahlzeiten werden dafür kleiner.'} Gezählt wird erst beim Abhaken.</p>` : ''}`;
     return;
   }
   const Q = wzQs(W), q = Q[W.step], A = W.A, v = A[q.k];
@@ -7558,6 +7581,13 @@ document.addEventListener('click', e => {
     renderPhasen(); return;
   }
   if (a === 'plan-undo') {
+    const [dk, sid] = String(b.dataset.key).split(':');
+    if (sid && sid.startsWith('px')) {
+      const all = JSON.parse(JSON.stringify(S.prefs.planExtra || {})); all[dk] = (all[dk] || []).filter(x => x.id !== sid); if (!all[dk].length) delete all[dk];
+      S.prefs = { ...S.prefs, planExtra: all }; Store.savePrefs();
+      if ((S.log.meals || {})[sid]) mutateLog(l => { delete l.meals[sid]; });
+      afterTaste(); toast('Planung entfernt'); return;
+    }
     const sw = { ...(S.prefs.swaps || {}) }; delete sw[b.dataset.key];
     S.prefs = { ...S.prefs, swaps: sw }; Store.savePrefs(); afterTaste(); try { pantrySync(); } catch (e) {}
     toast('Planung entfernt, wieder das ursprüngliche Gericht'); return;
