@@ -33,6 +33,16 @@
    "d": "2026-11-17!fix",
    "fix": "2026-11-17-gulasch",
    "code": "DR+ Rindsgulasch mit Nudeln und Kartoffeln (bei Mama) | 740 kcal | E 54 | KH 72 | F 25 | 15:00"
+  },
+  {
+   "id": "2026-11-20-mittag",
+   "d": "2026-11-20",
+   "code": "DR+ Frittatensuppe + Grillteller mit Pommes | 1140 kcal | E 68 | KH 78 | F 60 | 10:30"
+  },
+  {
+   "id": "2026-11-20-pizza",
+   "d": "2026-11-20",
+   "code": "DR+ Schinkenpizza | 1080 kcal | E 50 | KH 126 | F 40 | 19:15"
   }
  ]
 }
