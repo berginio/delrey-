@@ -43,6 +43,36 @@
    "id": "2026-11-20-pizza",
    "d": "2026-11-20",
    "code": "DR+ Schinkenpizza | 1080 kcal | E 50 | KH 126 | F 40 | 19:15"
+  },
+  {
+   "id": "2026-11-21-wels",
+   "d": "2026-11-21!ev",
+   "ev": {
+    "title": "Essen in Wels",
+    "start": "12:00",
+    "end": "14:00",
+    "kind": "buy"
+   }
+  },
+  {
+   "id": "2026-11-21-gluehwein",
+   "d": "2026-11-21!ev",
+   "ev": {
+    "title": "Glühweinstand",
+    "start": "14:00",
+    "end": "19:30",
+    "kind": "buy"
+   }
+  },
+  {
+   "id": "2026-11-21-kaffeebar",
+   "d": "2026-11-21!ev",
+   "ev": {
+    "title": "Kaffeebar",
+    "start": "19:30",
+    "open": true,
+    "kind": "buy"
+   }
   }
  ]
 }

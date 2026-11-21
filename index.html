@@ -6040,7 +6040,17 @@ async function inboxCheck(force) {
   // "fix": "<alte id>" berichtigt einen früheren Eintrag (z. B. falsche Uhrzeit): der alte wird zurückgenommen, der neue eingetragen.
   // Das Datum darf hinten etwas angehängt haben ("2026-11-17!fix"), damit ältere App-Versionen solche Einträge übergehen.
   const dOf = it => String(it.d || '').slice(0, 10), fixedBy = new Map(items.filter(it => it && it.fix).map(it => [it.fix, it]));
-  const fresh = items.filter(it => it && it.id && !done.includes(it.id) && dOf(it) === S.today && !fixedBy.has(it.id));
+  // Termine von Claude ("ev": { title, start, end, open, kind, noTrain }): landen bei den Terminen, der Plan richtet sich danach
+  const evIt = items.filter(it => it && it.id && it.ev && !done.includes(it.id) && dOf(it) >= S.today);
+  if (evIt.length) {
+    const have = new Set((S.prefs.events || []).map(e => e.id));
+    const add = evIt.map(it => ({ title: '', start: '12:00', end: '', open: false, kind: 'buy', noTrain: false, ...it.ev, id: 'c-' + it.id, date: dOf(it) }))
+      .filter(e => !have.has(e.id) && EV_KIND[e.kind] && /^\d\d:\d\d$/.test(e.start));
+    done = done.concat(evIt.map(it => it.id));
+    try { localStorage.setItem(INBOX_KEY, JSON.stringify(done.slice(-200))); } catch (e) {}
+    if (add.length) { S.prefs = { ...S.prefs, events: (S.prefs.events || []).concat(add) }; eventsChanged(add.length === 1 ? `Termin von Claude eingetragen: ${evTitle(add[0])}` : `${add.length} Termine von Claude eingetragen, Plan angepasst`); }
+  }
+  const fresh = items.filter(it => it && it.id && !it.ev && !done.includes(it.id) && dOf(it) === S.today && !fixedBy.has(it.id));
   const old = items.filter(it => it && it.id && !done.includes(it.id) && (dOf(it) < S.today || fixedBy.has(it.id))).map(it => it.id);
   inboxRetro(items, fixedBy, dOf);
   if (!fresh.length) { if (old.length) try { localStorage.setItem(INBOX_KEY, JSON.stringify(done.concat(old).slice(-200))); } catch (e) {} return; }
