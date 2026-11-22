@@ -6581,7 +6581,7 @@ Object.assign(WC, {
   // Frühstück, Snacks, Beilagen, Getränke
   fr_muesli: ['Müsli', 370, 10, 60, 8], fr_cornflakes: ['Cornflakes', 375, 7, 84, 1], fr_topfen: ['Magertopfen', 70, 12, 4, 0.3], fr_ruehrei: ['Rührei', 160, 11, 1.5, 12],
   fr_marmelade: ['Marmelade', 250, 0.4, 60, 0.1], fr_nutella: ['Nuss-Nougat-Creme', 540, 6, 57, 31],
-  sn_proteinriegel: ['Proteinriegel', 360, 30, 35, 11], sn_muesliriegel: ['Müsliriegel', 420, 6, 65, 14],
+  sn_proteinriegel: ['Proteinriegel', 360, 30, 35, 11], sn_linsenchips: ['Linsenchips Paprika', 457, 13, 57, 18], sn_muesliriegel: ['Müsliriegel', 420, 6, 65, 14],
   rotkraut: ['Rotkraut', 80, 1.5, 12, 2.5], gemuese: ['Gemüse (gedünstet)', 50, 2, 6, 2], su_klar: ['Klare Rindsuppe', 15, 1.5, 0.5, 0.8],
   dr_kakao: ['Kakao', 75, 3.5, 10, 2], dr_kaffee: ['Kaffee mit Milch', 15, 1, 1.5, 0.5], dr_cappu: ['Cappuccino', 35, 2, 3, 1.5], dr_latte: ['Latte Macchiato', 50, 3, 4.5, 2], dr_milch: ['Milch', 47, 3.4, 4.9, 1.5],
 });
@@ -6653,7 +6653,7 @@ const TREE = [
   { n: 'Snacks & Shakes', ic: 'lightning', sub: 'Shake, Riegel, Nüsse …', kids: [
     trI('Isoclear-Shake', 'f:isoclear', 30, ['Messlöffel', 'Messlöffel', 30]), trI('Protein-Shake (Whey)', 'f:whey', 30, ['Messlöffel', 'Messlöffel', 30]), trI('Proteinriegel', 'sn_proteinriegel', 50, ['Riegel', 'Riegel', 50]),
     trI('Müsliriegel', 'sn_muesliriegel', 25, ['Riegel', 'Riegel', 25]), trI('Reiswaffeln', 'f:ricecake', 16, ['Reiswaffel', 'Reiswaffeln', 8]), trI('Erdnüsse', 'f:peanuts', 30), trI('Mandeln', 'f:almonds', 30),
-    trI('Cashews', 'f:cashews', 30), trI('Walnüsse', 'f:walnuts', 30)] },
+    trI('Cashews', 'f:cashews', 30), trI('Walnüsse', 'f:walnuts', 30), trI('Linsenchips', 'sn_linsenchips', 30)] },
   { n: 'Getränke', ic: 'coffee', sub: 'Cola, Bier, Kaffee …', kids: [
     trI('Cola, Limo', 'dr_cola', 500), trI('Cola Zero', 'dr_zero', 500), trI('Bier', 'dr_bier', 500), trI('Radler', 'dr_radler', 500), trI('Spritzer', 'dr_spritzer', 250), trI('Wein', 'dr_wein', 125),
     trI('Orangensaft', 'dr_saft', 250), trI('Energy Drink', 'dr_energy', 250), trI('Eistee', 'dr_eistee', 500), trI('Milch', 'dr_milch', 250), trI('Kakao', 'dr_kakao', 250),
@@ -6894,7 +6894,7 @@ const VALIAS = [
   ['cola|coca cola|coke', 'dr_cola', 330], ['cola zero|coke zero', 'dr_zero', 330], ['bier', 'dr_bier', 500], ['radler', 'dr_radler', 500], ['orangensaft|saft|o saft', 'dr_saft', 250],
   ['energy|energydrink|energy drink|red bull', 'dr_energy', 250], ['eistee', 'dr_eistee', 500], ['spritzer', 'dr_spritzer', 250], ['wein', 'dr_wein', 125],
   ['butter', 'butter', 10], ['wurst|extrawurst', 'wurst', 30], ['schinken', 'schinken', 30], ['kase', 'kaese', 30], ['aufstrich', 'aufstrich', 20],
-  ['semmel|semmeln|kaisersemmel', 'semmel', 55, 'pc'], ['nusse|nuss|erdnuss|erdnusse', 'f:peanuts', 30], ['studentenfutter|nussmischung|nussmix', 'f:cashews', 30], ['brot|brotscheibe', 'brot', 50, 'pc'],
+  ['semmel|semmeln|kaisersemmel', 'semmel', 55, 'pc'], ['nusse|nuss|erdnuss|erdnusse', 'f:peanuts', 30], ['linsenchips|linsen chips|linsenchip|linsen chip', 'sn_linsenchips', 30], ['studentenfutter|nussmischung|nussmix', 'f:cashews', 30], ['brot|brotscheibe', 'brot', 50, 'pc'],
   ['isoclear|isoclear shake|clear whey', 'f:isoclear', 30, 'pc'], ['shake|proteinshake|eiweissshake|eiweiss shake|whey', 'f:whey', 30, 'pc'],
 ];
 /* Zusammengesetztes, das man in einem Wort sagt */
