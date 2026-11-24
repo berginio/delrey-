@@ -1569,6 +1569,7 @@ html.rkp-lock,html.rkp-lock body{overflow:hidden}
 .wheel-scroll::-webkit-scrollbar{display:none}
 .wheel-pad{height:88px}
 .wheel-it{height:44px;line-height:44px;text-align:right;padding-right:10px;scroll-snap-align:center;font-size:23px;font-variant-numeric:tabular-nums;color:var(--muted);transition:color .12s,transform .12s}
+.wheel-it,.wheel-head .wheel-ok{position:relative}.hap{position:absolute;inset:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation}.hap input{position:absolute;width:1px;height:1px;margin:0;visibility:hidden}
 .wheel-it.on{color:var(--ink);font-weight:600}
 .wheel-lbl{font-size:16px;font-weight:600;min-width:38px;pointer-events:none}
 .wheel-sep{font-size:23px;font-weight:600;color:var(--ink);margin:0 -2px}
@@ -7513,32 +7514,20 @@ function mutateLog(fn, msg) {
 /* ================= Rad-Auswahl wie beim iPhone-Wecker =================
    Spalten zum Hoch- und Runterwischen, die Mitte ist ausgewählt. Für die Laufzeit (min | sek) und für alle Uhrzeiten (Std | Min). */
 const WH = 44;
-/* Leichtes Klicken beim Drehen am Rad. Android: vibrate. iPhone (Safari ab iOS 18) kennt kein vibrate,
-   gibt aber beim Umschalten eines Schalters (input switch) ein kurzes Haptik-Feedback; den tippen wir unsichtbar an. */
-const haptic = (() => {
-  let lbl = null, last = 0;
-  return () => {
-    const now = performance.now(); if (now - last < 30) return; last = now;
-    try { if (navigator.vibrate && navigator.vibrate(6)) return; } catch (e) {}
-    try {
-      if (!lbl) {
-        lbl = document.createElement('label'); lbl.setAttribute('aria-hidden', 'true');
-        lbl.style.cssText = 'position:fixed;left:-200px;top:0;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none';
-        const i = document.createElement('input'); i.type = 'checkbox'; i.setAttribute('switch', ''); i.tabIndex = -1;
-        lbl.appendChild(i); document.body.appendChild(lbl);
-      }
-      lbl.click();
-    } catch (e) {}
-  };
-})();
+/* Leichtes Klicken am Rad. Android: bei jedem Schritt per vibrate. Das iPhone erlaubt Web-Apps keine Vibration beim Scrollen,
+   nur beim echten Antippen: dafür liegt über jeder Zahl ein unsichtbarer Schalter (input switch), Safari gibt beim Umschalten Haptik. */
+const IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const HAP = IOS ? '<label class="hap" aria-hidden="true"><input type="checkbox" switch tabindex="-1"></label>' : '';
+const haptic = (() => { let last = 0; return () => { const now = performance.now(); if (now - last < 30) return; last = now; try { navigator.vibrate && navigator.vibrate(6); } catch (e) {} }; })();
 function openWheel(o) {
   closeWheel();
   const ov = document.createElement('div'); ov.className = 'wheel-ov'; ov.id = 'wheelOv';
   ov.innerHTML = `<div class="wheel-sheet" role="dialog" aria-label="${esc(o.title || 'Auswählen')}">
-    <div class="wheel-head"><button class="wheel-x" data-w="cancel">Abbrechen</button><b>${esc(o.title || '')}</b><button class="wheel-ok" data-w="ok">Fertig</button></div>
+    <div class="wheel-head"><button class="wheel-x" data-w="cancel">Abbrechen</button><b>${esc(o.title || '')}</b><button class="wheel-ok" data-w="ok">Fertig${HAP}</button></div>
     <div class="wheel-body"><div class="wheel-band"></div>${o.cols.map((c, ci) => `${ci && o.sep ? `<span class="wheel-sep">${o.sep}</span>` : ''}<div class="wheel-col"><div class="wheel-scroll" data-ci="${ci}" tabindex="0" aria-label="${esc(c.label || '')}">
-      <div class="wheel-pad"></div>${c.values.map(v => `<div class="wheel-it">${c.pad ? String(v).padStart(2, '0') : v}</div>`).join('')}<div class="wheel-pad"></div></div>${c.label ? `<span class="wheel-lbl">${esc(c.label)}</span>` : ''}</div>`).join('')}</div></div>`;
+      <div class="wheel-pad"></div>${c.values.map(v => `<div class="wheel-it">${c.pad ? String(v).padStart(2, '0') : v}${HAP}</div>`).join('')}<div class="wheel-pad"></div></div>${c.label ? `<span class="wheel-lbl">${esc(c.label)}</span>` : ''}</div>`).join('')}</div></div>`;
   document.body.appendChild(ov);
+  ov.querySelectorAll('.hap input').forEach(i => i.addEventListener('click', e => e.stopPropagation()));
   const cols = [...ov.querySelectorAll('.wheel-scroll')];
   const idxOf = el => Math.max(0, Math.min(o.cols[+el.dataset.ci].values.length - 1, Math.round(el.scrollTop / WH)));
   const mark = el => { const i = idxOf(el); if (el._i != null && el._i !== i) haptic(); el._i = i; el.querySelectorAll('.wheel-it').forEach((x, j) => x.classList.toggle('on', j === i)); };
