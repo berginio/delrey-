@@ -7513,6 +7513,24 @@ function mutateLog(fn, msg) {
 /* ================= Rad-Auswahl wie beim iPhone-Wecker =================
    Spalten zum Hoch- und Runterwischen, die Mitte ist ausgewählt. Für die Laufzeit (min | sek) und für alle Uhrzeiten (Std | Min). */
 const WH = 44;
+/* Leichtes Klicken beim Drehen am Rad. Android: vibrate. iPhone (Safari ab iOS 18) kennt kein vibrate,
+   gibt aber beim Umschalten eines Schalters (input switch) ein kurzes Haptik-Feedback; den tippen wir unsichtbar an. */
+const haptic = (() => {
+  let lbl = null, last = 0;
+  return () => {
+    const now = performance.now(); if (now - last < 30) return; last = now;
+    try { if (navigator.vibrate && navigator.vibrate(6)) return; } catch (e) {}
+    try {
+      if (!lbl) {
+        lbl = document.createElement('label'); lbl.setAttribute('aria-hidden', 'true');
+        lbl.style.cssText = 'position:fixed;left:-200px;top:0;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none';
+        const i = document.createElement('input'); i.type = 'checkbox'; i.setAttribute('switch', ''); i.tabIndex = -1;
+        lbl.appendChild(i); document.body.appendChild(lbl);
+      }
+      lbl.click();
+    } catch (e) {}
+  };
+})();
 function openWheel(o) {
   closeWheel();
   const ov = document.createElement('div'); ov.className = 'wheel-ov'; ov.id = 'wheelOv';
@@ -7523,7 +7541,7 @@ function openWheel(o) {
   document.body.appendChild(ov);
   const cols = [...ov.querySelectorAll('.wheel-scroll')];
   const idxOf = el => Math.max(0, Math.min(o.cols[+el.dataset.ci].values.length - 1, Math.round(el.scrollTop / WH)));
-  const mark = el => { const i = idxOf(el); el.querySelectorAll('.wheel-it').forEach((x, j) => x.classList.toggle('on', j === i)); };
+  const mark = el => { const i = idxOf(el); if (el._i != null && el._i !== i) haptic(); el._i = i; el.querySelectorAll('.wheel-it').forEach((x, j) => x.classList.toggle('on', j === i)); };
   cols.forEach((el, ci) => {
     const c = o.cols[ci], i0 = Math.max(0, c.values.indexOf(c.value)); el.scrollTop = i0 * WH; mark(el);
     let t = 0; el.addEventListener('scroll', () => { mark(el); clearTimeout(t); t = setTimeout(() => mark(el), 80); }, { passive: true });
