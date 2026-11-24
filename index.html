@@ -1551,6 +1551,30 @@ html.rkp-lock,html.rkp-lock body{overflow:hidden}
 .sedit-q small{font-size:12.5px;color:var(--muted);min-width:34px}
 :root[data-ui="apple"] .sedit-q input{background:var(--fill);border-color:transparent}
 .sedit-sum{margin:0;font-size:13.5px;color:var(--muted)}
+.wheel-field{all:unset;box-sizing:border-box;width:100%;min-height:46px;display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:14px;background:var(--fill,var(--surface));border:1px solid var(--line);cursor:pointer;font-size:16px}
+.wheel-field b{font-family:var(--font-display);font-size:20px;font-variant-numeric:tabular-nums}
+.wheel-field .ico{margin-left:auto;width:18px;height:18px;color:var(--accent)}
+.wheel-ov{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,0);display:flex;align-items:flex-end;justify-content:center;transition:background .25s}
+.wheel-ov.in{background:rgba(0,0,0,.38)}
+.wheel-sheet{width:min(100%,480px);background:var(--surface);border-radius:22px 22px 0 0;padding:6px 14px calc(18px + env(safe-area-inset-bottom,0px));transform:translateY(100%);transition:transform .32s var(--ease);box-shadow:0 -10px 40px rgba(0,0,0,.25)}
+.wheel-ov.in .wheel-sheet{transform:none}
+.wheel-head{display:flex;align-items:center;justify-content:space-between;padding:8px 4px 6px}
+.wheel-head b{font-size:15px}
+.wheel-head button{all:unset;cursor:pointer;font-size:16px;color:var(--accent);padding:8px 6px}
+.wheel-head .wheel-ok{font-weight:700}
+.wheel-body{position:relative;display:flex;justify-content:center;align-items:center;gap:4px;height:220px}
+.wheel-band{position:absolute;left:8px;right:8px;top:50%;height:44px;transform:translateY(-50%);border-radius:12px;background:color-mix(in srgb,var(--ink) 8%,transparent);pointer-events:none}
+.wheel-col{position:relative;display:flex;align-items:center}
+.wheel-scroll{height:220px;width:86px;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;overscroll-behavior:contain;-webkit-mask-image:linear-gradient(transparent,#000 30%,#000 70%,transparent);mask-image:linear-gradient(transparent,#000 30%,#000 70%,transparent);outline:none}
+.wheel-scroll::-webkit-scrollbar{display:none}
+.wheel-pad{height:88px}
+.wheel-it{height:44px;line-height:44px;text-align:right;padding-right:10px;scroll-snap-align:center;font-size:23px;font-variant-numeric:tabular-nums;color:var(--muted);transition:color .12s,transform .12s}
+.wheel-it.on{color:var(--ink);font-weight:600}
+.wheel-lbl{font-size:16px;font-weight:600;min-width:38px;pointer-events:none}
+.wheel-sep{font-size:23px;font-weight:600;color:var(--ink);margin:0 -2px}
+.se-keep{display:flex;gap:10px;align-items:flex-start;font-size:14px;font-weight:600;cursor:pointer}
+.se-keep input{width:20px;height:20px;margin:1px 0 0;accent-color:var(--accent);flex:0 0 auto}
+.se-keep span{display:grid;gap:1px}.se-keep small{font-weight:500;font-size:12.5px;color:var(--muted)}
 .sedit-sum b{color:var(--ink)}
 .hn-act:has(.hn-adj){flex-wrap:wrap}
 .hn-adj{flex-basis:100%;justify-self:start;display:inline-flex;align-items:center;gap:6px;border:0;background:none;padding:4px 2px;color:var(--accent);font:inherit;font-size:13.5px;font-weight:600;cursor:pointer}
@@ -2349,16 +2373,29 @@ const POOLS = {
 const FOOD_CAP = { banana: 2, ricecake: 2 };
 const CAP_ALT = { prerun: ['breadapple'], pregym: ['breadapple'], workpre: ['isoapple', 'breadapple'], carbs: ['breadapple'], carbswork: ['breadapple', 'isoapple'], snack: [], late: [] };
 const mealHas = (meal, f) => !!meal && (meal.items || []).some(it => (it.food || it[0]) === f);
+/* Abends (ab 17 Uhr): höchstens 3 Scheiben Brot, und Reis wird abends nie extra gekocht */
+const EVENING = 17 * 60;
+const isEvening = sl => !!sl && (sl.t || 0) >= EVENING;
+function slotMax(sl, food) {
+  const F = FOODS[food]; let m = MAXG[food] || Infinity;
+  if (F && isEvening(sl) && F.grp === 'bread' && F.piece && ['loaf', 'toast'].includes(F.sub)) m = Math.min(m, 3 * F.piece);
+  return m;
+}
+function capSlotItems(sl, items) {
+  for (const it of items) { const m = slotMax(sl, it.food); if (it.g > m) { const P = FOODS[it.food].piece; it.g = P ? Math.floor(m / P) * P : m; } }
+  return items;
+}
+const eveningOk = (sl, m) => !(isEvening(sl) && m && mealHas(m, 'rice'));
 function capFoods(slots, pr) {
   const cnt = {};
   for (const sl of slots) {
     if (!sl.meal || sl.meal.portion) continue;
     const full = Object.keys(FOOD_CAP).filter(f => (cnt[f] || 0) >= FOOD_CAP[f]);
-    if (full.some(f => mealHas(sl.meal, f)) && sl.spec && sl.spec.pool) {
+    if ((full.some(f => mealHas(sl.meal, f)) || !eveningOk(sl, sl.meal)) && sl.spec && sl.spec.pool) {
       const cands = (POOLS[sl.spec.pool] || []).concat(CAP_ALT[sl.spec.pool] || ['breadapple']);
       for (const k of cands) {
         const m = resolveMeal(k, pr.taste, new Set());
-        if (m && !full.some(f => mealHas(m, f))) { sl.meal = { ...m, replaced: null }; sl.key = m.key; break; }
+        if (m && !full.some(f => mealHas(m, f)) && eveningOk(sl, m)) { sl.meal = { ...m, replaced: null }; sl.key = m.key; break; }
       }
     }
     for (const f of Object.keys(FOOD_CAP)) if (mealHas(sl.meal, f)) cnt[f] = (cnt[f] || 0) + 1;
@@ -2414,8 +2451,8 @@ function lockFoods(slots, pr) {
       let pick = null, fb = null;
       for (const k of cands) {
         const m = resolveMeal(k, pr.taste, new Set()); if (!m || !mealAvail(m, av)) continue;
-        if (!full.some(f => mealHas(m, f))) { pick = m; break; }
-        fb = fb || m;
+        if (!full.some(f => mealHas(m, f)) && eveningOk(sl, m)) { pick = m; break; }
+        if (eveningOk(sl, m)) fb = fb || m;
       }
       const m = pick || fb; if (m) { sl.meal = { ...m, replaced: null }; sl.key = m.key; }
     }
@@ -3045,7 +3082,7 @@ function planDay(d, pr, typeOverride, opts) {
     const mk = meatK(T.kcal);
     for (const sl of slots) sl.items = scaleMeal(sl.meal, s, null, mk);
     refine(slots.map(sl => sl.items), target, null, mk);
-    for (const sl of slots) sl.tot = sumItems(sl.items);
+    for (const sl of slots) { capSlotItems(sl, sl.items); sl.tot = sumItems(sl.items); }
     return slots.reduce((t, sl) => add(t, sl.tot), Z());
   };
   let tot = solve(T), T2 = T;
@@ -3117,7 +3154,7 @@ function planRemaining(plan, log) {
     if (changed) refine(lists, left, minMain, mk);
     return open.map(sl => {
       const idx = act.indexOf(sl);
-      const items = idx >= 0 ? lists[idx] : sl.items.map(it => ({...it}));
+      const items = capSlotItems(sl, idx >= 0 ? lists[idx] : sl.items.map(it => ({...it})));
       const tot = sumItems(items);
       const diff = items.length !== sl.items.length || items.some((it, i) => !sl.items[i] || Math.abs(it.g - sl.items[i].g) > Math.max(5, sl.items[i].g * 0.1));
       return { id: sl.id, items, tot, changed: changed && diff, skip: idx < 0 };
@@ -3153,8 +3190,8 @@ function carbTopUp(adjusted, eaten, plan) {
   const d0 = new Date(), isToday = plan.date === isoDate(d0), now = isToday ? d0.getHours() * 60 + d0.getMinutes() : 0;
   const slotOf = id => plan.slots.find(x => x.id === id) || {};
   const cand = act.map(a => {
-    const sl = slotOf(a.id), it = a.items.filter(i => carbPrio(i.food)).sort((x, y) => carbPrio(x.food) - carbPrio(y.food) || y.g * FOODS[y.food].c - x.g * FOODS[x.food].c)[0];
-    return it ? { a, it, main: !!FAM[sl.key] || ['lunch', 'dinner'].includes(sl.id), later: (sl.t || 0) >= now - 30, t: sl.t || 0 } : null;
+    const sl = slotOf(a.id), it = a.items.filter(i => carbPrio(i.food) && !(i.food === 'rice' && isEvening(sl)) && i.g < slotMax(sl, i.food)).sort((x, y) => carbPrio(x.food) - carbPrio(y.food) || y.g * FOODS[y.food].c - x.g * FOODS[x.food].c)[0];
+    return it ? { a, it, sl, main: !!FAM[sl.key] || ['lunch', 'dinner'].includes(sl.id), later: (sl.t || 0) >= now - 30, t: sl.t || 0 } : null;
   }).filter(Boolean).filter(c => c.later)
     .sort((x, y) => (y.main - x.main) || (carbPrio(x.it.food) - carbPrio(y.it.food)) || (x.t - y.t));
   for (const c of cand) {
@@ -3162,7 +3199,7 @@ function carbTopUp(adjusted, eaten, plan) {
     const F = FOODS[c.it.food], per = F.c / 100, g0 = c.it.g;
     const room = Math.max(0, Math.max(g0 * 1.2, F.grp === 'side' ? 120 : 60));   // höchstens gut doppelt so viel wie geplant
     const addG = Math.min(room, needC / per);
-    const step = F.piece || 5, g1 = Math.round((g0 + addG) / step) * step;
+    const step = F.piece || 5, mx = slotMax(c.sl, c.it.food), g1 = Math.min(Math.round((g0 + addG) / step) * step, F.piece ? Math.floor(mx / F.piece) * F.piece : mx);
     if (g1 <= g0) continue;
     c.it.g = g1; needC -= (g1 - g0) * per;
     c.a.tot = sumItems(c.a.items); c.a.changed = true;
@@ -6304,11 +6341,33 @@ function bagList(slots) {
 const seUnit = food => { const F = FOODS[food]; return F.portion ? { k: 'por', per: 100, step: .5, u: n => n === 1 ? 'Portion' : 'Portionen' } : F.piece ? { k: 'pc', per: F.piece, step: .5, u: n => n === 1 ? F.pn[0] : F.pn[1] } : { k: 'g', per: 1, step: 0, u: () => F.unit || 'g' }; };
 const seVal = it => { const U = seUnit(it.food); return U.k === 'g' ? Math.round(it.g) : Math.round(it.g / U.per * 2) / 2; };
 const seStep = it => { const U = seUnit(it.food); return U.k === 'g' ? (it.g < 60 ? 5 : 10) : U.step; };
+/* Nährwerte eines Gerichts gleich halten: änderst du eine Zutat, passen sich die anderen, noch nicht angefassten an
+   (mehr Fleisch heißt etwas weniger Beilage und umgekehrt). Was du selbst eingestellt hast, bleibt so. */
+function balanceItems(items, i, base, touched, kc, roundTo, capOf) {
+  const others = items.map((_, j) => j).filter(j => j !== i && !touched.includes(j) && kc(items[j], items[j].g) > 0.5);
+  if (!others.length || !(base > 0)) return false;
+  const fixed = items.reduce((t, it, j) => t + (others.includes(j) ? 0 : kc(it, it.g)), 0);
+  const cur = others.reduce((t, j) => t + kc(items[j], items[j].g), 0); if (cur <= 0) return false;
+  const f = Math.max(0.2, Math.min(3, (base - fixed) / cur));
+  for (const j of others) { const it = items[j]; it.g = Math.max(0, Math.min(capOf(it), roundTo(it, it.g * f))); }
+  return true;
+}
+const CAP_MSG = { rice: 'Mehr als 150 g Reis sind für eine Person zu viel', bread: 'Abends höchstens 3 Scheiben Brot' };
+function seBalance(i) {
+  const E = S.slotEdit; if (!E) return;
+  const sl = todayPlan && todayPlan.slots.find(x => x.id === E.id);
+  if (!E.touched.includes(i)) E.touched.push(i);
+  if (E.keep) balanceItems(E.items, i, E.base, E.touched, (it, g) => macrosOf(it.food, g).kcal,
+    (it, g) => { const U = seUnit(it.food); return U.k === 'g' ? Math.round(g / 5) * 5 : Math.round(g / U.per * 2) / 2 * U.per; }, it => slotMax(sl, it.food));
+  E.items.forEach((it, j) => { const inp = $('#se-' + j); if (inp && inp !== document.activeElement) { const U = seUnit(it.food), v = seVal(it); inp.value = String(v).replace('.', ','); inp.nextElementSibling.textContent = U.u(v); } });
+  const el = $('#seSum'); if (el) el.innerHTML = slotEditSum();
+}
 function slotEditStart(id) {
   const st = (S.log.meals || {})[id], adj = todayRem.open.find(o => o.id === id), s = todayPlan.slots.find(x => x.id === id);
   if (!s) return;
   const items = st && st.items ? st.items : adj ? adj.items : s.items;
-  S.slotEdit = { id, was: st && st.state === 'eaten' ? st.at || toHHMM(nowMin()) : null, items: items.map(i => ({ food: i.food, g: i.g })) };
+  S.slotEdit = { id, was: st && st.state === 'eaten' ? st.at || toHHMM(nowMin()) : null, items: items.map(i => ({ food: i.food, g: i.g })), keep: true, touched: [] };
+  S.slotEdit.base = sumItems(S.slotEdit.items).kcal;
   S.rowOpen[todayPlan.date + ':' + id] = true;
 }
 function slotEditTot() { return sumItems(S.slotEdit.items.filter(i => i.g > 0)); }
@@ -6324,6 +6383,7 @@ function slotEditHtml() {
       <button class="sedit-x" data-act="se-del" data-i="${i}" aria-label="${esc(FOODS[it.food].n)} entfernen">${icon('x')}</button></li>`; }).join('')}</ul>
     <div class="field" style="margin:0"><label for="se-q">Etwas anderes dazu</label><input id="se-q" type="search" autocomplete="off" placeholder="Zutat suchen, z. B. Erdnüsse" value="${esc(E.q || '')}" aria-controls="seHits"></div>
     <div class="se-hits" id="seHits" aria-live="polite">${seHitsHtml()}</div>
+    <label class="se-keep"><input type="checkbox" id="seKeep" ${E.keep ? 'checked' : ''}><span>Nährwerte gleich halten<small>Änderst du eine Zutat, passen sich die anderen an</small></span></label>
     <p class="sedit-sum" id="seSum">${slotEditSum()}</p>
     <div class="row" style="margin:0"><button class="btn sm" data-act="se-save">${icon('check')}${E.was ? 'Speichern' : 'So gegessen'}</button><button class="btn ghost sm" data-act="se-cancel">Abbrechen</button></div>
   </div>`;
@@ -7307,6 +7367,7 @@ function renderWizard() {
   }
   if (W.step === 99) {
     const t = wzMac(W.items), open = wzOpenSlots();
+    if (W.kBase == null) { W.kBase = t.kcal; W.touched = []; }
     el.innerHTML = `<div class="wz-top"><button class="wz-back" data-act="wz-back" aria-label="Zurück">${icon('arrow-left')}</button><span>${esc(W.head || (DISH[W.dish] ? DISH[W.dish].n : 'Zuletzt'))}</span><button class="wz-x" data-act="wz-cancel" aria-label="Abbrechen">${icon('x')}</button></div>
       <h3 class="wz-h">${esc(W.name)}</h3>
       ${W.heard ? `<p class="wz-heard">${icon('mic')}<span>„${esc(W.heard)}“</span></p>` : ''}
@@ -7318,6 +7379,7 @@ function renderWizard() {
         <button class="sedit-x" data-act="wz-del" data-i="${i}" aria-label="${esc(wcName(it.id))} entfernen">${icon('x')}</button></li>`).join('')}</ul>
       <div class="wz-quick"><span>Dazu</span><div class="chipwrap">${WZ_QUICK.map(([id, g, n]) => `<button class="pchip" data-act="wz-add" data-id="${id}" data-g="${g}">${icon('plus')}${esc(n)}</button>`).join('')}</div></div>
       ${true ? `<div class="field" style="margin:0"><label for="wzAddQ">Etwas anderes dazu</label><input id="wzAddQ" type="search" autocomplete="off" placeholder="z. B. Ketchup, Cola, Semmel"></div><div class="se-hits" id="wzAddHits"></div>` : ''}
+      ${W.items.length > 1 ? `<label class="se-keep"><input type="checkbox" id="wzKeep" ${W.keep !== false ? 'checked' : ''}><span>Nährwerte gleich halten<small>Änderst du eine Zutat, passen sich die anderen an</small></span></label>` : ''}
       <p class="sedit-sum" id="wzSum"><b>${fmt(t.kcal)} kcal</b> · Eiweiß ${fmt(t.p)} g · KH ${fmt(t.c)} g · Fett ${fmt(t.f)} g</p>
       <p class="fhint" style="margin:0">Die Mengen sind geschätzt. Wenn du es genauer weißt, ändere sie einfach.</p>
       <div class="wz-two ${W.rep ? 'one' : ''}"><div class="field" style="margin:0"><label for="wzRep">Welche Mahlzeit ist das?</label><select id="wzRep"><option value="">Zusätzlich, eigene Uhrzeit</option>${open.map(s => `<option value="${s.id}" ${W.rep === s.id ? 'selected' : ''}>${esc(s.label)} (${s.time})${(S.log.meals || {})[s.id] ? ', ausgelassen' : ''}</option>`).join('')}</select></div>
@@ -7348,6 +7410,14 @@ function renderWizard() {
     <h3 class="wz-h">${esc(q.t)}</h3>${body}
     ${auto && v == null ? '' : `<button class="btn" data-act="wz-next" style="width:100%">${q.type === 'multi' && !Object.keys(v).length ? 'Ohne Beilage weiter' : q.type === 'tops' && !Object.keys(v).length ? 'Ohne Belag weiter' : W.step === Q.length - 1 ? 'Fertig' : 'Weiter'}</button>`}`;
 }
+function wzBalance(i) {
+  const W = S.wz; if (!W || !W.items) return;
+  W.touched = W.touched || []; if (!W.touched.includes(i)) W.touched.push(i);
+  if (W.keep !== false && W.kBase > 0) balanceItems(W.items, i, W.kBase, W.touched, (it, g) => { const w = wcGet(it.id); return w ? w[1] * g / 100 : 0; },
+    (it, g) => Math.round(g / 5) * 5, it => it.id === 'f:rice' ? MAXG.rice : Infinity);
+  W.items.forEach((it, j) => { const inp = document.querySelector(`[data-wz="${j}"]`); if (inp && inp !== document.activeElement) inp.value = it.g; });
+  wzSumUpdate();
+}
 function wzSumUpdate() { const t = wzMac(S.wz.items), el = $('#wzSum'); if (el) el.innerHTML = `<b>${fmt(t.kcal)} kcal</b> · Eiweiß ${fmt(t.p)} g · KH ${fmt(t.c)} g · Fett ${fmt(t.f)} g`; }
 function wzAct(a, b) {
   const W = S.wz;
@@ -7377,8 +7447,9 @@ function wzAct(a, b) {
   if (a === 'wz-sidesz') { W.A[q.k][b.dataset.id] = b.dataset.v; renderWizard(); return true; }
   if (a === 'wz-top') { const v = W.A[q.k], id = b.dataset.v; if (v[id] != null) delete v[id]; else v[id] = +b.dataset.g; renderWizard(); return true; }
   if (a === 'wz-step') { const it = W.items[+b.dataset.i]; if (!it) return true; const st = it.g < 60 ? 5 : it.g < 200 ? 10 : 25; it.g = Math.max(0, Math.round((it.g + st * (+b.dataset.d)) / st) * st);
-    const inp = document.querySelector(`[data-wz="${b.dataset.i}"]`); if (inp) inp.value = it.g; wzSumUpdate(); return true; }
-  if (a === 'wz-del') { W.items.splice(+b.dataset.i, 1); renderWizard(); return true; }
+    if (it.id === 'f:rice' && it.g > MAXG.rice) { it.g = MAXG.rice; toast(CAP_MSG.rice); }
+    const inp = document.querySelector(`[data-wz="${b.dataset.i}"]`); if (inp) inp.value = it.g; wzBalance(+b.dataset.i); return true; }
+  if (a === 'wz-del') { W.items.splice(+b.dataset.i, 1); W.kBase = null; W.touched = []; renderWizard(); return true; }
   if (a === 'wz-save') { wzSave(); return true; }
   if (a === 'wz-plan') { wzPlan(); return true; }
   return false;
@@ -7401,6 +7472,52 @@ function mutateLog(fn, msg) {
   if (msg) toast(msg);
 }
 
+/* ================= Rad-Auswahl wie beim iPhone-Wecker =================
+   Spalten zum Hoch- und Runterwischen, die Mitte ist ausgewählt. Für die Laufzeit (min | sek) und für alle Uhrzeiten (Std | Min). */
+const WH = 44;
+function openWheel(o) {
+  closeWheel();
+  const ov = document.createElement('div'); ov.className = 'wheel-ov'; ov.id = 'wheelOv';
+  ov.innerHTML = `<div class="wheel-sheet" role="dialog" aria-label="${esc(o.title || 'Auswählen')}">
+    <div class="wheel-head"><button class="wheel-x" data-w="cancel">Abbrechen</button><b>${esc(o.title || '')}</b><button class="wheel-ok" data-w="ok">Fertig</button></div>
+    <div class="wheel-body"><div class="wheel-band"></div>${o.cols.map((c, ci) => `${ci && o.sep ? `<span class="wheel-sep">${o.sep}</span>` : ''}<div class="wheel-col"><div class="wheel-scroll" data-ci="${ci}" tabindex="0" aria-label="${esc(c.label || '')}">
+      <div class="wheel-pad"></div>${c.values.map(v => `<div class="wheel-it">${c.pad ? String(v).padStart(2, '0') : v}</div>`).join('')}<div class="wheel-pad"></div></div>${c.label ? `<span class="wheel-lbl">${esc(c.label)}</span>` : ''}</div>`).join('')}</div></div>`;
+  document.body.appendChild(ov);
+  const cols = [...ov.querySelectorAll('.wheel-scroll')];
+  const idxOf = el => Math.max(0, Math.min(o.cols[+el.dataset.ci].values.length - 1, Math.round(el.scrollTop / WH)));
+  const mark = el => { const i = idxOf(el); el.querySelectorAll('.wheel-it').forEach((x, j) => x.classList.toggle('on', j === i)); };
+  cols.forEach((el, ci) => {
+    const c = o.cols[ci], i0 = Math.max(0, c.values.indexOf(c.value)); el.scrollTop = i0 * WH; mark(el);
+    let t = 0; el.addEventListener('scroll', () => { mark(el); clearTimeout(t); t = setTimeout(() => mark(el), 80); }, { passive: true });
+    el.addEventListener('click', e => { const it = e.target.closest('.wheel-it'); if (!it) return; const j = [...el.querySelectorAll('.wheel-it')].indexOf(it); el.scrollTo({ top: j * WH, behavior: 'smooth' }); });
+    el.addEventListener('keydown', e => { if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); el.scrollTop += (e.key === 'ArrowDown' ? 1 : -1) * WH; } });
+  });
+  requestAnimationFrame(() => ov.classList.add('in'));
+  ov.addEventListener('click', e => {
+    const w = e.target.closest('[data-w]');
+    if (w && w.dataset.w === 'ok') { const vals = cols.map((el, ci) => o.cols[ci].values[idxOf(el)]); closeWheel(); o.done(vals); return; }
+    if ((w && w.dataset.w === 'cancel') || e.target === ov) closeWheel();
+  });
+}
+function closeWheel() { const ov = $('#wheelOv'); if (ov) ov.remove(); }
+/* Alle Uhrzeit-Felder: statt der Tastatur das Rad (Stunden | Minuten) */
+function timeWheel(inp) {
+  try { inp.blur(); } catch (e) {}
+  const [h, m] = String(inp.value || toHHMM(nowMin())).split(':').map(Number);
+  const lbl = inp.id && document.querySelector(`label[for="${inp.id}"]`);
+  openWheel({ title: (lbl && lbl.textContent.trim()) || inp.getAttribute('aria-label') || 'Uhrzeit', sep: ':', cols: [
+    { values: Array.from({ length: 24 }, (_, i) => i), value: h || 0, label: 'Std', pad: true },
+    { values: Array.from({ length: 60 }, (_, i) => i), value: m || 0, label: 'Min', pad: true }],
+    done: ([hh, mm]) => { inp.value = String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0'); inp.dispatchEvent(new Event('input', { bubbles: true })); inp.dispatchEvent(new Event('change', { bubbles: true })); } });
+}
+document.addEventListener('click', e => {
+  const t = e.target && e.target.closest && e.target.closest('input[type="time"]'); if (!t || t.disabled) return;
+  e.preventDefault(); timeWheel(t);
+}, true);
+// nur lesen, damit iOS nicht sein eigenes Auswahlfeld zeigt; das Rad übernimmt
+const roTime = root => { if (root && root.querySelectorAll) root.querySelectorAll('input[type="time"]:not([readonly])').forEach(i => { i.readOnly = true; }); };
+new MutationObserver(ms => { for (const m of ms) for (const n of m.addedNodes) if (n.nodeType === 1) { if (n.matches && n.matches('input[type="time"]')) n.readOnly = true; else roTime(n); } }).observe(document.documentElement, { childList: true, subtree: true });
+roTime(document);
 /* Kein Zoomen in der App: Zwei-Finger-Zoom (iPhone) abfangen; Doppeltippen ist per CSS aus, Zoom beim Tippen in Felder über den Viewport */
 ['gesturestart', 'gesturechange', 'gestureend'].forEach(t => document.addEventListener(t, e => e.preventDefault(), { passive: false }));
 document.addEventListener('touchmove', e => { if (e.touches && e.touches.length > 1) e.preventDefault(); }, { passive: false });
@@ -7424,9 +7541,9 @@ document.addEventListener('click', e => {
   if (a === 'wz-add') { if (!S.wz) return; const id = b.dataset.id, g = +b.dataset.g || 100, o = S.wz.items.find(i => i.id === id); if (o) o.g += g; else S.wz.items.push({ id, g });
     if (S.wz.base) { const f = szF(S.wz.sz || 'normal'), ob = S.wz.base.find(i => i.id === id); if (ob) ob.g += g / f; else S.wz.base.push({ id, g: g / f }); }
     if (S.wz.pc && S.wz.items.length > 1) { S.wz.base = S.wz.items.map(i => ({ ...i })); S.wz.sz = 'normal'; S.wz.pc = null; }
-    toast(`${wcName(id)} dazu`); renderWizard(); return; }
-  if (a === 'wz-pcn') { const W = S.wz; if (!W || !W.pc) return; W.pc.n = +b.dataset.n; W.items[0].g = W.pc.n * W.pc.per; renderWizard(); return; }
-  if (a === 'wz-psz') { const W = S.wz; if (!W || !W.base) return; W.sz = b.dataset.v; const f = szF(W.sz); W.items = W.base.map(i => ({ id: i.id, g: Math.max(5, Math.round(i.g * f / 5) * 5) })); renderWizard(); return; }
+    S.wz.kBase = null; S.wz.touched = []; toast(`${wcName(id)} dazu`); renderWizard(); return; }
+  if (a === 'wz-pcn') { const W = S.wz; if (!W || !W.pc) return; W.pc.n = +b.dataset.n; W.items[0].g = W.pc.n * W.pc.per; W.kBase = null; W.touched = []; renderWizard(); return; }
+  if (a === 'wz-psz') { const W = S.wz; if (!W || !W.base) return; W.sz = b.dataset.v; const f = szF(W.sz); W.items = W.base.map(i => ({ id: i.id, g: Math.max(5, Math.round(i.g * f / 5) * 5) })); W.kBase = null; W.touched = []; renderWizard(); return; }
   if (a === 'tr-open') { treeOpen(b.dataset.p.split('.').map(Number)); return; }
   if (a === 'tr-up') { S.wzPath = (S.wzPath || []).slice(0, -1); renderWizard(); return; }
   if (a === 'tr-jump') { S.wzPath = (S.wzPath || []).slice(0, +b.dataset.k + 1); renderWizard(); return; }
@@ -7434,6 +7551,8 @@ document.addEventListener('click', e => {
   if (a === 'slot-edit') { slotEditStart(b.dataset.slot); if (S.tab !== 'plan') setTab('plan'); else renderPlan(); setTimeout(() => { const el = $('.sedit'); if (el) el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' }); }, 120); return; }
   if (a === 'se-step') { const E = S.slotEdit, it = E && E.items[+b.dataset.i]; if (!it) return; const U = seUnit(it.food), st = seStep(it) * (+b.dataset.d);
     it.g = Math.max(0, U.k === 'g' ? Math.round((it.g + st) / Math.abs(st)) * Math.abs(st) : (seVal(it) + st) * U.per);
+    { const sl = todayPlan && todayPlan.slots.find(x => x.id === E.id), mx = slotMax(sl, it.food); if (st > 0 && it.g > mx) { it.g = FOODS[it.food].piece ? Math.floor(mx / FOODS[it.food].piece) * FOODS[it.food].piece : mx; toast(CAP_MSG[FOODS[it.food].grp === 'bread' ? 'bread' : it.food] || 'Mehr ist für eine Portion zu viel'); } }
+    seBalance(+b.dataset.i);
     const inp = $('#se-' + b.dataset.i); if (inp) { const v = seVal(it); inp.value = String(v).replace('.', ','); inp.nextElementSibling.textContent = U.u(v); }
     $('#seSum').innerHTML = slotEditSum(); return; }
   if (a === 'beer') { beerAdd(); return; }
@@ -7450,9 +7569,10 @@ document.addEventListener('click', e => {
   if (a === 'se-pick') {
     const k = b.dataset.k, F = FOODS[k]; if (!F || !S.slotEdit) return;
     S.slotEdit.items.push({ food: k, g: F.piece ? F.piece : F.spoon ? F.spoon : F.grp === 'nuts' ? 30 : 100 }); S.slotEdit.q = '';
+    S.slotEdit.base = slotEditTot().kcal; S.slotEdit.touched = [];
     renderPlan(); setTimeout(() => { const inp = $('#se-' + (S.slotEdit.items.length - 1)); if (inp) { inp.focus(); inp.select(); } }, 60); return;
   }
-  if (a === 'se-del') { S.slotEdit.items.splice(+b.dataset.i, 1); renderPlan(); return; }
+  if (a === 'se-del') { S.slotEdit.items.splice(+b.dataset.i, 1); S.slotEdit.base = slotEditTot().kcal; S.slotEdit.touched = []; renderPlan(); return; }
   if (a === 'se-save') { slotEditSave(); return; }
   if (a === 'se-cancel') { S.slotEdit = null; renderPlan(); return; }
   if (a === 'eat') { const id = b.dataset.slot; const snap = snapshotSlot(id); return mutateLog(l => { l.meals[id] = { state: 'eaten', at: toHHMM(nowMin()), ...snap }; }, 'Abgehakt'); }
@@ -7905,12 +8025,18 @@ document.addEventListener('click', e => {
     if (latest && latest.d === date) { S.profile.weight = kg; profileChanged(false); }
     renderFort(); toast('Gewicht gespeichert'); return;
   }
-  if (a === 'fr-km') { const i = $('#fr-km'); if (i) i.value = dec1(+b.dataset.v); document.querySelectorAll('[data-act="fr-km"]').forEach(x => x.setAttribute('aria-pressed', x === b)); const m = $('#fr-min'); if (m) m.focus(); return; }
+  if (a === 'fr-dur') {
+    const m0 = $('#fr-min').value !== '' ? +$('#fr-min').value : +b.dataset.min, s0 = $('#fr-sec').value !== '' ? +$('#fr-sec').value : +b.dataset.sec;
+    openWheel({ title: 'Laufzeit', cols: [{ values: Array.from({ length: 241 }, (_, i) => i), value: m0, label: 'min' }, { values: Array.from({ length: 60 }, (_, i) => i), value: s0, label: 'sek', pad: true }],
+      done: ([mi, se]) => { $('#fr-min').value = mi; $('#fr-sec').value = se; b.innerHTML = `<b>${mi}:${String(se).padStart(2, '0')}</b><span class="muted">min</span>${icon('clock')}`; b.classList.add('set'); } });
+    return;
+  }
+  if (a === 'fr-km') { const i = $('#fr-km'); if (i) i.value = dec1(+b.dataset.v); document.querySelectorAll('[data-act="fr-km"]').forEach(x => x.setAttribute('aria-pressed', x === b)); const m = $('#fr-dur'); if (m && !$('#fr-min').value) m.click(); return; }
   if (a === 'fr-save') {
     const km = num($('#fr-km').value), mi = num($('#fr-min').value) || 0, se = num($('#fr-sec').value) || 0, date = $('#fr-date').value || S.today;
     if (!(km > 0 && km < 200)) { toast('Bitte die Distanz in km eingeben, z. B. 5,2'); $('#fr-km').focus(); return; }
     const sec = Math.round(mi * 60 + se);
-    if (!(sec >= 60)) { toast('Bitte die Zeit eingeben, z. B. 28 min 30 sek'); $('#fr-min').focus(); return; }
+    if (!(sec >= 60)) { toast('Bitte die Zeit eingeben, z. B. 28 min 30 sek'); $('#fr-dur').click(); return; }
     if (sec / km < 120 || sec / km > 1200) { toast('Das Tempo wirkt unrealistisch, prüf km und Zeit'); return; }
     const run = { id: 'r-' + Date.now().toString(36), date, km: Math.round(km * 100) / 100, sec };
     S.train = { ...S.train, runs: (S.train.runs || []).concat(run) }; Store.saveTrain();
@@ -9306,8 +9432,9 @@ function fortRun() {
   const form = `<div class="card"><h3>Lauf eintragen</h3>
       <div class="field" style="margin-top:10px"><label for="fr-km">Distanz</label><label class="gin"><input id="fr-km" inputmode="decimal" autocomplete="off" value="${last ? dec1(last.km) : ''}" placeholder="5,0"><em>km</em></label>
         <div class="fr-chips" role="group" aria-label="Übliche Strecken">${[...new Set([last ? Math.round(last.km * 10) / 10 : null, 3, 5, 7.5, 10, 21.1].filter(Boolean))].slice(0, 5).map(k => `<button class="pchip" data-act="fr-km" data-v="${k}" aria-pressed="${!!last && Math.abs(last.km - k) < 0.05}">${dec1(k)} km</button>`).join('')}</div></div>
-      <div class="two" style="margin-top:10px"><div class="field"><label for="fr-min">Zeit</label><label class="gin"><input id="fr-min" inputmode="numeric" autocomplete="off" placeholder="${last ? Math.floor(last.sec / 60) : '30'}"><em>min</em></label></div>
-        <div class="field"><label for="fr-sec">&nbsp;</label><label class="gin"><input id="fr-sec" inputmode="numeric" autocomplete="off" placeholder="00"><em>sek</em></label></div></div>
+      <div class="field" style="margin-top:10px"><label for="fr-dur">Zeit</label>
+        <button class="wheel-field" id="fr-dur" data-act="fr-dur" data-min="${last ? Math.floor(last.sec / 60) : 30}" data-sec="${last ? Math.round(last.sec % 60) : 0}"><span class="muted">Zeit wählen</span>${icon('clock')}</button>
+        <input type="hidden" id="fr-min" value=""><input type="hidden" id="fr-sec" value=""></div>
       <div class="field" style="margin-top:10px"><label for="fr-date">Tag</label><input id="fr-date" type="date" value="${S.today}" max="${S.today}"></div>
       <button class="btn" data-act="fr-save" style="margin-top:12px">${icon('check')}Lauf speichern</button></div>`;
   // Vergangene Läufe und Kurven nur über die Lauf-Kachel in der Gesamtansicht
@@ -9699,6 +9826,10 @@ document.addEventListener('input', e => {
 });
 document.addEventListener('change', e => {
   if (e.target && e.target.id === 'wzRep' && S.wz) { S.wz.rep = e.target.value; renderWizard(); return; }
+  if (e.target && e.target.id === 'seKeep' && S.slotEdit) { S.slotEdit.keep = e.target.checked; S.slotEdit.base = slotEditTot().kcal; S.slotEdit.touched = []; return; }
+  if (e.target && e.target.id === 'wzKeep' && S.wz) { S.wz.keep = e.target.checked; S.wz.kBase = wzMac(S.wz.items).kcal; S.wz.touched = []; return; }
+  if (e.target && e.target.dataset && e.target.dataset.se !== undefined && S.slotEdit) { seBalance(+e.target.dataset.se); return; }
+  if (e.target && e.target.dataset && e.target.dataset.wz !== undefined && S.wz && S.wz.items) { wzBalance(+e.target.dataset.wz); return; }
 });
 document.addEventListener('input', e => {
   const t = e.target; if (!t) return;
