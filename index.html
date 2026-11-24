@@ -3995,7 +3995,18 @@ const Watch = {
     if (!todayPlan || !todayRem) computeToday();
     const T = todayPlan.target, E = todayRem.eaten, r = v => Math.max(0, Math.round(+v || 0));
     const pal = WATCH_PAL.apple || WATCH_PAL.cloud;
-    return ['DR1', S.today, r(E.kcal), r(T.kcal), r(E.p), r(T.p), r(E.c), r(T.c), r(E.f), r(T.f), ...pal.map(h => parseInt(h.slice(1), 16)), 'x'].join(';');
+    return ['DR1', S.today, r(E.kcal), r(T.kcal), r(E.p), r(T.p), r(E.c), r(T.c), r(E.f), r(T.f), ...pal.map(h => parseInt(h.slice(1), 16)), this.days(), 'x'].join(';');
+  },
+  // Tagesart für heute und die nächsten 6 Tage (Push, Pull, Laufen, Ruhe …), damit die Uhr auch ohne offene App weiß, was dran ist
+  days() {
+    const pr = planPr(), now = new Date(), out = [];
+    for (let i = 0; i < 7; i++) {
+      const d = addDays(now, i);
+      const t = (i === 0 && S.log.dayType) || (evNoTrain(pr, d) ? 'rest' : typeOn(S.profile, d));
+      const f = t === 'gym' ? focusShort(dayInfo(S.profile, d).f) : '';
+      out.push(String(t === 'gym' ? (f || 'Gym') : t === 'run' ? 'Laufen' : 'Ruhe').replace(/[;,]/g, ' ').slice(0, 12));
+    }
+    return out.join(',');
   },
   async api(method, path, body, token) {
     let res;
@@ -9954,7 +9965,7 @@ function mealMoveSet(iso, slot, hhmm) {
   document.addEventListener('touchcancel', () => { if (D && !D.on) reset(); else if (D) end(); });
   document.addEventListener('contextmenu', e => { if (D) e.preventDefault(); });
 })();
-if (/[?&]dbg\b/.test(location.search)) window.__np = { get S() { return S; }, get plan() { return todayPlan; }, get rem() { return todayRem; }, calcTargets, MEALS, FOODS, mealNameOf, rankBadge, RANKS, planDay, planPr, shoppingCycle, addDays, isoDate, computeToday, shopSnapSync, rankCompute, shopAskList, availOn, voiceParse, voiceHandle, Voice, ASR, vMatches, vNear, vSplitWord, vPrompt, vLex };
+if (/[?&]dbg\b/.test(location.search)) window.__np = { get S() { return S; }, get plan() { return todayPlan; }, get rem() { return todayRem; }, calcTargets, MEALS, FOODS, mealNameOf, rankBadge, RANKS, planDay, planPr, shoppingCycle, addDays, isoDate, computeToday, shopSnapSync, rankCompute, shopAskList, availOn, voiceParse, voiceHandle, Voice, ASR, vMatches, vNear, vSplitWord, vPrompt, vLex, Watch };
 })();
 </script>
 
