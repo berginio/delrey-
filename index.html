@@ -4047,6 +4047,29 @@ const Watch = {
     return ok;
   }
 };
+// Die Uhr schickt ab 18 Uhr einmal den Verbrauch bis dahin an einen geheimen ntfy-Kanal ("DRB;Datum;HH:MM;kcal").
+// Die App holt ihn beim Öffnen ab und trägt ihn wie einen Garmin-Wert ein. Ein selbst eingetippter Wert bleibt stehen.
+let burnLast = 0;
+async function watchBurnCheck() {
+  const w = Watch.get();
+  if (!w || !w.id || !Watch.can() || S.profile.garmin !== 'on' || nowMin() < 18 * 60) return;
+  if (S.log.burnedSrc === 'off' || (S.log.burned && S.log.burnedSrc !== 'uhr')) return;
+  if (Date.now() - burnLast < 60000) return;
+  burnLast = Date.now();
+  let txt = '';
+  try { const r = await fetch(`https://ntfy.sh/delrey-${encodeURIComponent(w.id)}/json?poll=1&since=12h`, { cache: 'no-store' }); if (!r.ok) return; txt = await r.text(); } catch (e) { return; }
+  let best = null;
+  for (const ln of txt.split('\n')) {
+    let m; try { m = JSON.parse(ln); } catch (e) { continue; }
+    const p = String((m && m.message) || '').split(';');
+    if (p[0] !== 'DRB' || p[1] !== S.today || !/^\d\d:\d\d$/.test(p[2] || '')) continue;
+    const v = parseInt(p[3], 10);
+    if (v >= 1000 && v <= 8000 && (!best || p[2] >= best.t)) best = { t: p[2], v };
+  }
+  if (!best || (S.log.burned === best.v && S.log.burnedAt === best.t)) return;
+  if (S.log.burned && S.log.burnedSrc !== 'uhr') return;
+  mutateLog(l => { l.burned = best.v; l.burnedAt = best.t; l.burnedSrc = 'uhr'; }, `Verbrauch von der Uhr übernommen (${fmt(best.v)} kcal um ${best.t}), Ziel angepasst`);
+}
 function renderWatch() {
   const el = $('#watchBox'); if (!el) return;
   const w = Watch.get();
@@ -7640,7 +7663,7 @@ document.addEventListener('click', e => {
     const v = parseInt(String($('#f-burn').value).replace(/\D/g, ''), 10);
     if (!(v >= 1000 && v <= 8000)) { toast('Bitte die Kalorien gesamt eingeben, z. B. 2900'); $('#f-burn').focus(); return; }
     if (nowMin() < 18 * 60) { toast('Erst ab 18 Uhr, vorher fehlt noch ein Teil des Tages'); return; }
-    return mutateLog(l => { l.burned = v; l.burnedAt = toHHMM(nowMin()); }, 'Ziel mit Garmin neu berechnet');
+    return mutateLog(l => { l.burned = v; l.burnedAt = toHHMM(nowMin()); delete l.burnedSrc; }, 'Ziel mit Garmin neu berechnet');
   }
   if (a === 'info') {
     const k = b.dataset.open;
@@ -7763,7 +7786,7 @@ document.addEventListener('click', e => {
     Store.saveWeight(S.today, kg); S.profile.weight = kg; profileChanged(true);
     toast('Gewicht gespeichert, alles neu berechnet'); return;
   }
-  if (a === 'burn-clear') return mutateLog(l => { delete l.burned; delete l.burnedAt; }, 'Garmin-Wert entfernt');
+  if (a === 'burn-clear') return mutateLog(l => { const auto = l.burnedSrc === 'uhr'; delete l.burned; delete l.burnedAt; if (auto) l.burnedSrc = 'off'; else delete l.burnedSrc; }, 'Garmin-Wert entfernt');
   if (a === 'snack-eat') {
     const i = (S.ideas || [])[+b.dataset.i]; if (!i) return;
     const r = x => Math.round(x);
@@ -9860,7 +9883,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && e.target && e.target.id === 'se-q') { const f = $('#seHits [data-act="se-pick"]'); if (f) { e.preventDefault(); f.click(); } return; }
   if (e.key === 'Enter' && e.target && e.target.id === 'wzSearch') { const f = $('#wzCard .tr-row, #wzCard .wz-rec .pchip'); if (f) { e.preventDefault(); f.click(); } }
 });
-document.addEventListener('visibilitychange', () => { if (!document.hidden) { tick(); Backup.auto(); Cal.push(); inboxCheck(true); } });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { tick(); Backup.auto(); Cal.push(); inboxCheck(true); watchBurnCheck(); } });
 document.addEventListener('change', async e => {
   if (!e.target || e.target.id !== 'bkFile') return;
   const f = e.target.files && e.target.files[0]; if (!f) return;
@@ -9868,7 +9891,7 @@ document.addEventListener('change', async e => {
   renderBackup();
 });
 Store.init().then(() => {
-  setTimeout(() => { try { shopSnapSync(); } catch (e) {} try { computeToday(); pantrySync(); renderAll(false); } catch (e) {} inboxCheck(true); }, 1500);
+  setTimeout(() => { try { shopSnapSync(); } catch (e) {} try { computeToday(); pantrySync(); renderAll(false); } catch (e) {} inboxCheck(true); watchBurnCheck(); }, 1500);
   if (!Backup.can()) return;
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {}
   setTimeout(() => { Backup.auto(); Cal.push(); }, 2500);
@@ -9965,7 +9988,7 @@ function mealMoveSet(iso, slot, hhmm) {
   document.addEventListener('touchcancel', () => { if (D && !D.on) reset(); else if (D) end(); });
   document.addEventListener('contextmenu', e => { if (D) e.preventDefault(); });
 })();
-if (/[?&]dbg\b/.test(location.search)) window.__np = { get S() { return S; }, get plan() { return todayPlan; }, get rem() { return todayRem; }, calcTargets, MEALS, FOODS, mealNameOf, rankBadge, RANKS, planDay, planPr, shoppingCycle, addDays, isoDate, computeToday, shopSnapSync, rankCompute, shopAskList, availOn, voiceParse, voiceHandle, Voice, ASR, vMatches, vNear, vSplitWord, vPrompt, vLex, Watch };
+if (/[?&]dbg\b/.test(location.search)) window.__np = { get S() { return S; }, get plan() { return todayPlan; }, get rem() { return todayRem; }, calcTargets, MEALS, FOODS, mealNameOf, rankBadge, RANKS, planDay, planPr, shoppingCycle, addDays, isoDate, computeToday, shopSnapSync, rankCompute, shopAskList, availOn, voiceParse, voiceHandle, Voice, ASR, vMatches, vNear, vSplitWord, vPrompt, vLex, Watch, watchBurnCheck };
 })();
 </script>
 
