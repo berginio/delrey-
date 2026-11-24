@@ -6377,22 +6377,26 @@ const seVal = it => { const U = seUnit(it.food); return U.k === 'g' ? Math.round
 const seStep = it => { const U = seUnit(it.food); return U.k === 'g' ? (it.g < 60 ? 5 : 10) : U.step; };
 /* Nährwerte eines Gerichts gleich halten: änderst du eine Zutat, passen sich die anderen, noch nicht angefassten an
    (mehr Fleisch heißt etwas weniger Beilage und umgekehrt). Was du selbst eingestellt hast, bleibt so. */
-function balanceItems(items, i, base, touched, kc, roundTo, capOf) {
-  const others = items.map((_, j) => j).filter(j => j !== i && !touched.includes(j) && kc(items[j], items[j].g) > 0.5);
+// Die anderen Zutaten werden immer aus den Mengen beim Start berechnet (orig), nicht aus den schon angepassten.
+// So kommt alles wieder genau auf den Anfang zurück, wenn du eine Zutat erst erhöhst und dann wieder senkst.
+function balanceItems(items, i, base, touched, kc, roundTo, capOf, orig) {
+  const g0 = j => (orig && orig[j] != null ? orig[j] : items[j].g);
+  const others = items.map((_, j) => j).filter(j => j !== i && !touched.includes(j) && kc(items[j], g0(j)) > 0.5);
   if (!others.length || !(base > 0)) return false;
   const fixed = items.reduce((t, it, j) => t + (others.includes(j) ? 0 : kc(it, it.g)), 0);
-  const cur = others.reduce((t, j) => t + kc(items[j], items[j].g), 0); if (cur <= 0) return false;
-  const f = Math.max(0.2, Math.min(3, (base - fixed) / cur));
-  for (const j of others) { const it = items[j]; it.g = Math.max(0, Math.min(capOf(it), roundTo(it, it.g * f))); }
+  const cur = others.reduce((t, j) => t + kc(items[j], g0(j)), 0); if (cur <= 0) return false;
+  const f = Math.max(0, Math.min(3, (base - fixed) / cur));
+  for (const j of others) { const it = items[j]; it.g = Math.abs(f - 1) < 0.005 ? g0(j) : Math.max(0, Math.min(capOf(it), roundTo(it, g0(j) * f))); }
   return true;
 }
+const origOf = items => items.map(it => it.g);
 const CAP_MSG = { rice: 'Mehr als 150 g Reis sind für eine Person zu viel', bread: 'Abends höchstens 3 Scheiben Brot' };
 function seBalance(i) {
   const E = S.slotEdit; if (!E) return;
   const sl = todayPlan && todayPlan.slots.find(x => x.id === E.id);
   if (!E.touched.includes(i)) E.touched.push(i);
   if (E.keep) balanceItems(E.items, i, E.base, E.touched, (it, g) => macrosOf(it.food, g).kcal,
-    (it, g) => { const U = seUnit(it.food); return U.k === 'g' ? Math.round(g / 5) * 5 : Math.round(g / U.per * 2) / 2 * U.per; }, it => slotMax(sl, it.food));
+    (it, g) => { const U = seUnit(it.food); return U.k === 'g' ? Math.round(g / 5) * 5 : Math.round(g / U.per * 2) / 2 * U.per; }, it => slotMax(sl, it.food), E.orig);
   E.items.forEach((it, j) => { const inp = $('#se-' + j); if (inp && inp !== document.activeElement) { const U = seUnit(it.food), v = seVal(it); inp.value = String(v).replace('.', ','); inp.nextElementSibling.textContent = U.u(v); } });
   const el = $('#seSum'); if (el) el.innerHTML = slotEditSum();
 }
@@ -6401,7 +6405,7 @@ function slotEditStart(id) {
   if (!s) return;
   const items = st && st.items ? st.items : adj ? adj.items : s.items;
   S.slotEdit = { id, was: st && st.state === 'eaten' ? st.at || toHHMM(nowMin()) : null, items: items.map(i => ({ food: i.food, g: i.g })), keep: true, touched: [] };
-  S.slotEdit.base = sumItems(S.slotEdit.items).kcal;
+  S.slotEdit.base = sumItems(S.slotEdit.items).kcal; S.slotEdit.orig = origOf(S.slotEdit.items);
   S.rowOpen[todayPlan.date + ':' + id] = true;
 }
 function slotEditTot() { return sumItems(S.slotEdit.items.filter(i => i.g > 0)); }
@@ -7401,7 +7405,7 @@ function renderWizard() {
   }
   if (W.step === 99) {
     const t = wzMac(W.items), open = wzOpenSlots();
-    if (W.kBase == null) { W.kBase = t.kcal; W.touched = []; }
+    if (W.kBase == null) { W.kBase = t.kcal; W.kOrig = origOf(W.items); W.touched = []; }
     el.innerHTML = `<div class="wz-top"><button class="wz-back" data-act="wz-back" aria-label="Zurück">${icon('arrow-left')}</button><span>${esc(W.head || (DISH[W.dish] ? DISH[W.dish].n : 'Zuletzt'))}</span><button class="wz-x" data-act="wz-cancel" aria-label="Abbrechen">${icon('x')}</button></div>
       <h3 class="wz-h">${esc(W.name)}</h3>
       ${W.heard ? `<p class="wz-heard">${icon('mic')}<span>„${esc(W.heard)}“</span></p>` : ''}
@@ -7448,7 +7452,7 @@ function wzBalance(i) {
   const W = S.wz; if (!W || !W.items) return;
   W.touched = W.touched || []; if (!W.touched.includes(i)) W.touched.push(i);
   if (W.keep !== false && W.kBase > 0) balanceItems(W.items, i, W.kBase, W.touched, (it, g) => { const w = wcGet(it.id); return w ? w[1] * g / 100 : 0; },
-    (it, g) => Math.round(g / 5) * 5, it => it.id === 'f:rice' ? MAXG.rice : Infinity);
+    (it, g) => Math.round(g / 5) * 5, it => it.id === 'f:rice' ? MAXG.rice : Infinity, W.kOrig);
   W.items.forEach((it, j) => { const inp = document.querySelector(`[data-wz="${j}"]`); if (inp && inp !== document.activeElement) inp.value = it.g; });
   wzSumUpdate();
 }
@@ -7603,10 +7607,10 @@ document.addEventListener('click', e => {
   if (a === 'se-pick') {
     const k = b.dataset.k, F = FOODS[k]; if (!F || !S.slotEdit) return;
     S.slotEdit.items.push({ food: k, g: F.piece ? F.piece : F.spoon ? F.spoon : F.grp === 'nuts' ? 30 : 100 }); S.slotEdit.q = '';
-    S.slotEdit.base = slotEditTot().kcal; S.slotEdit.touched = [];
+    S.slotEdit.base = slotEditTot().kcal; S.slotEdit.orig = origOf(S.slotEdit.items); S.slotEdit.touched = [];
     renderPlan(); setTimeout(() => { const inp = $('#se-' + (S.slotEdit.items.length - 1)); if (inp) { inp.focus(); inp.select(); } }, 60); return;
   }
-  if (a === 'se-del') { S.slotEdit.items.splice(+b.dataset.i, 1); S.slotEdit.base = slotEditTot().kcal; S.slotEdit.touched = []; renderPlan(); return; }
+  if (a === 'se-del') { S.slotEdit.items.splice(+b.dataset.i, 1); S.slotEdit.base = slotEditTot().kcal; S.slotEdit.orig = origOf(S.slotEdit.items); S.slotEdit.touched = []; renderPlan(); return; }
   if (a === 'se-save') { slotEditSave(); return; }
   if (a === 'se-cancel') { S.slotEdit = null; renderPlan(); return; }
   if (a === 'eat') { const id = b.dataset.slot; const snap = snapshotSlot(id); return mutateLog(l => { l.meals[id] = { state: 'eaten', at: toHHMM(nowMin()), ...snap }; }, 'Abgehakt'); }
@@ -9860,8 +9864,8 @@ document.addEventListener('input', e => {
 });
 document.addEventListener('change', e => {
   if (e.target && e.target.id === 'wzRep' && S.wz) { S.wz.rep = e.target.value; renderWizard(); return; }
-  if (e.target && e.target.id === 'seKeep' && S.slotEdit) { S.slotEdit.keep = e.target.checked; S.slotEdit.base = slotEditTot().kcal; S.slotEdit.touched = []; return; }
-  if (e.target && e.target.id === 'wzKeep' && S.wz) { S.wz.keep = e.target.checked; S.wz.kBase = wzMac(S.wz.items).kcal; S.wz.touched = []; return; }
+  if (e.target && e.target.id === 'seKeep' && S.slotEdit) { S.slotEdit.keep = e.target.checked; S.slotEdit.base = slotEditTot().kcal; S.slotEdit.orig = origOf(S.slotEdit.items); S.slotEdit.touched = []; return; }
+  if (e.target && e.target.id === 'wzKeep' && S.wz) { S.wz.keep = e.target.checked; S.wz.kBase = wzMac(S.wz.items).kcal; S.wz.kOrig = origOf(S.wz.items); S.wz.touched = []; return; }
   if (e.target && e.target.dataset && e.target.dataset.se !== undefined && S.slotEdit) { seBalance(+e.target.dataset.se); return; }
   if (e.target && e.target.dataset && e.target.dataset.wz !== undefined && S.wz && S.wz.items) { wzBalance(+e.target.dataset.wz); return; }
 });
@@ -9988,7 +9992,7 @@ function mealMoveSet(iso, slot, hhmm) {
   document.addEventListener('touchcancel', () => { if (D && !D.on) reset(); else if (D) end(); });
   document.addEventListener('contextmenu', e => { if (D) e.preventDefault(); });
 })();
-if (/[?&]dbg\b/.test(location.search)) window.__np = { get S() { return S; }, get plan() { return todayPlan; }, get rem() { return todayRem; }, calcTargets, MEALS, FOODS, mealNameOf, rankBadge, RANKS, planDay, planPr, shoppingCycle, addDays, isoDate, computeToday, shopSnapSync, rankCompute, shopAskList, availOn, voiceParse, voiceHandle, Voice, ASR, vMatches, vNear, vSplitWord, vPrompt, vLex, Watch, watchBurnCheck };
+if (/[?&]dbg\b/.test(location.search)) window.__np = { get S() { return S; }, get plan() { return todayPlan; }, get rem() { return todayRem; }, calcTargets, MEALS, FOODS, mealNameOf, rankBadge, RANKS, planDay, planPr, shoppingCycle, addDays, isoDate, computeToday, shopSnapSync, rankCompute, shopAskList, availOn, voiceParse, voiceHandle, Voice, ASR, vMatches, vNear, vSplitWord, vPrompt, vLex, Watch, watchBurnCheck, balanceItems };
 })();
 </script>
 
