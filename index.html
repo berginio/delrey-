@@ -7486,7 +7486,6 @@ function wzAct(a, b) {
   if (a === 'wz-sidesz') { W.A[q.k][b.dataset.id] = b.dataset.v; renderWizard(); return true; }
   if (a === 'wz-top') { const v = W.A[q.k], id = b.dataset.v; if (v[id] != null) delete v[id]; else v[id] = +b.dataset.g; renderWizard(); return true; }
   if (a === 'wz-step') { const it = W.items[+b.dataset.i]; if (!it) return true; const st = it.g < 60 ? 5 : it.g < 200 ? 10 : 25; it.g = Math.max(0, Math.round((it.g + st * (+b.dataset.d)) / st) * st);
-    if (it.id === 'f:rice' && it.g > MAXG.rice) { it.g = MAXG.rice; toast(CAP_MSG.rice); }
     const inp = document.querySelector(`[data-wz="${b.dataset.i}"]`); if (inp) inp.value = it.g; wzBalance(+b.dataset.i); return true; }
   if (a === 'wz-del') { W.items.splice(+b.dataset.i, 1); W.kBase = null; W.touched = []; renderWizard(); return true; }
   if (a === 'wz-save') { wzSave(); return true; }
@@ -7596,7 +7595,7 @@ document.addEventListener('click', e => {
   if (a === 'slot-edit') { slotEditStart(b.dataset.slot); if (S.tab !== 'plan') setTab('plan'); else renderPlan(); setTimeout(() => { const el = $('.sedit'); if (el) el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' }); }, 120); return; }
   if (a === 'se-step') { const E = S.slotEdit, it = E && E.items[+b.dataset.i]; if (!it) return; const U = seUnit(it.food), st = seStep(it) * (+b.dataset.d);
     it.g = Math.max(0, U.k === 'g' ? Math.round((it.g + st) / Math.abs(st)) * Math.abs(st) : (seVal(it) + st) * U.per);
-    { const sl = todayPlan && todayPlan.slots.find(x => x.id === E.id), mx = slotMax(sl, it.food); if (st > 0 && it.g > mx) { it.g = FOODS[it.food].piece ? Math.floor(mx / FOODS[it.food].piece) * FOODS[it.food].piece : mx; toast(CAP_MSG[FOODS[it.food].grp === 'bread' ? 'bread' : it.food] || 'Mehr ist für eine Portion zu viel'); } }
+    // was du selbst einstellst, wird nicht begrenzt (gegessen ist gegessen); Obergrenzen gelten nur für die Vorschläge der App
     seBalance(+b.dataset.i);
     const inp = $('#se-' + b.dataset.i); if (inp) { const v = seVal(it); inp.value = String(v).replace('.', ','); inp.nextElementSibling.textContent = U.u(v); }
     $('#seSum').innerHTML = slotEditSum(); return; }
