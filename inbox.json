@@ -1,100 +1,105 @@
 {
- "v": 1,
- "hinweis": "Einträge, die Claude für die App DEL REY vorbereitet. Die App übernimmt sie beim Öffnen.",
- "items": [
-  {
-   "id": "2026-11-11-abend-toasts",
-   "d": "2026-11-11",
-   "code": "DR+ 2 Schinken-Käse-Toasts | 680 kcal | E 36 | KH 68 | F 29 | 22:50"
-  },
-  {
-   "id": "2026-11-15-mcdonalds",
-   "d": "2026-11-15",
-   "code": "DR+ McDonald's: Hot Chicken, 12 Nuggets, Pommes, Camembert Donuts, 2 Dips | 1895 kcal | E 79 | KH 165 | F 100 | 18:00"
-  },
-  {
-   "id": "2026-11-16-briespitzen",
-   "d": "2026-11-16",
-   "extra": true,
-   "code": "DR+ 6 gebackene Briespitzen | 450 kcal | E 15 | KH 38 | F 27 | 10:45"
-  },
-  {
-   "id": "2026-11-17-kebab",
-   "d": "2026-11-17",
-   "code": "DR+ Kebab mit Fleisch und Schafkäse (ohne Salat & Soße) | 755 kcal | E 41 | KH 72 | F 34 | 10:30"
-  },
-  {
-   "id": "2026-11-17-gulasch",
-   "d": "2026-11-17",
-   "code": "DR+ Rindsgulasch mit Nudeln und Kartoffeln (bei Mama) | 740 kcal | E 54 | KH 72 | F 25 | 16:45"
-  },
-  {
-   "id": "2026-11-17-gulasch-15",
-   "d": "2026-11-17!fix",
-   "fix": "2026-11-17-gulasch",
-   "code": "DR+ Rindsgulasch mit Nudeln und Kartoffeln (bei Mama) | 740 kcal | E 54 | KH 72 | F 25 | 15:00"
-  },
-  {
-   "id": "2026-11-20-mittag",
-   "d": "2026-11-20",
-   "code": "DR+ Frittatensuppe + Grillteller mit Pommes | 1140 kcal | E 68 | KH 78 | F 60 | 10:30"
-  },
-  {
-   "id": "2026-11-20-pizza",
-   "d": "2026-11-20",
-   "code": "DR+ Schinkenpizza | 1080 kcal | E 50 | KH 126 | F 40 | 19:15"
-  },
-  {
-   "id": "2026-11-21-wels",
-   "d": "2026-11-21!ev",
-   "ev": {
-    "title": "Essen in Wels",
-    "start": "12:00",
-    "end": "14:00",
-    "kind": "buy"
-   }
-  },
-  {
-   "id": "2026-11-21-gluehwein",
-   "d": "2026-11-21!ev",
-   "ev": {
-    "title": "Glühweinstand",
-    "start": "14:00",
-    "end": "19:30",
-    "kind": "buy"
-   }
-  },
-  {
-   "id": "2026-11-21-kaffeebar",
-   "d": "2026-11-21!ev",
-   "ev": {
-    "title": "Kaffeebar",
-    "start": "19:30",
-    "open": true,
-    "kind": "buy"
-   }
-  },
-  {
-   "id": "2026-11-22-linsenchips",
-   "d": "2026-11-22",
-   "extra": true,
-   "code": "DR+ 30 g Linsenchips Paprika | 137 kcal | E 4 | KH 17 | F 5 | 21:00"
-  },
-  {
-   "id": "2026-11-22-joghurt",
-   "d": "2026-11-22",
-   "extra": true,
-   "code": "DR+ Griechischer Joghurt mit Honig und Walnüssen | 420 kcal | E 24 | KH 30 | F 24 | 21:30"
-  },
-  {
-   "id": "2026-11-23-kantine",
-   "d": "2026-11-23",
-   "code": "DR+ Kantine: Gnocchi mit Schinkenrahm, Scheibe Brot, Nudelsuppe | 870 kcal | E 28 | KH 121 | F 30 | 10:30"
-  },
-  {
-   "id": "2026-11-24-kantine",
-   "d": "2026-11-24",
-   "code": "DR+ Kantine: Jägerschnitzel mit Schwammerlsauce, 3 Rösti, Scheibe Brot | 825 kcal | E 46 | KH 63 | F 42 | 10:30"
-  }
- ]
+  "v": 1,
+  "hinweis": "Einträge, die Claude für die App DEL REY vorbereitet. Die App übernimmt sie beim Öffnen.",
+  "items": [
+    {
+      "id": "2026-11-11-abend-toasts",
+      "d": "2026-11-11",
+      "code": "DR+ 2 Schinken-Käse-Toasts | 680 kcal | E 36 | KH 68 | F 29 | 22:50"
+    },
+    {
+      "id": "2026-11-15-mcdonalds",
+      "d": "2026-11-15",
+      "code": "DR+ McDonald's: Hot Chicken, 12 Nuggets, Pommes, Camembert Donuts, 2 Dips | 1895 kcal | E 79 | KH 165 | F 100 | 18:00"
+    },
+    {
+      "id": "2026-11-16-briespitzen",
+      "d": "2026-11-16",
+      "extra": true,
+      "code": "DR+ 6 gebackene Briespitzen | 450 kcal | E 15 | KH 38 | F 27 | 10:45"
+    },
+    {
+      "id": "2026-11-17-kebab",
+      "d": "2026-11-17",
+      "code": "DR+ Kebab mit Fleisch und Schafkäse (ohne Salat & Soße) | 755 kcal | E 41 | KH 72 | F 34 | 10:30"
+    },
+    {
+      "id": "2026-11-17-gulasch",
+      "d": "2026-11-17",
+      "code": "DR+ Rindsgulasch mit Nudeln und Kartoffeln (bei Mama) | 740 kcal | E 54 | KH 72 | F 25 | 16:45"
+    },
+    {
+      "id": "2026-11-17-gulasch-15",
+      "d": "2026-11-17!fix",
+      "fix": "2026-11-17-gulasch",
+      "code": "DR+ Rindsgulasch mit Nudeln und Kartoffeln (bei Mama) | 740 kcal | E 54 | KH 72 | F 25 | 15:00"
+    },
+    {
+      "id": "2026-11-20-mittag",
+      "d": "2026-11-20",
+      "code": "DR+ Frittatensuppe + Grillteller mit Pommes | 1140 kcal | E 68 | KH 78 | F 60 | 10:30"
+    },
+    {
+      "id": "2026-11-20-pizza",
+      "d": "2026-11-20",
+      "code": "DR+ Schinkenpizza | 1080 kcal | E 50 | KH 126 | F 40 | 19:15"
+    },
+    {
+      "id": "2026-11-21-wels",
+      "d": "2026-11-21!ev",
+      "ev": {
+        "title": "Essen in Wels",
+        "start": "12:00",
+        "end": "14:00",
+        "kind": "buy"
+      }
+    },
+    {
+      "id": "2026-11-21-gluehwein",
+      "d": "2026-11-21!ev",
+      "ev": {
+        "title": "Glühweinstand",
+        "start": "14:00",
+        "end": "19:30",
+        "kind": "buy"
+      }
+    },
+    {
+      "id": "2026-11-21-kaffeebar",
+      "d": "2026-11-21!ev",
+      "ev": {
+        "title": "Kaffeebar",
+        "start": "19:30",
+        "open": true,
+        "kind": "buy"
+      }
+    },
+    {
+      "id": "2026-11-22-linsenchips",
+      "d": "2026-11-22",
+      "extra": true,
+      "code": "DR+ 30 g Linsenchips Paprika | 137 kcal | E 4 | KH 17 | F 5 | 21:00"
+    },
+    {
+      "id": "2026-11-22-joghurt",
+      "d": "2026-11-22",
+      "extra": true,
+      "code": "DR+ Griechischer Joghurt mit Honig und Walnüssen | 420 kcal | E 24 | KH 30 | F 24 | 21:30"
+    },
+    {
+      "id": "2026-11-23-kantine",
+      "d": "2026-11-23",
+      "code": "DR+ Kantine: Gnocchi mit Schinkenrahm, Scheibe Brot, Nudelsuppe | 870 kcal | E 28 | KH 121 | F 30 | 10:30"
+    },
+    {
+      "id": "2026-11-24-kantine",
+      "d": "2026-11-24",
+      "code": "DR+ Kantine: Jägerschnitzel mit Schwammerlsauce, 3 Rösti, Scheibe Brot | 825 kcal | E 46 | KH 63 | F 42 | 10:30"
+    },
+    {
+      "id": "2026-11-25-kantine",
+      "d": "2026-11-25",
+      "code": "DR+ Kantine: Würstelgulasch mit Semmel und Scheibe Brot | 790 kcal | E 27 | KH 83 | F 38 | 10:30"
+    }
+  ]
 }
