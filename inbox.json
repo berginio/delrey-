@@ -100,6 +100,14 @@
       "id": "2026-11-25-kantine",
       "d": "2026-11-25",
       "code": "DR+ Kantine: Würstelgulasch mit Semmel und Scheibe Brot | 790 kcal | E 27 | KH 83 | F 38 | 10:30"
+    },
+    {
+      "id": "2026-11-25-omega3-serie",
+      "d": "2026-11-25!supp",
+      "supp": {
+        "n": "Omega-3",
+        "since": "2026-11-07"
+      }
     }
   ]
 }

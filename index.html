@@ -1401,6 +1401,7 @@ button.hn-row:active .hn-ic{transform:scale(.94)}
 .hn-edit{all:unset;box-sizing:border-box;min-height:36px;padding:0 2px 0 12px;font-size:14px;font-weight:600;color:var(--accent);cursor:pointer;-webkit-tap-highlight-color:transparent}
 .hn-edit:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
 .hn-row.hn-supp{grid-template-columns:40px minmax(0,1fr)}
+.hn-days{width:64px;min-height:36px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:6px 8px;font:inherit;font-size:16px;text-align:center;font-variant-numeric:tabular-nums}
 .hn-empty{margin:10px 0 14px;font-size:13.5px;line-height:1.45;color:var(--muted)}
 .hn-sub{margin:16px 0 4px;font-size:12.5px;font-weight:600;color:var(--muted)}
 .hn-erow{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px;padding:6px 0}
@@ -3868,7 +3869,8 @@ function renderHomeNeu(next) {
   }
   for (const x of supps) {
     const at = taken[x.id];
-    rows.push(`<div class="hn-row hn-supp"><button class="hn-chk ${at ? 'on' : ''}" data-act="supp" data-id="${esc(x.id)}" aria-pressed="${!!at}" aria-label="${esc(x.n)} heute genommen">${icon('check')}</button><span class="hn-t"><b>${esc(x.n)}</b><small>${at ? `Heute genommen um ${esc(at)}` : 'Heute noch offen'}</small></span></div>`);
+    const si = suppInfo(x);
+    rows.push(`<div class="hn-row hn-supp"><button class="hn-chk ${at ? 'on' : ''}" data-act="supp" data-id="${esc(x.id)}" aria-pressed="${!!at}" aria-label="${esc(x.n)} heute genommen">${icon('check')}</button><span class="hn-tx" style="cursor:default"><span class="hn-t"><b>${esc(x.n)}</b><small>${at ? `Heute genommen um ${esc(at)}` : 'Heute noch offen'}</small></span><span class="hn-streak">${fmt(si.n)} ${si.n === 1 ? 'Tag' : 'Tage'}${si.n > 1 ? icon('fire') : ''}</span></span></div>`);
   }
   if (!hide.has('streak')) {
     const t = trackStreak();
@@ -3897,7 +3899,7 @@ function hnEditHtml() {
   return `<div class="hn-hh"><h2 class="hn-h">Heute anpassen</h2><button class="hn-edit" data-act="hn-edit">Fertig</button></div>
     <p class="hn-sub">Supplements zum Abhaken</p>
     <div class="hn-erow"><span>Creatin<small>Mit Serie und Erinnerung</small></span>${sw(pr.creatine === 'on', 'hn-crea-tg', '', 'Creatin anzeigen')}</div>
-    ${supps.map(x => `<div class="hn-erow"><span>${esc(x.n)}</span><button class="hn-x" data-act="supp-del" data-id="${esc(x.id)}" aria-label="${esc(x.n)} entfernen">${icon('x')}</button></div>`).join('')}
+    ${supps.map(x => `<div class="hn-erow"><span>${esc(x.n)}<small>Tage am Stück</small></span><span style="display:flex;align-items:center;gap:10px"><input class="hn-days" type="number" inputmode="numeric" min="0" max="3650" data-supp-days="${esc(x.id)}" value="${suppInfo(x).n}" aria-label="${esc(x.n)}: Tage am Stück"><button class="hn-x" data-act="supp-del" data-id="${esc(x.id)}" aria-label="${esc(x.n)} entfernen">${icon('x')}</button></span></div>`).join('')}
     <div class="hn-sugg">${SUPP_SUG.filter(n => !have.has(n.toLowerCase())).map(n => `<button class="pchip" data-act="supp-add" data-n="${esc(n)}">${icon('plus')}${esc(n)}</button>`).join('')}</div>
     <div class="hn-addf"><input id="supp-new" autocomplete="off" maxlength="30" placeholder="Eigenes, z. B. Kollagen" aria-label="Eigenes Supplement"><button class="btn sm" data-act="supp-add">${icon('plus')}Dazu</button></div>
     <p class="hn-sub">Außerdem anzeigen</p>
@@ -3928,6 +3930,27 @@ function creaInfo() {
   }
   const n = start > end ? 0 : Math.round((D(end) - D(start)) / 864e5) + 1;
   return { n, start: n ? start : null, taken };
+}
+/* Serie für ein Supplement (z. B. Omega-3): wie bei Creatin. x.since = erster Tag, x.trackFrom = ab da zählen nur echte Haken,
+   x.days = Tage mit Haken. Tage zwischen since und trackFrom gelten als genommen (selbst angegeben). */
+function suppInfo(x) {
+  const today = S.today, taken = !!((S.log.supps || {})[x.id]), days = new Set(x.days || []);
+  const D = v => new Date(v + 'T12:00');
+  const end = taken ? today : isoDate(addDays(D(today), -1));
+  let start = x.since || [...days].sort()[0] || null;
+  if (!start) return { n: taken ? 1 : 0, start: taken ? today : null, taken };
+  const tf = x.trackFrom || start, from = [start, tf].sort()[1];
+  for (let d = D(end); isoDate(d) >= from; d = addDays(d, -1)) {
+    const k = isoDate(d);
+    if (!(days.has(k) || (k === today && taken))) { start = isoDate(addDays(d, 1)); break; }
+  }
+  const n = start > end ? 0 : Math.round((D(end) - D(start)) / 864e5) + 1;
+  return { n, start: n ? start : null, taken };
+}
+// n Tage am Stück bis heute (wenn heute schon abgehakt) bzw. bis gestern
+function setSuppStreak(x, n) {
+  const taken = !!((S.log.supps || {})[x.id]), end = taken ? S.today : isoDate(addDays(new Date(S.today + 'T12:00'), -1));
+  return { ...x, since: n > 0 ? isoDate(addDays(new Date(end + 'T12:00'), -(n - 1))) : S.today, trackFrom: S.today };
 }
 function setCreaStreak(n) {
   // n Tage am Stück bis heute (wenn heute schon genommen) bzw. bis gestern
@@ -6122,7 +6145,23 @@ async function inboxCheck(force) {
     try { localStorage.setItem(INBOX_KEY, JSON.stringify(done.slice(-200))); } catch (e) {}
     if (add.length) { S.prefs = { ...S.prefs, events: (S.prefs.events || []).concat(add) }; eventsChanged(add.length === 1 ? `Termin von Claude eingetragen: ${evTitle(add[0])}` : `${add.length} Termine von Claude eingetragen, Plan angepasst`); }
   }
-  const fresh = items.filter(it => it && it.id && !it.ev && !done.includes(it.id) && dOf(it) === S.today && !fixedBy.has(it.id));
+  // Supplement-Serie von Claude ("supp": { n: "Omega-3", days: 18 }): legt das Supplement an, falls es fehlt, und setzt die Serie
+  const spIt = items.filter(it => it && it.id && it.supp && it.supp.n && !done.includes(it.id) && dOf(it) <= S.today);
+  if (spIt.length) {
+    const norm = v => String(v).toLowerCase().replace(/[^a-z0-9äöü]/g, '');
+    let list = (S.profile.supps || []).slice();
+    for (const it of spIt) {
+      let x = list.find(y => norm(y.n) === norm(it.supp.n));
+      if (!x) { x = { id: 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), n: String(it.supp.n).slice(0, 30) }; list.push(x); }
+      const up = /^\d{4}-\d\d-\d\d$/.test(it.supp.since || '') ? { ...x, since: it.supp.since, trackFrom: S.today } : it.supp.days != null ? setSuppStreak(x, Math.max(0, +it.supp.days || 0)) : null;
+      if (up) list = list.map(y => y.id === x.id ? up : y);
+    }
+    S.profile = { ...S.profile, supps: list }; Store.saveProfileSoon();
+    done = done.concat(spIt.map(it => it.id));
+    try { localStorage.setItem(INBOX_KEY, JSON.stringify(done.slice(-200))); } catch (e) {}
+    toast(spIt.length === 1 ? `${spIt[0].supp.n}: Serie von Claude eingetragen` : 'Supplement-Serien von Claude eingetragen'); try { renderToday(); } catch (e) {}
+  }
+  const fresh = items.filter(it => it && it.id && !it.ev && !it.supp && !done.includes(it.id) && dOf(it) === S.today && !fixedBy.has(it.id));
   const old = items.filter(it => it && it.id && !done.includes(it.id) && (dOf(it) < S.today || fixedBy.has(it.id))).map(it => it.id);
   inboxRetro(items, fixedBy, dOf);
   if (!fresh.length) { if (old.length) try { localStorage.setItem(INBOX_KEY, JSON.stringify(done.concat(old).slice(-200))); } catch (e) {} return; }
@@ -8102,6 +8141,8 @@ document.addEventListener('click', e => {
   if (a === 'supp') {
     const id = b.dataset.id, x = (S.profile.supps || []).find(y => y.id === id); if (!x) return;
     const on = !(S.log.supps && S.log.supps[id]);
+    const dd = new Set(x.days || []); if (on) dd.add(S.today); else dd.delete(S.today);
+    S.profile.supps = (S.profile.supps || []).map(y => y.id === id ? { ...y, days: [...dd].sort().slice(-400), since: y.since || (on ? S.today : y.since), trackFrom: y.trackFrom || S.today } : y); Store.saveProfileSoon();
     return mutateLog(l => { l.supps = { ...(l.supps || {}) }; if (on) l.supps[id] = toHHMM(nowMin()); else delete l.supps[id]; }, on ? `${x.n} abgehakt` : `${x.n} wieder offen`);
   }
   if (a === 'theme-set') {
@@ -8293,6 +8334,13 @@ function profileChanged(rerenderForm) {
   if (S.tab === 'plan') renderPlan();
   if (S.tab === 'einkauf') renderShop();
 }
+// Supplement-Serie in "Heute anpassen" selbst festlegen (Tage am Stück)
+document.addEventListener('change', e => {
+  const sid = e.target && e.target.dataset ? e.target.dataset.suppDays : undefined; if (sid === undefined) return;
+  const n = Math.max(0, Math.min(3650, parseInt(e.target.value, 10) || 0));
+  S.profile.supps = (S.profile.supps || []).map(y => y.id === sid ? setSuppStreak(y, n) : y); Store.saveProfileSoon();
+  const y = S.profile.supps.find(v => v.id === sid); if (y) toast(`${y.n}: ${n} ${n === 1 ? 'Tag' : 'Tage'} am Stück`);
+});
 document.addEventListener('change', e => {
   if (e.target.matches && e.target.matches('select[data-pp]')) { const P = ppTarget(); if (P) { ppNormalize(P); const i = +e.target.dataset.pp; if (P.phases[i]) P.phases[i].goal = e.target.value; renderPhasen(); } return; }
   if (e.target.id === 'ev-open' && S.evEdit) { S.evEdit.open = e.target.checked; const en = $('#ev-end'); if (en) en.disabled = e.target.checked; }
