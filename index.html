@@ -2616,6 +2616,8 @@ const GOALS = {
   minicut:{n:'Mini Cut', d:'Kurz und deutlich Fett runter, Muskeln und Kraft halten', adj:-0.25, pk:2.5, fk:0.8},
   maint:  {n:'Erhaltung', d:'Gewicht halten, Form zeigen', adj:0, pk:2.2, fk:1.0, fs:.25},
 };
+/* Im Aufbau: zusätzlicher Fettanteil je nach Tag (Ruhetag am meisten, Gym-Tag gar nicht) */
+const FAT_PLUS = { gym: 0, run: 0.03, rest: 0.07 };
 /* Gewichtstempo pro Woche in % vom Körpergewicht, das zum Ziel passt */
 const GOAL_RATE = { mass:[0.25, 0.75], bulk:[0.15, 0.5], recomp:[-0.5, 0.1], cut:[-1, -0.4], minicut:[-1.2, -0.5], maint:[-0.3, 0.3] };
 /* Ziele mit Kalorienüberschuss (Gewicht soll steigen) */
@@ -2682,7 +2684,10 @@ function calcTargets(pr) {
   for (const t of Object.keys(TYPES)) {
     const kcal = avg * TYPES[t].mult * norm;
     // Fett: im Überschuss mindestens ein Viertel der Kalorien, damit nicht alles über Kohlenhydrate (viel Essensmenge) laufen muss
-    const p = kg * g.pk, f = Math.max(kg * g.fk, kcal * (g.fs || 0) / 9);
+    // Im Aufbau an Tagen ohne Krafttraining etwas mehr Fett statt Kohlenhydrate: gleiche Kalorien, aber weniger Essensmenge.
+    // Gym-Tage bleiben kohlenhydratreich (Treibstoff fürs Training). Bleibt im üblichen Bereich von 20 bis 35 % Fett.
+    const fs = (g.fs || 0) + (GAIN(pr.goal) ? (FAT_PLUS[t] || 0) : 0);
+    const p = kg * g.pk, f = Math.max(kg * g.fk, kcal * fs / 9);
     const fib = Math.max(30, Math.round(kcal / 1000 * 14));
     const c = Math.max(80, (kcal - 4*p - 9*f - 2*fib) / 4); // EU-Kennzeichnung: Ballaststoffe 2 kcal/g
     per[t] = { kcal: Math.round(kcal), p: Math.round(p), c: Math.round(c), f: Math.round(f),
