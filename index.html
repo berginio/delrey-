@@ -1604,7 +1604,19 @@ html.rkp-lock,html.rkp-lock body{overflow:hidden}
 .wz-pc > span,.wz-quick > span{font-size:12px;font-weight:600;color:var(--muted)}
 .wz-pc small{font-size:12px;color:var(--muted)}
 .wz-pc .chipwrap .pchip{min-width:40px;justify-content:center}
-.hn-logrow{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;margin-top:-4px;align-items:center}
+.hn-logrow{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:8px;margin-top:-4px;align-items:center}
+.drink-btn{width:46px;height:46px;border-radius:50%;border:0;background:#14a3e6;color:#fff;display:grid;place-items:center;cursor:pointer;box-shadow:0 8px 20px -10px rgb(20 163 230 / .8);transition:transform .12s}
+.drink-btn:active{transform:scale(.9)}
+.drink-btn .ico{width:24px;height:24px}
+.dr-grp{margin-top:14px}
+.dr-grp .chipwrap{margin-top:6px}
+.dr-grp .pchip,.dr-ml .pchip{min-height:38px}
+.dr-ml{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.dr-amt{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px}
+.dr-amt .sedit-q input{width:70px}
+.dr-mix{margin-top:6px}
+.dr-sum{margin:14px 0 4px;font-size:14px}
+.dr-sel{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
 .beer-w{position:relative;display:inline-flex;align-items:center}
 .beer-btn{position:relative;width:46px;height:46px;border-radius:50%;border:0;background:#e5382d;color:#fff;display:grid;place-items:center;cursor:pointer;box-shadow:0 8px 20px -10px rgb(229 56 45 / .8);transition:transform .12s}
 .beer-btn:active{transform:scale(.9)}
@@ -1928,8 +1940,9 @@ html.rkp-lock,html.rkp-lock body{overflow:hidden}
         <div class="hn-more-b" id="hnMore" hidden></div>
       </section>
       <div class="hn" id="hnNow" style="--i:1"></div>
-      <div class="hn-logrow" style="--i:1"><button class="btn soft hn-log" data-act="track-open"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Essen eintragen</button>
+      <div class="hn-logrow" style="--i:1"><button class="btn soft hn-log" data-act="track-open" aria-label="Essen eintragen"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Essen</button>
         <button class="btn hn-mic" data-voice aria-label="Gedrückt halten und sagen, was du gegessen hast"><svg class="ico" aria-hidden="true"><use href="#i-mic"/></svg>Sprechen</button>
+        <button class="drink-btn" data-act="dr-open" aria-label="Getränk eintragen"><svg class="ico" aria-hidden="true"><use href="#i-drop"/></svg></button>
         <span class="beer-w"><button class="beer-btn" data-act="beer" aria-label="Ein Bier (0,5 l) eintragen"><svg class="ico" aria-hidden="true"><use href="#i-beer"/></svg><span class="beer-n" data-beer-n hidden>0</span></button><button class="beer-minus" data-act="beer-minus" aria-label="Ein Bier weniger" hidden>−</button></span></div>
       <div id="shopAsk" style="--i:2"></div>
       <section class="card hn hn-list" id="hnList" style="--i:2" aria-label="Heute erledigen"></section>
@@ -2166,6 +2179,7 @@ const FOODS = {
   couscous: {n:'Couscous', nom:'Couscous', dat:'Couscous', pre:'Couscous', kcal:355, p:12, c:68, f:2, fib:6, cat:'vorrat', grp:'side', pack:500, packLabel:'500-g-Packung', stock:true, raw:true},
   oats:     {n:'Haferflocken', nom:'Haferflocken', dat:'Haferflocken', kcal:372, p:13.5, c:58.7, f:7.0, fib:10, cat:'vorrat', grp:'oats', pack:500, packLabel:'500-g-Packung', stock:true, raw:true},
   ricecake: {n:'Reiswaffeln', nom:'Reiswaffeln', dat:'Reiswaffeln', kcal:387, p:8, c:81, f:3, fib:3, cat:'vorrat', grp:'crisp', pack:100, packLabel:'100-g-Packung', stock:true, piece:8, pn:['Reiswaffel','Reiswaffeln']},
+  corncake: {n:'Maiswaffeln', nom:'Maiswaffeln', dat:'Maiswaffeln', kcal:383, p:8, c:79, f:3, fib:5, cat:'vorrat', grp:'crisp', pack:120, packLabel:'120-g-Packung', stock:true, piece:8, pn:['Maiswaffel','Maiswaffeln']},
   zwieback: {n:'Zwieback', nom:'Zwieback', dat:'Zwieback', kcal:410, p:11, c:72, f:6, fib:4, cat:'vorrat', grp:'crisp', pack:225, packLabel:'225-g-Packung', stock:true, piece:10, pn:['Zwieback','Zwieback']},
   // Gemüse (für alle, die es mögen; wer es ausschließt, bekommt es nie)
   broccoli: {n:'Brokkoli', nom:'Brokkoli', dat:'Brokkoli', kcal:34, p:2.8, c:2.7, f:0.4, fib:3, cat:'gemuese', grp:'veg', sub:'warm', pack:500, packLabel:'Kopf ~500 g'},
@@ -2223,7 +2237,7 @@ const FOODS = {
 const MEATMIN = { steak:200, salmon:125 };
 
 /* Sinnvolle Höchstmengen pro Portion, damit nichts absurd groß wird */
-const MAXG = { potato:500, rice:150, pasta:150, couscous:150, oats:120, bread:200, roll:180, wrap:186, ricecake:48, zwieback:50,
+const MAXG = { potato:500, rice:150, pasta:150, couscous:150, oats:120, bread:200, roll:180, wrap:186, ricecake:48, corncake:48, zwieback:50,
   chicken:250, turkey:250, pork:250, beef:250, steak:200, salmon:250,
   fries:300, roesti:250, wedges:300, kroketten:250, gnocchi:400, spaetzle:150, raclette:80, ketchup:40, mayo:20, sriracha:15, srirachamayo:30,
   tomsauce5:250, arrabbiata:250, passata:300, pesto:40, coconut:150, kidney:200, corn:150, shrimp:250, tofu:250, skyr:350, topfen:350, greekyog:350, cottage:300,
@@ -2242,7 +2256,7 @@ const GROUPS = {
   bread:  {n:'Brot', by:'c', order:['bread','ryebread','spelt','mixbread','protbread','wholetoast','toast','roll','semmel','kornspitz','pretzel','bagel','pita','crispbread']},
   wrap:   {n:'Wraps', by:'c', order:['wrap']},
   oats:   {n:'Haferflocken', by:'c', order:['oats']},
-  crisp:  {n:'Knabbern', by:'c', order:['ricecake','zwieback']},
+  crisp:  {n:'Knabbern', by:'c', order:['corncake','ricecake','zwieback']},
   powder: {n:'Proteinpulver', by:'p', order:['whey','isoclear','vegprot']},
   veg:    {n:'Gemüse', by:'g', order:['broccoli','beans','zucchini','paprika','carrots','peas','spinach','mushrooms','tomato','cucumber','salad']},
   nuts:   {n:'Nüsse', by:'f', order:['peanuts','almonds','pb','walnuts','cashews']},
@@ -2287,9 +2301,9 @@ const MEALS = {
                how:'{0n} in Streifen braten. Mit {2d} einrollen. {5n} mit rein. {6n} mit rein. {3n} mit Salz und Knoblauch als Dip dazu.'},
   tunabowl:   {n:'{1p}-Bowl mit {0d}', cook:true, icon:'fish', items:[['tuna',110,0,'main'],['rice',80,'C','main'],['eggs',60,'F'],['teriyaki',20,0],['cucumber',100,0]],
                how:'{1n} kochen und {0n} drauf. Ein Spiegelei dazu{2x}. {4n} in Würfeln dazu. {3n} drüber.'},
-  prerice:    {n:'{0n} mit {1d} und {2d}', icon:'lightning', items:[['ricecake',32,'C','main'],['honey',15,0],['apple',160,0,'main']],
+  prerice:    {n:'{0n} mit {1d} und {2d}', icon:'lightning', items:[['corncake',32,'C','main'],['honey',15,0],['apple',160,0,'main']],
                how:'60 bis 90 Minuten vor dem Training. Schnelle Kohlenhydrate, kaum Fett, liegt nicht schwer im Magen. {1n} drauf.'},
-  prerun:     {n:'{0n} & {1n} mit {2d}', icon:'lightning', items:[['banana',120,0,'main'],['ricecake',16,'C','main'],['honey',10,0]],
+  prerun:     {n:'{0n} & {1n} mit {2d}', icon:'lightning', items:[['banana',120,0,'main'],['corncake',16,'C','main'],['honey',10,0]],
                how:'45 bis 60 Minuten vor dem Lauf. Leicht verdaulich und gibt Energie für die Beine. {2n} drauf.'},
   pasta:      {n:'Pasta mit {1d} in {2n}-Sauce', cook:true, icon:'cooking-pot', items:[['pasta',110,'C','core'],['chicken',170,'P','main'],['creamch',50,'F','main'],['parmesan',10,0],['spinach',120,0]],
                how:'Nudeln kochen. {1n} in Würfeln anbraten. {4n} mit in die Pfanne. {2n} mit einem Schuss Nudelwasser einrühren. {3n} drüber.'},
@@ -2347,7 +2361,7 @@ const MEALS = {
                how:'Einfache Kohlenhydrate ohne Banane. {2n} dazu, passt auch in die Arbeitstasche.'},
   isoapple:   {n:'Isoclear-Shake, {1n} & {2n}', icon:'lightning', items:[['isoclear',25,0,'core'],['apple',160,0,'main'],['bread',60,'C']],
                how:'Etwa eine Stunde vor dem Gym. Shake, Obst und Brot geben Eiweiß und Energie, ganz ohne Banane.'},
-  isobanana:  {n:'Isoclear-Shake, {1n} & {2n}', icon:'lightning', items:[['isoclear',25,0,'core'],['banana',120,0,'main'],['ricecake',16,'C']],
+  isobanana:  {n:'Isoclear-Shake, {1n} & {2n}', icon:'lightning', items:[['isoclear',25,0,'core'],['banana',120,0,'main'],['corncake',16,'C']],
                how:'Etwa eine Stunde vor dem Gym. Shake und Obst geben Eiweiß und schnelle Energie. {2n} passen in jede Tasche.'},
 };
 const POOLS = {
@@ -2371,8 +2385,8 @@ const POOLS = {
   carbswork: ['prerun'],
 };
 
-/* Höchstens 2-mal am Tag Banane und 2-mal Reiswaffeln: weitere Snacks bekommen eine Alternative ohne */
-const FOOD_CAP = { banana: 2, ricecake: 2 };
+/* Höchstens 2-mal am Tag Banane und 2-mal Mais- oder Reiswaffeln: weitere Snacks bekommen eine Alternative ohne */
+const FOOD_CAP = { banana: 2, corncake: 2, ricecake: 2 };
 const CAP_ALT = { prerun: ['breadapple'], pregym: ['breadapple'], workpre: ['isoapple', 'breadapple'], carbs: ['breadapple'], carbswork: ['breadapple', 'isoapple'], snack: [], late: [] };
 const mealHas = (meal, f) => !!meal && (meal.items || []).some(it => (it.food || it[0]) === f);
 /* Abends (ab 17 Uhr): höchstens 3 Scheiben Brot, und Reis wird abends nie extra gekocht */
@@ -2703,7 +2717,7 @@ function calcTargets(pr) {
    Leucin ist die Aminosäure, die den Muskelaufbau nach einer Mahlzeit anstößt. */
 const LEU = { whey:.105, isoclear:.105, milk:.098, skyr:.098, topfen:.098, greekyog:.098, cottage:.100, cheese:.096, mozza:.096, parmesan:.096, creamch:.095, butter:.095,
   eggs:.086, chicken:.075, chickencut:.075, turkey:.077, ham:.077, pork:.079, beef:.080, steak:.080, salmon:.081, smokedsalmon:.081, tuna:.081, shrimp:.080,
-  tofu:.076, soydrink:.078, vegprot:.082, oats:.076, oatdrink:.076, rice:.083, ricecake:.083, potato:.060, pb:.065, peanuts:.065, almonds:.070, walnuts:.077, cashews:.081,
+  tofu:.076, soydrink:.078, vegprot:.082, oats:.076, oatdrink:.076, rice:.083, ricecake:.083, corncake:.070, potato:.060, pb:.065, peanuts:.065, almonds:.070, walnuts:.077, cashews:.081,
   chia:.083, linseed:.069, kantine:.078, honey:0, oil:0 };
 function leuFrac(food) { if (LEU[food] != null) return LEU[food]; const F = FOODS[food] || {}; return F.cat === 'obst' ? .055 : F.grp === 'veg' || F.cat === 'gemuese' ? .06 : .068; }
 for (const k in FOODS) FOODS[k].leu = FOODS[k].p * leuFrac(k);
@@ -3216,7 +3230,7 @@ function carbTopUp(adjusted, eaten, plan) {
 function fillerFor(gap) {
   const opts = [];
   if (gap.p > 15) opts.push({ need: gap.p / 25, text: gap.p > 35 ? '250 g Skyr plus 1 Protein-Shake' : (gap.p > 22 ? '1 Protein-Shake (30 g Whey)' : '250 g Magertopfen'), macro: 'Eiweiß', g: Math.round(gap.p) });
-  if (gap.c > 30) opts.push({ need: gap.c / 45, text: typeof todayPlan !== 'undefined' && todayPlan && (todayFoodCount('banana') >= FOOD_CAP.banana || todayFoodCount('ricecake') >= FOOD_CAP.ricecake) ? (gap.c > 60 ? 'eine Scheibe Vollkornbrot mit Honig und einen Apfel' : 'einen Apfel und einen Löffel Honig') : gap.c > 60 ? '1 Banane und 4 Reiswaffeln' : '1 Banane und 2 Reiswaffeln', macro: 'Kohlenhydrate', g: Math.round(gap.c) });
+  if (gap.c > 30) opts.push({ need: gap.c / 45, text: typeof todayPlan !== 'undefined' && todayPlan && (todayFoodCount('banana') >= FOOD_CAP.banana || todayFoodCount('corncake') >= FOOD_CAP.corncake || todayFoodCount('ricecake') >= FOOD_CAP.ricecake) ? (gap.c > 60 ? 'eine Scheibe Vollkornbrot mit Honig und einen Apfel' : 'einen Apfel und einen Löffel Honig') : gap.c > 60 ? '1 Banane und 4 Maiswaffeln' : '1 Banane und 2 Maiswaffeln', macro: 'Kohlenhydrate', g: Math.round(gap.c) });
   if (gap.f > 10) opts.push({ need: gap.f / 15, text: gap.f > 18 ? '30 g Erdnüsse' : '15 g Erdnüsse', macro: 'Fett', g: Math.round(gap.f) });
   opts.sort((a, b) => b.need - a.need);
   return opts[0] || null;
@@ -3230,13 +3244,13 @@ const SNACKS = [
   { n:'Hüttenkäse', items:[['cottage',200]] },
   { n:'Protein-Shake mit Milch', items:[['whey',30],['milk',300]] },
   { n:'Banane', items:[['banana',120]] },
-  { n:'2 Reiswaffeln mit Erdnussmus', items:[['ricecake',16],['pb',15]] },
+  { n:'2 Maiswaffeln mit Erdnussmus', items:[['corncake',16],['pb',15]] },
   { n:'Eine Handvoll Erdnüsse', items:[['peanuts',20]] },
   { n:'Vollkornbrot mit Putenschinken', items:[['bread',50],['ham',50]] },
   { n:'Apfel', items:[['apple',160]] },
-  { n:'3 Reiswaffeln mit Honig', items:[['ricecake',24],['honey',15]] },
+  { n:'3 Maiswaffeln mit Honig', items:[['corncake',24],['honey',15]] },
   { n:'Vollkornbrot mit Honig', items:[['bread',50],['honey',15]] },
-  { n:'Banane und 2 Reiswaffeln', items:[['banana',120],['ricecake',16]] },
+  { n:'Banane und 2 Maiswaffeln', items:[['banana',120],['corncake',16]] },
   { n:'Haferflocken mit Milch', items:[['oats',50],['milk',200]] },
 ];
 function snackIdeas(gap, taste, n) {
@@ -4839,7 +4853,7 @@ const infoPrev = {};
 const SRC = {
   p:   [['chicken',150],['turkey',150],['beef',150],['steak',150],['pork',150],['salmon',150],['tuna',110],['shrimp',150],['tofu',200],
         ['topfen',250],['skyr',250],['greekyog',250],['cottage',200],['eggs',180],['ham',100],['isoclear',30],['whey',30],['vegprot',30]],
-  c:   [['oats',80],['rice',100],['pasta',100],['couscous',100],['potato',300],['bread',100],['roll',120],['wrap',124],['banana',120],['ricecake',32],['honey',20],['apple',160],['pear',170]],
+  c:   [['oats',80],['rice',100],['pasta',100],['couscous',100],['potato',300],['bread',100],['roll',120],['wrap',124],['banana',120],['corncake',32],['honey',20],['apple',160],['pear',170]],
   f:   [['peanuts',30],['almonds',30],['walnuts',30],['cashews',30],['pb',20],['oil',10],['butter',10],['salmon',150],['eggs',120],['cheese',30],['mozza',125],['chia',15],['linseed',15]],
   leu: [['whey',30],['isoclear',30],['skyr',250],['topfen',250],['cottage',200],['greekyog',250],['chicken',150],['turkey',150],['steak',150],['beef',150],['salmon',150],['tuna',110],['eggs',180],['milk',300],['tofu',200],['oats',80]],
   fib: [['chia',15],['linseed',15],['oats',80],['bread',100],['pasta',100],['berries',150],['pear',170],['kiwi',150],['apple',160],['almonds',30],['potato',300],['peas',100],['broccoli',150],['beans',150],['carrots',150]],
@@ -5172,6 +5186,9 @@ function renderSheet() {
       <p class="muted" style="margin:6px 0 0;font-size:13.5px">${v === 'no' || v === 'meh' ? esc(replacementText(f)) + '.' : 'Wie sehr magst du das?'}</p>
       <div class="choice">${TASTE_OPTS.map(([k, ic, lbl, sub]) => `<button data-act="rate" data-food="${f}" data-v="${k}" aria-pressed="${v === k}"><span class="ic">${icon(ic)}</span><span><b>${lbl}</b><small>${sub}</small></span></button>`).join('')}</div>
       ${sheetCtx.meal ? `<button class="taste-btn" style="margin-top:14px" data-act="taste-meal" data-meal="${sheetCtx.meal}">${icon('fork-knife')}Ganzes Gericht bewerten</button>` : ''}`;
+  } else if (sheetCtx.drink) {
+    if (!S.dr) return;
+    $('#sheetBody').innerHTML = drinkSheetHtml();
   } else if (sheetCtx.meal) {
     const k = sheetCtx.meal, M = MEALS[k], off = (S.prefs.taste.meals || {})[k] === 'no';
     const foods = [...new Set(M.items.map(i => i[0]))];
@@ -6562,6 +6579,7 @@ const WC = {
   sw_schoko: ['Schokolade', 540, 7, 57, 31], sw_chips: ['Chips', 535, 6, 50, 34], sw_eis: ['Eis', 200, 3.5, 25, 9], sw_kekse: ['Kekse', 480, 6, 65, 21], sw_gummi: ['Fruchtgummi', 340, 6, 77, 0.2],
   // Getränke (pro 100 ml)
   dr_cola: ['Cola', 42, 0, 10.6, 0], dr_zero: ['Cola Zero', 0, 0, 0, 0], dr_bier: ['Bier', 43, 0.5, 3.2, 0], dr_radler: ['Radler', 40, 0.3, 6, 0],
+  dr_apfel: ['Apfelsaft', 46, 0.1, 11, 0.1], dr_gespritzt: ['Apfelsaft gespritzt', 23, 0, 5.5, 0], dr_almdudler: ['Almdudler', 34, 0, 8.4, 0],
   dr_saft: ['Orangensaft', 45, 0.7, 10, 0.2], dr_energy: ['Energy Drink', 45, 0, 11, 0], dr_eistee: ['Eistee', 30, 0, 7.5, 0], dr_spritzer: ['Weißer Spritzer', 40, 0, 1, 0], dr_wein: ['Wein', 80, 0, 2.6, 0],
   // Jause
   butter: ['Butter', 740, 0.7, 0.6, 83], wurst: ['Extrawurst', 250, 13, 1, 21], schinken: ['Schinken', 110, 20, 1, 3], kaese: ['Käse', 360, 25, 0, 28], aufstrich: ['Aufstrich', 250, 8, 3, 22],
@@ -6795,11 +6813,11 @@ const TREE = [
     trI('Schokolade', 'sw_schoko', 25), trI('Eis', 'sw_eis', 120, ['Kugel', 'Kugeln', 60]), trI('Kekse', 'sw_kekse', 30, ['Keks', 'Kekse', 10]), trI('Fruchtgummi', 'sw_gummi', 50), trI('Chips', 'sw_chips', 50)] },
   { n: 'Snacks & Shakes', ic: 'lightning', sub: 'Shake, Riegel, Nüsse …', kids: [
     trI('Isoclear-Shake', 'f:isoclear', 30, ['Messlöffel', 'Messlöffel', 30]), trI('Protein-Shake (Whey)', 'f:whey', 30, ['Messlöffel', 'Messlöffel', 30]), trI('Proteinriegel', 'sn_proteinriegel', 50, ['Riegel', 'Riegel', 50]),
-    trI('Müsliriegel', 'sn_muesliriegel', 25, ['Riegel', 'Riegel', 25]), trI('Reiswaffeln', 'f:ricecake', 16, ['Reiswaffel', 'Reiswaffeln', 8]), trI('Erdnüsse', 'f:peanuts', 30), trI('Mandeln', 'f:almonds', 30),
+    trI('Müsliriegel', 'sn_muesliriegel', 25, ['Riegel', 'Riegel', 25]), trI('Maiswaffeln', 'f:corncake', 16, ['Maiswaffel', 'Maiswaffeln', 8]), trI('Reiswaffeln', 'f:ricecake', 16, ['Reiswaffel', 'Reiswaffeln', 8]), trI('Erdnüsse', 'f:peanuts', 30), trI('Mandeln', 'f:almonds', 30),
     trI('Cashews', 'f:cashews', 30), trI('Walnüsse', 'f:walnuts', 30), trI('Linsenchips', 'sn_linsenchips', 30)] },
   { n: 'Getränke', ic: 'coffee', sub: 'Cola, Bier, Kaffee …', kids: [
     trI('Cola, Limo', 'dr_cola', 500), trI('Cola Zero', 'dr_zero', 500), trI('Bier', 'dr_bier', 500), trI('Radler', 'dr_radler', 500), trI('Spritzer', 'dr_spritzer', 250), trI('Wein', 'dr_wein', 125),
-    trI('Orangensaft', 'dr_saft', 250), trI('Energy Drink', 'dr_energy', 250), trI('Eistee', 'dr_eistee', 500), trI('Milch', 'dr_milch', 250), trI('Kakao', 'dr_kakao', 250),
+    trI('Orangensaft', 'dr_saft', 250), trI('Apfelsaft', 'dr_apfel', 250), trI('Apfelsaft gespritzt', 'dr_gespritzt', 500), trI('Almdudler', 'dr_almdudler', 350), trI('Energy Drink', 'dr_energy', 250), trI('Eistee', 'dr_eistee', 500), trI('Milch', 'dr_milch', 250), trI('Kakao', 'dr_kakao', 250),
     trI('Kaffee mit Milch', 'dr_kaffee', 200), trI('Cappuccino', 'dr_cappu', 200), trI('Latte Macchiato', 'dr_latte', 300)] },
   { n: 'Rezepte aus der App', ic: 'book-open', sub: 'Gerichte aus deinem Plan', recipes: true },
 ];
@@ -6974,6 +6992,74 @@ function renderBeer() {
   const n = beerCount();
   document.querySelectorAll('[data-beer-n]').forEach(el => { el.textContent = n; el.hidden = !n; });
   document.querySelectorAll('[data-act="beer-minus"]').forEach(el => { el.hidden = !n; });
+}
+
+/* ================= Getränke =================
+   Blauer Tropfen-Knopf: Getränk antippen, Menge in ml wählen, bei Säften auch wie stark gespritzt. Wird mit Uhrzeit als Extra eingetragen.
+   Werte pro 100 ml: [id, Name, kcal, E, KH, F, Standard-ml, Saft (kann gespritzt werden)] */
+const DRINK_GROUPS = [
+  ['Saft & Limo', [['apfel', 'Apfelsaft', 46, 0.1, 11, 0.1, 250, 1], ['orange', 'Orangensaft', 45, 0.7, 10, 0.2, 250, 1], ['multi', 'Multivitaminsaft', 50, 0.3, 11.5, 0.1, 250, 1],
+    ['sirup', 'Sirup mit Wasser', 30, 0, 7.5, 0, 500], ['almdudler', 'Almdudler', 34, 0, 8.4, 0, 350], ['cola', 'Cola', 42, 0, 10.6, 0, 500], ['zero', 'Cola Zero', 0, 0, 0, 0, 500],
+    ['limo', 'Limo', 38, 0, 9.2, 0, 500], ['eistee', 'Eistee', 30, 0, 7.5, 0, 500], ['energy', 'Energy Drink', 45, 0, 11, 0, 250], ['energy0', 'Energy zuckerfrei', 3, 0, 0, 0, 250], ['iso', 'Iso-Getränk', 25, 0, 6, 0, 500]]],
+  ['Milch & Kaffee', [['milch', 'Milch 1,5 %', 47, 3.4, 4.9, 1.5, 250], ['vollmilch', 'Milch 3,5 %', 64, 3.3, 4.8, 3.5, 250], ['kakao', 'Kakao', 75, 3.5, 10, 2, 250],
+    ['hafer', 'Haferdrink', 45, 1, 6.5, 1.5, 250], ['protdrink', 'Protein-Milchdrink', 61, 7.6, 4.8, 0.9, 330], ['kaffee', 'Kaffee schwarz', 2, 0.1, 0.3, 0, 200],
+    ['kaffeemilch', 'Kaffee mit Milch', 15, 1, 1.5, 0.5, 200], ['cappu', 'Cappuccino', 35, 2, 3, 1.5, 200], ['latte', 'Latte Macchiato', 50, 3, 4.5, 2, 300]]],
+  ['Alkohol', [['bier', 'Bier', 43, 0.5, 3.2, 0, 500], ['radler', 'Radler', 40, 0.3, 6, 0, 500], ['spritzer', 'Weißer Spritzer', 40, 0, 1, 0, 250], ['wein', 'Wein', 80, 0, 2.6, 0, 125]]],
+];
+const DRINKS = {}; for (const [, L] of DRINK_GROUPS) for (const d of L) DRINKS[d[0]] = d;
+const DRINK_ML = [125, 250, 330, 500, 750, 1000];
+// Saftanteil: pur oder mit Wasser gespritzt (Saft : Wasser)
+const DRINK_MIX = [['1', 1, 'Pur'], ['2', 1 / 2, '1 : 1'], ['3', 1 / 3, '1 : 2'], ['4', 1 / 4, '1 : 3']];
+const DR_LAST = 'np:drinkLast';
+const drLast = () => { try { return JSON.parse(localStorage.getItem(DR_LAST) || '{}') || {}; } catch (e) { return {}; } };
+const mlLabel = ml => ml >= 1000 ? `${String(ml / 1000).replace('.', ',')} l` : `${ml} ml`;
+function drOpen(opener) {
+  const L = drLast(), k = DRINKS[L.k] ? L.k : 'apfel';
+  S.dr = { k, ml: (L.ml && L.k === k) ? L.ml : DRINKS[k][6], mix: (L.mix && L.k === k) ? L.mix : '1', time: toHHMM(nowMin()) };
+  openSheet({ drink: true }, opener);
+}
+function drPick(k) {
+  const D = S.dr; if (!D || !DRINKS[k]) return;
+  D.k = k; D.ml = DRINKS[k][6]; D.mix = '1';
+  try { const per = JSON.parse(localStorage.getItem(DR_LAST + ':' + k) || 'null'); if (per) { D.ml = per.ml || D.ml; D.mix = DRINKS[k][7] ? (per.mix || '1') : '1'; } } catch (e) {}
+  renderSheet();
+}
+function drMac() {
+  const D = S.dr, d = DRINKS[D.k], juice = d[7] ? (DRINK_MIX.find(m => m[0] === D.mix) || DRINK_MIX[0])[1] : 1, x = D.ml / 100 * juice;
+  return { kcal: d[2] * x, p: d[3] * x, c: d[4] * x, f: d[5] * x };
+}
+function drName() {
+  const D = S.dr, d = DRINKS[D.k], m = d[7] && D.mix !== '1' ? DRINK_MIX.find(x => x[0] === D.mix) : null;
+  return `${d[1]}${m ? ` gespritzt (${m[2].replace(/ /g, '')})` : ''}, ${mlLabel(D.ml)}`;
+}
+const drSumHtml = () => { const t = drMac(); return `<b>${fmt(Math.round(t.kcal))} kcal</b> · Eiweiß ${fmt(Math.round(t.p))} g · KH ${fmt(Math.round(t.c))} g · Fett ${fmt(Math.round(t.f))} g`; };
+function drinkSheetHtml() {
+  const D = S.dr, d = DRINKS[D.k];
+  const chip = ([k, n]) => `<button class="pchip" data-act="dr-pick" data-k="${k}" aria-pressed="${k === D.k}">${esc(n)}</button>`;
+  return `<span class="label">Getränk</span><h3 id="sheetTitle" style="margin-top:4px">Was hast du getrunken?</h3>
+    ${DRINK_GROUPS.map(([g, L]) => `<div class="dr-grp"><span class="kmenu-l">${esc(g)}</span><div class="chipwrap">${L.map(chip).join('')}</div></div>`).join('')}
+    <div class="dr-sel">
+      <span class="kmenu-l">Menge</span>
+      <div class="dr-ml">${DRINK_ML.map(ml => `<button class="pchip" data-act="dr-ml" data-ml="${ml}" aria-pressed="${D.ml === ml}">${mlLabel(ml)}</button>`).join('')}</div>
+      <div class="dr-amt"><b>${esc(d[1])}</b><span class="sedit-q"><button data-act="dr-step" data-d="-1" aria-label="50 ml weniger">${icon('minus')}</button><label><input id="drMl" inputmode="numeric" autocomplete="off" value="${D.ml}" aria-label="Menge in Milliliter"><small>ml</small></label><button data-act="dr-step" data-d="1" aria-label="50 ml mehr">${icon('plus')}</button></span></div>
+      ${d[7] ? `<div style="margin-top:14px"><span class="kmenu-l">Mit Wasser gespritzt? (Saft : Wasser)</span><div class="seg dr-mix" role="group" aria-label="Wie stark gespritzt">${DRINK_MIX.map(([k, , n]) => `<button data-act="dr-mix" data-m="${k}" aria-pressed="${D.mix === k}">${n}</button>`).join('')}</div></div>` : ''}
+      <p class="sedit-sum dr-sum" id="drSum">${drSumHtml()}</p>
+      <div class="field" style="margin:8px 0 12px"><label for="drTime">Uhrzeit</label><input id="drTime" type="time" value="${D.time}"></div>
+      <button class="btn" data-act="dr-save" style="width:100%">${icon('check')}Eintragen</button>
+    </div>`;
+}
+function drSave() {
+  const D = S.dr; if (!D) return;
+  if (!(D.ml > 0)) { toast('Gib eine Menge in ml ein'); return; }
+  const t = drMac(), name = drName(), time = ($('#drTime') || {}).value || D.time;
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+  const en = { id, name, time, kcal: Math.round(t.kcal), p: Math.round(t.p), c: Math.round(t.c), f: Math.round(t.f), fib: 0,
+    leu: Math.round(t.p * LEU_PER_P * 10) / 10, src: D.k === 'bier' ? 'beer' : 'drink', replaces: null };
+  try { localStorage.setItem(DR_LAST, JSON.stringify({ k: D.k, ml: D.ml, mix: D.mix })); localStorage.setItem(DR_LAST + ':' + D.k, JSON.stringify({ ml: D.ml, mix: D.mix })); } catch (e) {}
+  S.dr = null; closeSheet();
+  mutateLog(l => { l.extras = (l.extras || []).concat(en); }, `${name}: ${fmt(en.kcal)} kcal eingetragen`);
+  if (en.src === 'beer') { beerSync(); renderBeer(); }
+  try { renderAll(false); } catch (e) {}
 }
 
 /* ================= Sprechen statt tippen (ohne KI, alles im Handy) =================
@@ -7644,6 +7730,12 @@ document.addEventListener('click', e => {
     const inp = $('#se-' + b.dataset.i); if (inp) { const v = seVal(it); inp.value = String(v).replace('.', ','); inp.nextElementSibling.textContent = U.u(v); }
     $('#seSum').innerHTML = slotEditSum(); return; }
   if (a === 'beer') { beerAdd(); return; }
+  if (a === 'dr-open') { drOpen(b); return; }
+  if (a === 'dr-pick') { drPick(b.dataset.k); return; }
+  if (a === 'dr-ml') { if (S.dr) { S.dr.ml = +b.dataset.ml; renderSheet(); } return; }
+  if (a === 'dr-step') { if (S.dr) { S.dr.ml = Math.max(0, Math.round((S.dr.ml + 50 * (+b.dataset.d)) / 50) * 50); renderSheet(); } return; }
+  if (a === 'dr-mix') { if (S.dr) { S.dr.mix = b.dataset.m; renderSheet(); } return; }
+  if (a === 'dr-save') { drSave(); return; }
   if (a === 'shopans') { shopAnswer(b.dataset.k, [b.dataset.food], b.dataset.v); toast(b.dataset.v === 'no' ? `${FOODS[b.dataset.food].n} fehlt, der Plan nimmt etwas anderes` : 'Gut, ist da'); return; }
   if (a === 'shopans-all') { const it = shopAskList().find(x => x.k === b.dataset.k); if (it) shopAnswer(it.k, it.pend, 'yes'); toast('Alles da'); return; }
   if (a === 'beer-minus') { beerMinus(); return; }
@@ -8755,7 +8847,7 @@ function saveBuilder(eat) {
 const FILL = {
   f: [['peanuts', 10, 10, 40], ['almonds', 10, 10, 40], ['pb', 15, 15, 45], ['walnuts', 10, 10, 40], ['cashews', 10, 10, 40], ['x-avocado', 75, 75, 150], ['eggs', 60, 60, 180], ['x-gouda', 10, 20, 60], ['oil', 5, 5, 20]],
   p: [['skyr', 50, 150, 500], ['topfen', 50, 125, 500], ['whey', 5, 20, 40], ['isoclear', 5, 20, 40], ['cottage', 50, 100, 400], ['greekyog', 50, 150, 500], ['ham', 25, 50, 150], ['x-chicken-cooked', 25, 100, 250]],
-  c: [['banana', 60, 120, 240], ['ricecake', 8, 16, 48], ['oats', 10, 30, 100], ['bread', 50, 50, 150], ['honey', 5, 10, 30], ['apple', 80, 160, 320]],   // kein Reis: der wird nie extra zum Auffüllen gekocht
+  c: [['banana', 60, 120, 240], ['corncake', 8, 16, 48], ['oats', 10, 30, 100], ['bread', 50, 50, 150], ['honey', 5, 10, 30], ['apple', 80, 160, 320]],   // kein Reis: der wird nie extra zum Auffüllen gekocht
 };
 const MAC = { p: ['Eiweiß', 'var(--mp)', 4], c: ['Kohlenhydrate', 'var(--mc)', 4], f: ['Fett', 'var(--mf)', 9] };
 const GAP_MIN = { p: 10, c: 20, f: 8 };
@@ -9939,6 +10031,8 @@ document.addEventListener('input', e => {
     return;
   }
   if (t.id === 'wzTime') { t.dataset.touched = '1'; return; }
+  if (t.id === 'drMl' && S.dr) { S.dr.ml = Math.max(0, parseInt(String(t.value).replace(/\D/g, ''), 10) || 0); document.querySelectorAll('[data-act="dr-ml"]').forEach(x => x.setAttribute('aria-pressed', +x.dataset.ml === S.dr.ml)); const el = $('#drSum'); if (el) el.innerHTML = drSumHtml(); return; }
+  if (t.id === 'drTime' && S.dr) { S.dr.time = t.value; return; }
   if (t.id === 'se-q' && S.slotEdit) { S.slotEdit.q = t.value; const h = $('#seHits'); if (h) h.innerHTML = seHitsHtml(); return; }
   if (t.dataset && t.dataset.wz !== undefined && S.wz && S.wz.items) { const it = S.wz.items[+t.dataset.wz]; if (it) { it.g = Math.max(0, parseFloat(String(t.value).replace(',', '.')) || 0); wzSumUpdate(); } }
 });
