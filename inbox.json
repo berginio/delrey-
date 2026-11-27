@@ -128,6 +128,22 @@
    "id": "2026-11-27-apfel",
    "d": "2026-11-27",
    "code": "DR+ Kleiner Apfel (ca. 120 g) | 62 kcal | E 0 | KH 14 | F 0 | 12:15"
+  },
+  {
+   "id": "2026-11-27-supp-omega3-27",
+   "d": "2026-11-27!supp",
+   "supp": {
+    "n": "Omega-3",
+    "days": 27
+   }
+  },
+  {
+   "id": "2026-11-27-supp-creatin-27",
+   "d": "2026-11-27!supp",
+   "supp": {
+    "n": "Creatin",
+    "days": 27
+   }
   }
  ]
 }

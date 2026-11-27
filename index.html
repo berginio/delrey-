@@ -6173,6 +6173,12 @@ async function inboxCheck(force) {
     const norm = v => String(v).toLowerCase().replace(/[^a-z0-9äöü]/g, '');
     let list = (S.profile.supps || []).slice();
     for (const it of spIt) {
+      // Creatin hat seine eigene Kachel: dort die Serie setzen statt ein Supplement anzulegen
+      if (/^(creatin|kreatin)/.test(norm(it.supp.n))) {
+        if (it.supp.days != null) { if (S.profile.creatine !== 'on') S.profile.creatine = 'on'; setCreaStreak(Math.max(1, +it.supp.days || 1)); }
+        else if (/^\d{4}-\d\d-\d\d$/.test(it.supp.since || '')) { S.profile.creaSince = it.supp.since; S.profile.creaTrackFrom = S.today; }
+        continue;
+      }
       let x = list.find(y => norm(y.n) === norm(it.supp.n));
       if (!x) { x = { id: 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), n: String(it.supp.n).slice(0, 30) }; list.push(x); }
       const up = /^\d{4}-\d\d-\d\d$/.test(it.supp.since || '') ? { ...x, since: it.supp.since, trackFrom: S.today } : it.supp.days != null ? setSuppStreak(x, Math.max(0, +it.supp.days || 0)) : null;
