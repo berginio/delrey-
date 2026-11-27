@@ -2174,6 +2174,7 @@ const FOODS = {
   roesti:   {n:'Rösti (TK)', nom:'Rösti', dat:'Rösti', pre:'Rösti', kcal:194, p:3, c:23, f:9.5, fib:2, cat:'tk', grp:'side', pack:550, packLabel:'550-g-Packung', raw:true},
   wedges:   {n:'Kartoffel-Wedges (TK)', nom:'Wedges', dat:'Wedges', pre:'Wedges', kcal:130, p:2.5, c:20, f:4, fib:2.5, cat:'tk', grp:'side', pack:750, packLabel:'750-g-Beutel', raw:true},
   kroketten:{n:'Kroketten (TK)', nom:'Kroketten', dat:'Kroketten', pre:'Kroketten', kcal:148, p:2.4, c:20, f:6, fib:2.2, cat:'tk', grp:'side', pack:750, packLabel:'750-g-Beutel', raw:true},
+  wgnocchi: {n:'Vollkorn-Gnocchi', nom:'Vollkorn-Gnocchi', dat:'Vollkorn-Gnocchi', pre:'Vollkorn-Gnocchi', kcal:150, p:4.5, c:29, f:0.7, fib:4, cat:'vorrat', grp:'side', pack:500, packLabel:'500-g-Packung'},
   gnocchi:  {n:'Gnocchi', nom:'Gnocchi', dat:'Gnocchi', pre:'Gnocchi', kcal:155, p:4, c:33, f:0.5, fib:1.5, cat:'vorrat', grp:'side', pack:500, packLabel:'500-g-Packung'},
   spaetzle: {n:'Eierspätzle', nom:'Spätzle', dat:'Spätzle', pre:'Spätzle', kcal:360, p:13, c:69, f:3, fib:3, cat:'vorrat', grp:'side', pack:500, packLabel:'500-g-Packung', stock:true, raw:true},
   couscous: {n:'Couscous', nom:'Couscous', dat:'Couscous', pre:'Couscous', kcal:355, p:12, c:68, f:2, fib:6, cat:'vorrat', grp:'side', pack:500, packLabel:'500-g-Packung', stock:true, raw:true},
@@ -2239,7 +2240,7 @@ const MEATMIN = { steak:200, salmon:125 };
 /* Sinnvolle Höchstmengen pro Portion, damit nichts absurd groß wird */
 const MAXG = { potato:500, rice:150, pasta:150, couscous:150, oats:120, bread:200, roll:180, wrap:186, ricecake:48, corncake:48, zwieback:50,
   chicken:250, turkey:250, pork:250, beef:250, steak:200, salmon:250,
-  fries:300, roesti:250, wedges:300, kroketten:250, gnocchi:400, spaetzle:150, raclette:80, ketchup:40, mayo:20, sriracha:15, srirachamayo:30,
+  fries:300, roesti:250, wedges:300, kroketten:250, gnocchi:400, wgnocchi:400, spaetzle:150, raclette:80, ketchup:40, mayo:20, sriracha:15, srirachamayo:30,
   tomsauce5:250, arrabbiata:250, passata:300, pesto:40, coconut:150, kidney:200, corn:150, shrimp:250, tofu:250, skyr:350, topfen:350, greekyog:350, cottage:300,
   eggs:300, whey:45, isoclear:45, vegprot:45, pb:40, peanuts:40, almonds:40, walnuts:40, cashews:40, oil:20, butter:20, cheese:50, mozza:125, creamch:80, honey:30, kantine:130 };
 
@@ -2252,7 +2253,7 @@ const GROUPS = {
   milk:   {n:'Milch & Drinks', by:'g', order:['milk','oatdrink','soydrink']},
   cheese: {n:'Käse', by:'f', order:['cheese','mozza','parmesan','creamch','raclette']},
   fruit:  {n:'Obst', by:'c', order:['banana','apple','orange','pear','kiwi','berries']},
-  side:   {n:'Beilagen', by:'c', order:['rice','potato','pasta','couscous','gnocchi','spaetzle','fries','wedges','roesti','kroketten']},
+  side:   {n:'Beilagen', by:'c', order:['rice','potato','pasta','couscous','wgnocchi','gnocchi','spaetzle','fries','wedges','roesti','kroketten']},
   bread:  {n:'Brot', by:'c', order:['bread','ryebread','spelt','mixbread','protbread','wholetoast','toast','roll','semmel','kornspitz','pretzel','bagel','pita','crispbread']},
   wrap:   {n:'Wraps', by:'c', order:['wrap']},
   oats:   {n:'Haferflocken', by:'c', order:['oats']},
@@ -2325,7 +2326,7 @@ const MEALS = {
                how:'{1n} kochen. {0n} auftauen lassen. {4n} in Streifen anbraten und mit Currypulver bestäuben. {2n} und {3n} dazu und 5 Minuten köcheln lassen. {0n} dazu und 3 Minuten mitziehen lassen. Mit Salz abschmecken.'},
   chili:      {n:'Chili con Carne mit {4d}', cook:true, icon:'cooking-pot', items:[['beef',160,'P','main'],['kidney',120,'C'],['corn',60,0],['passata',200,0,'main'],['rice',70,'C','main'],['oil',5,'F']],
                how:'{0n} im Topf krümelig anbraten. Mit Chilipulver, Kreuzkümmel und Salz würzen. {3n} dazu. {1n} abspülen und dazu. {2n} dazu. 15 Minuten köcheln lassen. {4n} daneben kochen.'},
-  gnocchi:    {n:'Gnocchi-Pfanne mit {1d}', cook:true, icon:'cooking-pot', items:[['gnocchi',250,'C','core'],['chicken',150,'P','main'],['tomsauce5',150,0,'main'],['mozza',60,'F'],['spinach',100,0],['oil',5,'F']],
+  gnocchi:    {n:'Gnocchi-Pfanne mit {1d}', cook:true, icon:'cooking-pot', items:[['wgnocchi',250,'C','core'],['chicken',150,'P','main'],['tomsauce5',150,0,'main'],['mozza',60,'F'],['spinach',100,0],['oil',5,'F']],
                how:'{0n} in der Pfanne goldbraun anbraten und kurz herausnehmen. {1n} in Würfeln anbraten. {4n} zusammenfallen lassen. {2n} und die Gnocchi dazu. {3n} in Stücken drauf und zugedeckt schmelzen lassen. Mit Oregano und Salz würzen.'},
   geschnetzeltes:{n:'Rahmgeschnetzeltes mit {1d}', cook:true, icon:'cooking-pot', items:[['turkey',170,'P','main'],['spaetzle',90,'C','core'],['creamch',40,'F'],['mushrooms',150,0],['oil',5,'F']],
                how:'{1n} in Salzwasser kochen. {0n} in Streifen scharf anbraten, salzen und pfeffern. {3n} in Scheiben mitbraten. {2n} mit einem Schuss Wasser zu einer cremigen Sauce einrühren.'},
@@ -3199,7 +3200,7 @@ function planRemaining(plan, log) {
   return { eaten, open: adjusted, projected, gap, filler: fillerFor(gap) };
 }
 
-const CARB_PRIO = { pasta: 1, rice: 1, potato: 1, gnocchi: 1, spaetzle: 1, couscous: 1, oats: 2, wrap: 3 };
+const CARB_PRIO = { pasta: 1, rice: 1, potato: 1, gnocchi: 1, wgnocchi: 1, spaetzle: 1, couscous: 1, oats: 2, wrap: 3 };
 const carbPrio = f => { const F = FOODS[f]; if (!F) return 0; if (CARB_PRIO[f]) return CARB_PRIO[f]; if (F.grp === 'side') return 2; if (F.grp === 'bread' || F.grp === 'oats' || F.grp === 'wrap') return 3; return 0; };
 function carbTopUp(adjusted, eaten, plan) {
   const T = plan.target, act = adjusted.filter(a => !a.skip);
@@ -6167,6 +6168,21 @@ async function inboxCheck(force) {
     try { localStorage.setItem(INBOX_KEY, JSON.stringify(done.slice(-200))); } catch (e) {}
     if (add.length) { S.prefs = { ...S.prefs, events: (S.prefs.events || []).concat(add) }; eventsChanged(add.length === 1 ? `Termin von Claude eingetragen: ${evTitle(add[0])}` : `${add.length} Termine von Claude eingetragen, Plan angepasst`); }
   }
+  // Zutat tauschen ("swap": { from: "gnocchi", to: "wgnocchi" }): in den heute schon gegessenen Mahlzeiten, Nährwerte neu gerechnet
+  const swIt = items.filter(it => it && it.id && it.swap && FOODS[it.swap.from] && FOODS[it.swap.to] && !done.includes(it.id) && dOf(it) === S.today);
+  if (swIt.length) {
+    let hit = 0;
+    const r = o => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, Math.round(v * 10) / 10]));
+    mutateLog(l => { for (const st of Object.values(l.meals || {})) {
+      if (!st || st.state !== 'eaten' || !Array.isArray(st.items)) continue;
+      let ch = false;
+      for (const it of swIt) for (const x of st.items) if (x.food === it.swap.from) { x.food = it.swap.to; ch = true; }
+      if (ch) { st.tot = r(sumItems(st.items)); hit++; }
+    } }, null);
+    done = done.concat(swIt.map(it => it.id));
+    try { localStorage.setItem(INBOX_KEY, JSON.stringify(done.slice(-200))); } catch (e) {}
+    if (hit) toast(`${FOODS[swIt[0].swap.to].n}: Nährwerte von Claude angepasst`);
+  }
   // Supplement-Serie von Claude ("supp": { n: "Omega-3", days: 18 }): legt das Supplement an, falls es fehlt, und setzt die Serie
   const spIt = items.filter(it => it && it.id && it.supp && it.supp.n && !done.includes(it.id) && dOf(it) <= S.today);
   if (spIt.length) {
@@ -6781,7 +6797,7 @@ const TREE = [
     trP('Nudeln mit Lachs-Sahne-Sauce', [['nudeln', 250], ['s_lachs', 130]]), trP('Nudeln mit Hendl in Rahmsauce', [['nudeln', 250], ['s_hendl', 160]]),
     trP('Tortellini', [['tortellini', 250], ['s_tomate', 100]]), trP('Lasagne', [['lasagne', 350]]), trP('Käsespätzle', [['kaesespaetzle', 350]]), trP('Schinkenfleckerl', [['nd_schinkenfleckerl', 350]]),
     trP('Krautfleckerl', [['nd_krautfleckerl', 350]]), trP('Mac & Cheese', [['nd_mac', 300]]), trP('Nudelauflauf', [['nd_auflauf', 350]]), trP('Gebratene Nudeln', [['as_nudeln', 400]]),
-    trP('Gnocchi', [['f:gnocchi', 250], ['s_tomate', 100]]), { n: 'Selbst zusammenstellen', d: 'nudeln' }] },
+    trP('Gnocchi', [['f:gnocchi', 250], ['s_tomate', 100]]), trP('Vollkorn-Gnocchi', [['f:wgnocchi', 250], ['s_tomate', 100]]), { n: 'Selbst zusammenstellen', d: 'nudeln' }] },
   { n: 'Fast Food & Imbiss', ic: 'storefront', sub: 'Pizza, Burger, Kebap …', kids: [
     { n: 'Pizza', d: 'pizza' }, { n: 'Burger', d: 'burger' }, { n: 'Kebap & Dürüm', d: 'kebap' }, { n: 'Hendl & Nuggets', d: 'hendl' }, { n: 'Leberkäse', d: 'leberkaese' },
     trI('Hot Dog', 'im_hotdog', 150, ['Hot Dog', 'Hot Dogs', 150]), trI('Schinken-Käse-Toast', 'im_toast', 130, ['Toast', 'Toasts', 130]), trI('Gebackene Briespitzen', 'im_brie', 150, ['Stück', 'Stück', 25]), trI('Ofenkäse', 'im_ofenk', 180, ['Ofenkäse', 'Ofenkäse', 180]), trM('Würstel', 'ws_frank', 100), trP('Pommes', [['pommes', 150], ['ketchup', 30]])] },
@@ -8716,7 +8732,7 @@ function dishResult(d, m) {
 
 /* ================= Zutaten für eigene Gerichte (pro 100 g bzw. 100 ml) =================
    Grundlage sind die Lebensmittel der App, ergänzt um typische Koch-Zutaten. lf = Leucin-Anteil am Eiweiß. */
-const ING_SYN = { ryebread: 'schwarzbrot roggen', spelt: 'dinkel', mixbread: 'mischbrot bauernbrot', protbread: 'proteinbrot low carb', wholetoast: 'toast', toast: 'toastbrot weissbrot', semmel: 'broetchen semmel kaisersemmel', kornspitz: 'weckerl gebaeck', pretzel: 'brezen laugengebaeck', crispbread: 'knaeckebrot', bbq: 'grillsauce barbecue', curryketchup: 'curry ketchup', salsa: 'dip tomatensalsa', sweetchili: 'chili', sweetsour: 'suess sauer', mustard: 'senf', mayolight: 'mayo leicht', garlicsauce: 'knoblauch kebab', burgersauce: 'burger', tzatziki: 'zaziki joghurt', fries: 'pommes frites fritten', wedges: 'kartoffelspalten pommes', roesti: 'roesti kartoffelpuffer', kroketten: 'kroketten', gnocchi: 'nocken', spaetzle: 'spatzle nockerl', raclette: 'kaese', ketchup: 'tomatenketchup', mayo: 'majo mayonnaise', sriracha: 'chili scharf chilisauce', srirachamayo: 'sriracha mayo majo scharf', tomsauce5: 'tomatensauce sugo sauce paradeiser kraeuter spaghetti glas', arrabbiata: 'tomatensauce sugo scharf', passata: 'passierte tomaten paradeiser sauce', pesto: 'pesto', coconut: 'kokosmilch curry', kidney: 'bohnen', corn: 'mais', chicken: 'huhn hendl haehnchen haenchen huehnchen haendl poulet huehnerbrust', turkey: 'truthahn puten', beef: 'hackfleisch hack rind', cheese: 'lightkaese kaese light gerieben', rice: 'reis roh basmati', pasta: 'nudeln spaghetti roh', potato: 'kartoffeln erdaepfel', eggs: 'ei eier', milk: 'milch', oil: 'oel', topfen: 'quark', mozza: 'mozzarella' };
+const ING_SYN = { ryebread: 'schwarzbrot roggen', spelt: 'dinkel', mixbread: 'mischbrot bauernbrot', protbread: 'proteinbrot low carb', wholetoast: 'toast', toast: 'toastbrot weissbrot', semmel: 'broetchen semmel kaisersemmel', kornspitz: 'weckerl gebaeck', pretzel: 'brezen laugengebaeck', crispbread: 'knaeckebrot', bbq: 'grillsauce barbecue', curryketchup: 'curry ketchup', salsa: 'dip tomatensalsa', sweetchili: 'chili', sweetsour: 'suess sauer', mustard: 'senf', mayolight: 'mayo leicht', garlicsauce: 'knoblauch kebab', burgersauce: 'burger', tzatziki: 'zaziki joghurt', fries: 'pommes frites fritten', wedges: 'kartoffelspalten pommes', roesti: 'roesti kartoffelpuffer', kroketten: 'kroketten', gnocchi: 'nocken', wgnocchi: 'gnocchi vollkorn nocken', spaetzle: 'spatzle nockerl', raclette: 'kaese', ketchup: 'tomatenketchup', mayo: 'majo mayonnaise', sriracha: 'chili scharf chilisauce', srirachamayo: 'sriracha mayo majo scharf', tomsauce5: 'tomatensauce sugo sauce paradeiser kraeuter spaghetti glas', arrabbiata: 'tomatensauce sugo scharf', passata: 'passierte tomaten paradeiser sauce', pesto: 'pesto', coconut: 'kokosmilch curry', kidney: 'bohnen', corn: 'mais', chicken: 'huhn hendl haehnchen haenchen huehnchen haendl poulet huehnerbrust', turkey: 'truthahn puten', beef: 'hackfleisch hack rind', cheese: 'lightkaese kaese light gerieben', rice: 'reis roh basmati', pasta: 'nudeln spaghetti roh', potato: 'kartoffeln erdaepfel', eggs: 'ei eier', milk: 'milch', oil: 'oel', topfen: 'quark', mozza: 'mozzarella' };
 const ING_EXTRA = [
   ['x-chicken-cooked', 'Hühnerbrust gegart', 145, 31, 0, 1.8, 0, .08, 'huhn haehnchen haenchen gebraten gekocht'],
   ['x-chickthigh', 'Hühnerkeule ohne Haut', 125, 19.5, 0, 5, 0, .08, 'huhn haehnchen haenchen schenkel', { raw: 1 }],
